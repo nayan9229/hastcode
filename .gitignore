@@ -1,0 +1,7 @@
+.vercel/
+.scratch/*/tmp/
+*_templ.go
+dist/
+.env
+.env.*
+.DS_Store
