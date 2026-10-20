@@ -9,3 +9,4 @@ dist/
 # Local agent skills/config (not part of the project)
 .claude/
 .agents/
+skills-lock.json
