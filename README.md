@@ -58,8 +58,13 @@ newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
 `init()` that calls `registerStep(phase, order, name, fn)`. Do not edit a
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
-(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20;
-validate references 10; render reset 0, render explainers 20; write config.json 100.
+(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
+exclude drafts (production only) 30; validate references 10, unique slugs 20,
+Explainer skeleton 30, section-length warning 40, Review-overdue warning 50;
+render reset 0, render explainers 20; write config.json 100.
+Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
+never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
+(intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
 `fn(s *site) error` returns an error only for fatal I/O (aborts the build).
 Content problems go through `s.fail(file, rule, fmt, args…)` (error; marks that
 file failed so its page is not written) or `s.warn(...)` (never fails). `file`
@@ -89,10 +94,15 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `DefaultAuthor()`, `HeroPNG(w, h)`, `Config()` (launch Verticals, production).
+  `ValidComparison()` (adds a `## Trade-offs` table), `DefaultAuthor()`,
+  `HeroPNG(w, h)`, `Config()` (launch Verticals, production; set `cfg.Now` to
+  pin the clock).
   Mutate a copy of `ValidExplainer()` to make an invalid fixture.
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
-  `RequireError(t, res, file, substring)`, `RequireWarning(...)`.
+  `RequireError(t, res, file, substring)`, `RequireWarning(...)`,
+  `RequireErrorRule(t, res, file, rule, substring)`, `RequireWarningRule(...)`,
+  `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`
+  (prove a piece appears in no output file).
