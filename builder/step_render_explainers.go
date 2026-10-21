@@ -37,5 +37,6 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
 		BodyHTML:     body,
+		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 	}
 }

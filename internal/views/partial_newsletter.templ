@@ -1,0 +1,28 @@
+package views
+
+import "hastcode.com/site/internal/subscribe"
+
+// NewsletterForm ends every Explainer and Brief. It is a plain form POST to
+// the subscribe function (works without JS: the function answers 303 to
+// /subscribed/). The inline script, when it runs, submits in place with
+// Accept: application/json and shows the result in the status region.
+// Field names are the function's contract (internal/subscribe).
+templ NewsletterForm(n Newsletter) {
+	<section class="newsletter" aria-labelledby="newsletter-title">
+		<h2 id="newsletter-title">Get new Explainers by email</h2>
+		<p>How real systems are built, in your inbox. No spam; unsubscribe any time.</p>
+		<form class="newsletter-form" method="post" action={ templ.SafeURL(subscribe.Path) } data-newsletter>
+			<label for="newsletter-email">Email address</label>
+			<input id="newsletter-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com"/>
+			<input type="hidden" name="source" value={ n.Source }/>
+			<div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+				<label>Leave this field empty <input type="text" name={ subscribe.HoneypotField } tabindex="-1" autocomplete="off"/></label>
+			</div>
+			<button type="submit">Subscribe</button>
+			<p class="newsletter-status" role="status" aria-live="polite"></p>
+		</form>
+		<script>
+			document.querySelectorAll("form[data-newsletter]").forEach(function(f){var s=f.querySelector("[role=status]"),b=f.querySelector("button");f.addEventListener("submit",function(e){if(!window.fetch||!window.URLSearchParams)return;e.preventDefault();b.disabled=true;s.textContent="Subscribing…";fetch(f.action,{method:"POST",headers:{Accept:"application/json"},body:new URLSearchParams(new FormData(f))}).then(function(r){return r.json()}).then(function(d){s.textContent=d.message;if(d.ok)f.reset()}).catch(function(){s.textContent="Something went wrong. Please try again."}).then(function(){b.disabled=false})})})
+		</script>
+	</section>
+}
