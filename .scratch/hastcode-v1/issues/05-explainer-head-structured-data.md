@@ -4,11 +4,11 @@
 
 **Blocked by:** 04 (Hero image pipeline)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test decodes the JSON-LD and asserts every required field, all three image ratio URLs, and that dates are RFC 3339 with offset and equal to the frontmatter values
-- [ ] Visible dates on the page are the same instants as the JSON-LD dates
-- [ ] `BreadcrumbList` has three items with correct names and absolute URLs
-- [ ] Canonical, og:image (≥1200 px variant), og:type article, twitter:card summary_large_image present
-- [ ] Robots meta contains `max-image-preview:large`; no `noindex` anywhere in production output
-- [ ] `dateModified` equals `reviewed` from frontmatter, never the build time
+- [x] Build-seam test decodes the JSON-LD and asserts every required field, all three image ratio URLs, and that dates are RFC 3339 with offset and equal to the frontmatter values
+- [x] Visible dates on the page are the same instants as the JSON-LD dates
+- [x] `BreadcrumbList` has three items with correct names and absolute URLs
+- [x] Canonical, og:image (≥1200 px variant), og:type article, twitter:card summary_large_image present
+- [x] Robots meta contains `max-image-preview:large`; no `noindex` anywhere in production output
+- [x] `dateModified` equals `reviewed` from frontmatter, never the build time

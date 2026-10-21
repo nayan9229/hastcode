@@ -210,14 +210,20 @@ func (e Explainer) Markdown() string {
 
 // Author is a fixture Author.
 type Author struct {
-	Slug string
-	Name string
-	Body string
+	Slug   string
+	Name   string
+	SameAs []string
+	Body   string
 }
 
 // DefaultAuthor is the Author every default fixture references.
 func DefaultAuthor() Author {
-	return Author{Slug: "ada", Name: "Ada Lovelace", Body: "Writes about distributed systems.\n"}
+	return Author{
+		Slug:   "ada",
+		Name:   "Ada Lovelace",
+		SameAs: []string{"https://github.com/ada-example", "https://www.linkedin.com/in/ada-example"},
+		Body:   "Writes about distributed systems.\n",
+	}
 }
 
 // Markdown renders the fixture as a content file.
@@ -225,6 +231,7 @@ func (a Author) Markdown() string {
 	var b strings.Builder
 	b.WriteString("---\n")
 	field(&b, "name", a.Name)
+	list(&b, "same_as", a.SameAs)
 	b.WriteString("---\n\n")
 	b.WriteString(a.Body)
 	return b.String()

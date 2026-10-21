@@ -8,12 +8,16 @@ import (
 )
 
 // page returns the view model every page passes to views.Layout: head
-// fields plus the site chrome (header nav, footer links), ads and analytics. Every render step
-// builds its views.Page through this so the chrome is never missing.
-func (s *site) page(title, description string) views.Page {
+// fields (canonical from urlPath, default Open Graph) plus the site chrome
+// (header nav, footer links), ads and analytics. Every render step builds
+// its views.Page through this (or s.articlePage, which calls it) so the
+// canonical and chrome are never missing.
+func (s *site) page(urlPath, title, description string) views.Page {
 	return views.Page{
 		Title:           title,
 		Description:     description,
+		Canonical:       s.absURL(urlPath),
+		Social:          views.Social{Type: "website", Title: title},
 		Chrome:          s.chrome(),
 		Ads:             views.Ads{Enabled: s.cfg.AdsEnabled, Client: s.cfg.AdSenseClient},
 		PlausibleDomain: s.cfg.PlausibleDomain,

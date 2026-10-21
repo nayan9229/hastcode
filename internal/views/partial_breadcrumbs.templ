@@ -1,0 +1,18 @@
+package views
+
+// Breadcrumbs is the visible trail from Home to the current page (the
+// last link, shown unlinked with aria-current). The builder emits the
+// matching BreadcrumbList JSON-LD from the same links.
+templ Breadcrumbs(trail []Link) {
+	<nav class="breadcrumbs" aria-label="Breadcrumb">
+		<ol class="inline-list">
+			for i, l := range trail {
+				if i == len(trail)-1 {
+					<li aria-current="page">{ l.Name }</li>
+				} else {
+					<li><a href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>
+				}
+			}
+		</ol>
+	</nav>
+}

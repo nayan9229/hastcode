@@ -65,7 +65,9 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
-| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav, ads flag and Plausible domain. |
+| `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
+| `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
+| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
@@ -116,8 +118,26 @@ keep them. Run `make generate` after editing `.templ` files.
 **Adding a page type.** Add a URL func in `builder/urls.go`, a view model in
 `models.go`, a templ file, and a `step_render_<type>.go` that calls
 `s.writePage(url, component)`. Build the page's `views.Page` with
-`s.page(title, description)` (never a bare `views.Page{}`) so the header and
-footer nav are filled, and wrap the component in `@Layout(page)`.
+`s.page(url, title, description)` (never a bare `views.Page{}`) so the
+canonical, header and footer nav are filled, and wrap the component in
+`@Layout(page)`. Article pages (Explainer, Brief) use
+`s.articlePage(articleHead{...})` instead, which calls `s.page` and adds
+the hero preload, Open Graph article tags, the breadcrumb trail and the
+Article/NewsArticle + BreadcrumbList JSON-LD. Other pages set
+`page.Breadcrumbs` (Home first, the page last; rendered above the content
+by `Layout`) and append `s.breadcrumbs(page.Breadcrumbs)` plus any
+top-level block (`Person`/`Organization` with `Context: schema.Context`)
+to `page.StructuredData`.
+
+**Head and structured data.** Every page's `<head>` carries `lang="en"`,
+robots `max-image-preview:large` (or `noindex` when `Page.NoIndex`; only
+`/subscribed/` is noindex in production), an absolute trailing-slash
+canonical, Open Graph + Twitter card and both theme-colors. JSON-LD URLs
+are absolute (`s.absURL`), dates are RFC 3339 with the frontmatter's
+offset (the same instants as the visible `<time datetime>`), and an
+Explainer's `dateModified` is its `reviewed` date, never the build time.
+Author `url` is `/authors/<slug>/`; `sameAs` comes from the Author file's
+`same_as` list. No `FAQPage`, `HowTo`, `Speakable` or `TechArticle`.
 
 **Design system.** One stylesheet, `internal/views/site.css`, served as
 `/assets/site.<hash>.css` (ADR-0003); no inline `<style>`, no webfonts, no

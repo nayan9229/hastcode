@@ -99,6 +99,12 @@ button { cursor: pointer; padding: .55rem 1rem; background: var(--link); color: 
 .byline, .dates { margin-bottom: .25rem; color: var(--muted); font-size: .875rem; }
 article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
 
+/* Breadcrumbs (partial_breadcrumbs.templ) */
+.breadcrumbs { margin-block: 1rem 1.5rem; color: var(--muted); font-size: .875rem; }
+.breadcrumbs .inline-list { gap: .25rem .5rem; }
+.breadcrumbs li + li::before { content: "/"; margin-right: .5rem; color: var(--border); }
+.breadcrumbs a { color: var(--muted); }
+
 /* Newsletter form (partial_newsletter.templ) */
 .newsletter { margin-top: 3rem; }
 .newsletter h2 { margin-top: 0; }

@@ -3,6 +3,7 @@ package builder
 import (
 	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/markdown"
+	"hastcode.com/site/internal/schema"
 	"hastcode.com/site/internal/views"
 )
 
@@ -37,14 +38,31 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 	if hr := s.heroes[e.File]; hr != nil {
 		hero = hr.view
 	}
-	page := s.page(e.Title+" | Hast Code", e.Description)
-	page.HeroPreload = &hero
+	author := s.authors[e.Author]
+	vertical := s.verticals[e.Vertical]
+	page := s.articlePage(articleHead{
+		Type:        schema.TypeArticle,
+		URL:         explainerURL(e),
+		Headline:    e.Title,
+		Description: e.Description,
+		Hero:        hero,
+		Published:   e.Published,
+		Modified:    e.Reviewed, // dateModified is the last Review, never the build time
+		Author:      author,
+		Section:     vertical.Name,
+		Keywords:    e.Tags,
+		Breadcrumbs: []views.Link{
+			{Name: "Home", URL: homeURL},
+			{Name: vertical.Name, URL: verticalURL(vertical.Slug)},
+			{Name: e.Title, URL: explainerURL(e)},
+		},
+	})
 	return views.ExplainerPage{
 		Page:         page,
 		Title:        e.Title,
 		Description:  e.Description,
-		VerticalName: s.verticals[e.Vertical].Name,
-		AuthorName:   s.authors[e.Author].Name,
+		VerticalName: vertical.Name,
+		AuthorName:   author.Name,
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
 		Hero:         hero,

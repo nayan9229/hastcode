@@ -17,9 +17,14 @@ func subscribedURL() string { return subscribe.SubscribedPath }
 
 func verticalURL(slug string) string { return "/" + slug + "/" }
 
+// authorURL is the Author page (written by ticket 08); Person JSON-LD
+// uses it as the author's url.
+func authorURL(slug string) string { return "/authors/" + slug + "/" }
+
 // Fixed pages and feeds. Some are written by later tickets; the site
 // chrome links them from every page already.
 const (
+	homeURL            = "/"
 	briefsIndexURL     = "/briefs/"
 	searchURL          = "/search/"
 	aboutURL           = "/about/"

@@ -1,0 +1,31 @@
+package views
+
+import "strconv"
+
+// SocialMeta is the Open Graph and Twitter card preview in <head>. Twitter
+// reads og:title/description/image, so only twitter:card is its own tag:
+// summary_large_image when there is an image (article heroes), summary
+// otherwise.
+templ SocialMeta(p Page) {
+	<meta property="og:type" content={ p.Social.Type }/>
+	<meta property="og:site_name" content={ PublicationName }/>
+	<meta property="og:locale" content="en_US"/>
+	<meta property="og:url" content={ p.Canonical }/>
+	<meta property="og:title" content={ p.Social.Title }/>
+	<meta property="og:description" content={ p.Description }/>
+	if img := p.Social.Image; img != nil {
+		<meta property="og:image" content={ img.URL }/>
+		<meta property="og:image:width" content={ strconv.Itoa(img.Width) }/>
+		<meta property="og:image:height" content={ strconv.Itoa(img.Height) }/>
+		<meta property="og:image:alt" content={ p.Social.ImageAlt }/>
+		<meta name="twitter:card" content="summary_large_image"/>
+	} else {
+		<meta name="twitter:card" content="summary"/>
+	}
+	if p.Social.Published != "" {
+		<meta property="article:published_time" content={ p.Social.Published }/>
+	}
+	if p.Social.Modified != "" {
+		<meta property="article:modified_time" content={ p.Social.Modified }/>
+	}
+}

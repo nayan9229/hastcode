@@ -28,7 +28,17 @@ type Page struct {
 	// Title is the full <title> text.
 	Title       string
 	Description string
-	Chrome      Chrome
+	// Canonical is the page's absolute canonical URL (trailing slash).
+	Canonical string
+	// Social is the Open Graph / Twitter card preview.
+	Social Social
+	// Breadcrumbs is the trail from Home to this page (site-relative
+	// URLs, last = this page), shown above the content. Empty = none.
+	Breadcrumbs []Link
+	// StructuredData are JSON-LD blocks (internal/schema values), each
+	// written to its own script in <head>.
+	StructuredData []any
+	Chrome         Chrome
 	// NoIndex keeps the page out of search indexes (meta robots noindex).
 	NoIndex bool
 	// HeroPreload, when set, adds a preload hint for the hero to the head.
@@ -38,6 +48,22 @@ type Page struct {
 	// PlausibleDomain is the Plausible analytics site domain; "" omits
 	// the analytics script (tests, local builds).
 	PlausibleDomain string
+}
+
+// Social is a page's Open Graph and Twitter card preview.
+type Social struct {
+	// Type is the og:type: "website" (default) or "article".
+	Type string
+	// Title is og:title: the page's own name, without the site suffix
+	// <title> carries.
+	Title string
+	// Image is the preview image with an absolute URL; nil = none (a
+	// "summary" card). Article pages use the 1200 px 16:9 hero crop.
+	Image    *Image
+	ImageAlt string
+	// Published and Modified are RFC 3339 article:published_time and
+	// article:modified_time ("" = omitted).
+	Published, Modified string
 }
 
 // Ads is the one flag (plus account) that turns every AdSlot from an

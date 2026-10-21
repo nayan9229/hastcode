@@ -11,6 +11,9 @@ templ Layout(p Page) {
 			<a class="skip-link" href="#main">Skip to content</a>
 			@SiteHeader(p.Chrome)
 			<main id="main" class="wrap">
+				if len(p.Breadcrumbs) > 0 {
+					@Breadcrumbs(p.Breadcrumbs)
+				}
 				{ children... }
 			</main>
 			@SiteFooter(p.Chrome)
