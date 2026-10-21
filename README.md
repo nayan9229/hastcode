@@ -314,8 +314,13 @@ not part of any page's initial JS); analytics and Pagefind are the
 only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
 `TestNewsletter_EnhancementScriptIsSmall`), plus the AdSense library and its
 per-unit push only when `ads_enabled`. Total client JS per page stays
-≤ 60 KB (`TestJSBudget_EveryPageStaysWithin60KB`; give any new third-party
-script a size there).
+≤ 60 KB **uncompressed, analytics included**: the authority is the
+Build-seam test `TestJSBudget_EveryPageStaysWithin60KB`, which sums every
+script a page loads initially (inline code, same-origin files, and an
+upper bound for each third-party script: Plausible 4 KB, measured 2,841
+bytes). Give any new third-party script a size there. Lighthouse CI's
+script check is only a secondary guard (it measures compressed transfer
+and must block Plausible on previews).
 
 **Weight, ads, analytics.** Every page written through `s.writePage` is
 checked against the 50 KB uncompressed HTML gate (the stylesheet is external
@@ -631,7 +636,9 @@ false`):
   against home, `/search/`, `/briefs/`, a Vertical hub, an Explainer and a
   Brief (`scripts/lighthouse-urls.sh` picks them from the build's sitemap).
   Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
-  (median of 3 runs), CLS 0 (worst run), script transfer ≤ 60 KB. A miss
+  (median of 3 runs), CLS 0 (worst run), first-party script transfer
+  (compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
+  (uncompressed, analytics included) is enforced by `make test`. A miss
   fails the check; reports are the `lighthouse-reports` artefact (never
   public storage: previews hold drafts). The preview is behind Vercel
   Authentication, so Lighthouse sends `x-vercel-protection-bypass`; it

@@ -12,14 +12,22 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
-// Spec "Lighthouse budgets": total client JS ≤ 60 KB per page.
+// Spec story 61: total client JS ≤ 60 KB per page. This test is the
+// authority for that budget, not Lighthouse CI: Lighthouse has to block
+// Plausible on previews (it would otherwise send the Vercel bypass secret
+// to a third party) and its resource-summary counts compressed transfer
+// bytes. Here every script a page loads initially is summed uncompressed:
+// inline code, same-origin files from the output, and an upper bound for
+// each third-party script. Pagefind loads only on interaction, so it is
+// not initial JS.
 const jsBudget = 60 * 1024
 
-// thirdPartyScriptBytes are upper bounds for the third-party scripts the
-// site may load, since their bytes are not in the build output. Plausible
-// documents its script as under 1 KB; 2 KB leaves headroom.
+// thirdPartyScriptBytes are upper bounds for the uncompressed size of the
+// third-party scripts the site may load, since their bytes are not in the
+// build output. Plausible's script.js measured 2,841 bytes uncompressed
+// (1,283 gzipped) on 2026-10-21; 4 KB leaves headroom for its updates.
 var thirdPartyScriptBytes = map[string]int{
-	"https://plausible.io/js/script.js": 2 * 1024,
+	"https://plausible.io/js/script.js": 4 * 1024,
 }
 
 func TestJSBudget_EveryPageStaysWithin60KB(t *testing.T) {
