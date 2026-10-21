@@ -18,8 +18,8 @@ import (
 	"net/http"
 	"os"
 
-	"hastcode.com/site/subscribe"
 	"hastcode.com/site/internal/vercel"
+	"hastcode.com/site/subscribe"
 )
 
 func main() {
