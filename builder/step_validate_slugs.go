@@ -1,9 +1,6 @@
 package builder
 
-import (
-	"path"
-	"strings"
-)
+import "strings"
 
 func init() {
 	registerStep(phaseValidate, 20, "validate unique slugs", validateUniqueSlugs)
@@ -27,14 +24,8 @@ func validateUniqueSlugs(s *site) error {
 	for _, e := range s.explainers {
 		add(e.Slug, e.File)
 	}
-	// Brief slugs come from file names (content/briefs/<slug>.md), so this
-	// gate holds whether or not Briefs parsed. Ticket 06 may switch this to
-	// the loaded Briefs once the site holds them.
-	err := s.eachMarkdown("briefs", func(rel string, _ []byte) {
-		add(strings.TrimSuffix(path.Base(rel), path.Ext(rel)), rel)
-	})
-	if err != nil {
-		return err
+	for _, b := range s.briefs {
+		add(b.Slug, b.File)
 	}
 	for _, slug := range order {
 		group := files[slug]

@@ -12,6 +12,8 @@ func explainerURL(e *content.Explainer) string {
 	return "/" + e.Vertical + "/" + e.Slug + "/"
 }
 
+func briefURL(b *content.Brief) string { return briefsIndexURL + b.Slug + "/" }
+
 // subscribedURL is where the subscribe function sends no-JS signups.
 func subscribedURL() string { return subscribe.SubscribedPath }
 

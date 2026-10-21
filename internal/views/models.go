@@ -112,6 +112,48 @@ type ExplainerPage struct {
 	Newsletter Newsletter
 }
 
+// BriefPage is the view model for a Brief article page.
+type BriefPage struct {
+	Page        Page
+	Title       string
+	Description string
+	AuthorName  string
+	Published   time.Time
+	Hero        Hero
+	// LeadHTML is the rendered body through "What happened", before the
+	// first ad slot; BodyHTML is the rest (both trusted: built from content).
+	LeadHTML string
+	BodyHTML string
+	// Source is the public source the Brief is curated from (absolute URL);
+	// SourceName is the text shown for it.
+	Source, SourceName string
+	// Newsletter is the subscribe form that ends the Brief.
+	Newsletter Newsletter
+}
+
+// BriefsIndexPage is one page of the Briefs index (newest first).
+type BriefsIndexPage struct {
+	Page       Page
+	Heading    string
+	Items      []BriefItem
+	Pagination Pagination
+}
+
+// BriefItem is a Brief in a listing.
+type BriefItem struct {
+	Title       string
+	URL         string
+	Description string
+	Published   time.Time
+}
+
+// Pagination is a listing page's place in its sequence: Prev and Next are
+// site-relative URLs ("" at either end). Rendered by PaginationNav.
+type Pagination struct {
+	Current, Total int
+	Prev, Next     string
+}
+
 // Newsletter is the view model for the newsletter form partial.
 type Newsletter struct {
 	// Source is the site-relative path of the page the form is on; it is

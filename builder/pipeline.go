@@ -51,6 +51,7 @@ type site struct {
 	verticals  map[string]Vertical // by slug
 	authors    map[string]*content.Author
 	explainers []*content.Explainer
+	briefs     []*content.Brief
 	heroes     map[string]*hero // by content file; see step_transform_heroes.go
 
 	failed map[string]bool // content-relative files that produced an error
