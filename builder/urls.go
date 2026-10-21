@@ -71,7 +71,7 @@ func encodedImageURL(dir, source string, f images.File) string {
 }
 
 // Asset directories. assetsDir holds only content-hashed files (the
-// stylesheet, heroAssetDir, authorPhotoDir), so the routes
+// stylesheet, the OG badge, heroAssetDir, authorPhotoDir), so the routes
 // cache it forever. pagefindBundleURL is where the browser loads Pagefind
 // from (the search page's lazy loader reads it, the index step writes it);
 // its files keep stable names and are revalidated.

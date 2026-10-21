@@ -66,8 +66,12 @@ func checkAuthorPlaceholders(s *site) error {
 				file = marked[0]
 			}
 		}
-		report(file, ruleAuthorPlaceholder, "%s contains %q placeholder text; replace every %s line in %s before publishing",
-			pageURL, authorPlaceholder, authorPlaceholder, strings.Join(marked, ", "))
+		fix := file
+		if fix == "" {
+			fix = "content/"
+		}
+		report(file, ruleAuthorPlaceholder, "%s still contains %q placeholder text; replace the %s lines in %s before publishing",
+			pageURL, authorPlaceholder, authorPlaceholder, fix)
 		return nil
 	})
 }
