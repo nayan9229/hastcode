@@ -15,8 +15,8 @@ func init() {
 
 // Rules for the Explainer editorial skeleton (spec "Content model").
 const (
-	ruleTLDR    = "tldr"
-	ruleSources = "sources"
+	ruleTLDR           = "tldr"
+	ruleSources        = "sources"
 	ruleDiagram        = "diagram"
 	ruleTradeOffsTable = "trade-offs-table"
 )
