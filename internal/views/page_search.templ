@@ -1,0 +1,32 @@
+package views
+
+// Search is the /search/ page (noindex). It is a complete page without JS:
+// the form, a <noscript> note saying search needs JavaScript, and links to
+// browse every Vertical and the Briefs. The inline loader (search.js)
+// fetches Pagefind only on first focus of the input, a submit, or ?q=.
+templ Search(s SearchPage) {
+	@Layout(s.Page) {
+		<section class="search">
+			<h1>Search</h1>
+			<p>Find Explainers and Briefs by keyword. Search runs in your browser: what you type never leaves this page.</p>
+			<form class="search-form" role="search" method="get" action="/search/" data-pagefind-bundle={ s.Bundle }>
+				<label for="search-input">Search Explainers and Briefs</label>
+				<input id="search-input" type="search" name="q" autocomplete="off" autocapitalize="none" enterkeyhint="search" placeholder="e.g. consensus, CDN caching"/>
+				<button type="submit">Search</button>
+			</form>
+			<noscript>
+				<p class="search-nojs box">Search needs JavaScript, which is turned off in this browser. Every Explainer and Brief is also listed by topic below.</p>
+			</noscript>
+			<p id="search-status" class="search-status" role="status" aria-live="polite"></p>
+			<ol id="search-results" class="search-results"></ol>
+			<h2>Browse by topic</h2>
+			<ul class="inline-list search-browse">
+				for _, v := range s.Page.Chrome.Verticals {
+					<li><a href={ templ.SafeURL(v.URL) }>{ v.Name }</a></li>
+				}
+				<li><a href={ templ.SafeURL(s.Page.Chrome.Briefs.URL) }>{ s.Page.Chrome.Briefs.Name }</a></li>
+			</ul>
+			@templ.Raw("<script>" + searchScript + "</script>")
+		</section>
+	}
+}

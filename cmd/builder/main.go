@@ -6,8 +6,10 @@
 // encoders run as WASM and output is identical on every machine.
 //
 // It prints every error and warning and exits 1 if the build failed.
-// Run `make generate` (templ) and `npm ci` (Mermaid renderer) before
-// building from a fresh checkout.
+// Run `make generate` (templ) and `npm ci` (Mermaid renderer, Pagefind)
+// before building from a fresh checkout. The build ends by indexing the
+// output with Pagefind (static/pagefind/); a production build fails
+// without that index, and -skip-search-index is for preview builds only.
 package main
 
 import (
@@ -27,12 +29,13 @@ func main() {
 	toolsDir := flag.String("tools", ".", "directory with package.json and node_modules (run npm ci there)")
 	cacheDir := flag.String("cache", "", "build cache directory (default <tools>/node_modules/.cache/hastcode)")
 	imageCache := flag.String("image-cache", "", "hero image cache dir (overrides images.cache_dir; default "+builder.DefaultImageCacheDir+")")
+	skipSearch := flag.Bool("skip-search-index", false, "do not run Pagefind (preview mode only; a production build fails without the index)")
 	flag.Parse()
 
-	os.Exit(run(*contentDir, *configPath, *outDir, *mode, *toolsDir, *cacheDir, *imageCache))
+	os.Exit(run(*contentDir, *configPath, *outDir, *mode, *toolsDir, *cacheDir, *imageCache, *skipSearch))
 }
 
-func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCache string) int {
+func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCache string, skipSearch bool) int {
 	cfg, err := builder.LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
@@ -43,6 +46,7 @@ func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCach
 		return 2
 	}
 	cfg.ToolsDir, cfg.CacheDir = toolsDir, cacheDir
+	cfg.SkipSearchIndex = skipSearch
 	if imageCache != "" {
 		cfg.Images.CacheDir = imageCache
 	}

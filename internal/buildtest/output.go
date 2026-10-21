@@ -24,6 +24,9 @@ func Build(tb testing.TB, cfg builder.Config, tree Tree) (outDir string, res bui
 	if tree.hasDiagram() {
 		requireDiagramRenderer(tb, cfg)
 	}
+	if !cfg.SkipSearchIndex {
+		requireSearchIndexer(tb, cfg)
+	}
 	if cfg.CacheDir == "" {
 		cfg.CacheDir = tb.TempDir()
 	}

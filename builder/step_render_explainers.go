@@ -19,12 +19,20 @@ func renderExplainers(s *site) error {
 			s.fail(e.File, "markdown", "%v", err)
 			continue
 		}
+		rest, sources := e.Body.SplitAtSection(rest, headingSources)
 		body, err := markdown.RenderBlocks(e.Body, rest)
 		if err != nil {
 			s.fail(e.File, "markdown", "%v", err)
 			continue
 		}
-		if err := s.writePage(explainerURL(e), views.ExplainerArticle(explainerPage(s, e, leadHTML, body))); err != nil {
+		sourcesHTML, err := markdown.RenderBlocks(e.Body, sources)
+		if err != nil {
+			s.fail(e.File, "markdown", "%v", err)
+			continue
+		}
+		page := explainerPage(s, e, leadHTML, body)
+		page.SourcesHTML = sourcesHTML
+		if err := s.writePage(explainerURL(e), views.ExplainerArticle(page)); err != nil {
 			return err
 		}
 	}

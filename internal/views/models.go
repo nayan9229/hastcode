@@ -109,6 +109,9 @@ type ExplainerPage struct {
 	// content).
 	LeadHTML string
 	BodyHTML string
+	// SourcesHTML is the rendered "## Sources" section that ends the body
+	// (kept out of the search index); "" when there is none.
+	SourcesHTML string
 	// Newsletter is the subscribe form after the body.
 	Newsletter Newsletter
 	// ReadNext are the "More in {Vertical}" and "Related" lists that end

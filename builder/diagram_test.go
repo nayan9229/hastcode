@@ -7,6 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	"hastcode.com/site/builder"
 	"hastcode.com/site/internal/buildtest"
 )
 
@@ -157,6 +158,10 @@ func TestDiagram_UnchangedDiagramsAreServedFromTheCacheWithoutRerendering(t *tes
 
 	noRenderer := cfg
 	noRenderer.Node = filepath.Join(t.TempDir(), "no-such-node")
+	// Without Node there is no Pagefind either: a preview build may skip
+	// the search index, so only the diagram renderer is missing.
+	noRenderer.Mode = builder.Preview
+	noRenderer.SkipSearchIndex = true
 
 	second := buildtest.Page(t, buildtest.MustBuild(t, noRenderer, tree), explainerURL).Find("figure.diagram")
 	if secondHTML, _ := goquery.OuterHtml(second); secondHTML != firstHTML {

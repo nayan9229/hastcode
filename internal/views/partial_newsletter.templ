@@ -8,7 +8,7 @@ import "hastcode.com/site/internal/subscribe"
 // Accept: application/json and shows the result in the status region.
 // Field names are the function's contract (internal/subscribe).
 templ NewsletterForm(n Newsletter) {
-	<section class="newsletter box" aria-labelledby="newsletter-title">
+	<section class="newsletter box" aria-labelledby="newsletter-title" data-pagefind-ignore="all">
 		<h2 id="newsletter-title">Get new Explainers by email</h2>
 		<p>How real systems are built, in your inbox. No spam; unsubscribe any time.</p>
 		<form class="newsletter-form" method="post" action={ templ.SafeURL(subscribe.Path) } data-newsletter>

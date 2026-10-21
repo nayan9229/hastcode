@@ -7,7 +7,7 @@ import "time"
 // like ExplainerArticle; tests select on those classes, so keep them.
 templ BriefArticle(b BriefPage) {
 	@Layout(b.Page) {
-		<article class="h-entry">
+		<article class="h-entry" data-pagefind-body>
 			<header>
 				<p class="vertical">Brief</p>
 				<h1 class="p-name">{ b.Title }</h1>
@@ -22,7 +22,7 @@ templ BriefArticle(b BriefPage) {
 				@templ.Raw(b.LeadHTML)
 				@AdSlot(b.Page.Ads, AdAfterTLDR)
 				@templ.Raw(b.BodyHTML)
-				<p class="brief-source">Source: <a href={ templ.SafeURL(b.Source) }>{ b.SourceName }</a></p>
+				<p class="brief-source" data-pagefind-ignore>Source: <a href={ templ.SafeURL(b.Source) }>{ b.SourceName }</a></p>
 			</div>
 			@AdSlot(b.Page.Ads, AdAfterBody)
 			@NewsletterForm(b.Newsletter)

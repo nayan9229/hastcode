@@ -72,17 +72,17 @@ func TestExplainerHead_RobotsAllowLargeImagePreviews(t *testing.T) {
 }
 
 // The only production pages kept out of search are the newsletter's
-// "check your inbox" page and the 404 page; every content page (articles,
-// Author pages, static pages) is indexable. Add a new noindex page here
-// deliberately.
-func TestProductionOutput_NothingIsNoindexButTheSubscribedAnd404Pages(t *testing.T) {
+// "check your inbox" page, the 404 page and the site search page; every
+// content page (articles, Author pages, static pages) is indexable. Add a
+// new noindex page here deliberately.
+func TestProductionOutput_NothingIsNoindexButTheSubscribed404AndSearchPages(t *testing.T) {
 	tree := buildtest.ValidTree().WithExplainer(buildtest.ValidComparison())
 	for _, p := range buildtest.TransparencyPages() {
 		tree.WithPage(p)
 	}
 	out := buildtest.MustBuild(t, buildtest.Config(), tree)
 
-	noindex := map[string]bool{"static/subscribed/index.html": true, "static/404.html": true}
+	noindex := map[string]bool{"static/subscribed/index.html": true, "static/404.html": true, "static/search/index.html": true}
 	for _, file := range buildtest.FilesContaining(t, out, "noindex") {
 		if !noindex[file] {
 			t.Errorf("%s contains noindex", file)

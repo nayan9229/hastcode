@@ -14,7 +14,7 @@ compiling, vetting or testing anything. Mermaid diagrams need Node 22+ and the
 pinned npm packages (see "Mermaid diagrams" below).
 
 ```sh
-npm ci          # Node build tools from package.json (Mermaid renderer)
+npm ci          # Node build tools from package.json (Mermaid renderer, Pagefind)
 make generate   # go generate ./...  (runs `go tool templ generate`)
 make test       # generate + go test ./...
 make vet        # generate + go vet ./...
@@ -30,7 +30,8 @@ Builder flags: `-content` (default `content`), `-config` (default `site.yaml`),
 `-out` (default `.vercel/output`), `-mode production|preview`, `-tools` (dir
 with `package.json`/`node_modules`, default `.`), `-cache` (build cache, default
 `<tools>/node_modules/.cache/hastcode`), `-image-cache` (overrides
-`images.cache_dir`). It prints every
+`images.cache_dir`), `-skip-search-index` (preview only: no Pagefind run; a
+production build with it fails). It prints every
 error and warning and exits non-zero if the build failed.
 
 Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`,
@@ -74,6 +75,9 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
 | `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestExplainers`/`newestBriefs`, `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
 | `builder/step_render_link_gate.go` | The site-wide broken internal link gate (rule `broken-link`), last in the render phase. |
+| `builder/step_render_search.go`, `step_write_search_index.go` | The noindex `/search/` page and the Pagefind post-step (rule `search-index`) that indexes the written output into `/pagefind/`. |
+| `internal/pagefind/` | Runs the Pagefind CLI (`node node_modules/pagefind/lib/runner/bin.cjs --site …`) and reads the bundle's page count. |
+| `internal/views/page_search.templ`, `search.js` | Search page and its inline lazy loader (Pagefind modular UI on first focus). |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
@@ -84,7 +88,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
 | `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on). |
-| `package.json` | Pinned Node build tools (`beautiful-mermaid`). Not a JS app. |
+| `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
 hero images -> `builder/step_transform_heroes.go` +
@@ -108,8 +112,9 @@ render reset 0, write site assets 10, write hero assets 15, write author
 photos 16, render explainers 20, render briefs 30, render author pages 40,
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
-render 404 page 65, check internal links 1000 (keep it last: it reads
-every written page); write config.json 100.
+render search page 62, render 404 page 65, check internal links 1000
+(keep it last: it reads every written page); write config.json 100,
+index search 900 (Pagefind over the final output).
 
 **Internal links.** After every page is written, `checkInternalLinks`
 reads each HTML file in the output and resolves every `href` that stays on
@@ -117,9 +122,9 @@ the site (root-relative, page-relative, or absolute on `site_url`'s host;
 query and fragment ignored). It must name a written file or a directory
 index (`/a/` -> `/a/index.html`; `/a` without the slash is broken), or a
 path the build does not write itself (`linkTargetsNotWritten`:
-`/api/subscribe`, `/search/`, `/feed.xml`, `/{vertical}/feed.xml`,
-`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`; entries become
-redundant once tickets 09/13 write them). Otherwise it is a `broken-link`
+`/api/subscribe`, `/feed.xml`, `/{vertical}/feed.xml`,
+`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`: written in the
+write phase, after the gate). Otherwise it is a `broken-link`
 error naming the page and the target, attributed to the page's content
 file ("" for home and listings), and the page is removed from the output.
 Header and footer links are checked on every page, so the About, Contact
@@ -190,7 +195,7 @@ to `page.StructuredData`.
 
 **Head and structured data.** Every page's `<head>` carries `lang="en"`,
 robots `max-image-preview:large` (or `noindex` when `Page.NoIndex`; only
-`/subscribed/` and `/404.html` are noindex in production; the 404 has no
+`/subscribed/`, `/404.html` and `/search/` are noindex in production; the 404 has no
 canonical), an absolute trailing-slash
 canonical, Open Graph + Twitter card and both theme-colors. JSON-LD URLs
 are absolute (`s.absURL`), dates are RFC 3339 with the frontmatter's
@@ -216,8 +221,10 @@ and `button`. Generic hooks for partials: `.box` (bordered surface panel,
 e.g. TL;DR, newsletter), `.muted`, `.inline-list` (breadcrumbs, tags,
 links), `.visually-hidden`. Add component-specific rules to `site.css` under
 a comment naming the partial, one declaration block per line. The inline
-scripts are the theme toggle (≤ 1 KB, in `<head>`) and the newsletter form's
-enhancement (≤ 1 KB, inside `.newsletter`); analytics and Pagefind are the
+scripts are the theme toggle (≤ 1 KB, in `<head>`), the newsletter form's
+enhancement (≤ 1 KB, inside `.newsletter`) and the search page's loader
+(≤ 1.5 KB, `search.js`; Pagefind itself loads only on interaction, so it is
+not part of any page's initial JS); analytics and Pagefind are the
 only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
 `TestNewsletter_EnhancementScriptIsSmall`), plus the AdSense library and its
 per-unit push only when `ads_enabled`. Total client JS per page stays
@@ -356,6 +363,58 @@ The local router (`vercel.NewRouter`) refuses a `config.json` using route
 features it does not implement (other `handle` phases, `has`/`missing`, a
 non-RE2 regex), so the check cannot silently diverge from the file. It is not
 Vercel itself: ticket 15 repeats the check against the first preview.
+
+## Search
+
+`/search/` (noindex) searches Explainers and Briefs in the browser with
+[Pagefind](https://pagefind.app) `1.5.2` (pinned exactly in `package.json`;
+`npm ci` installs the platform binary as an optional dependency). There is
+no backend.
+
+- **Index (post-step inside the builder).** The last pipeline step
+  (`step_write_search_index.go`, write phase 900, after the link gate has
+  removed broken pages) runs `node node_modules/pagefind/lib/runner/bin.cjs
+  --site <out>/static --output-subdir pagefind --quiet` in `-tools`, then
+  reads `static/pagefind/pagefind-entry.json`. A missing or empty index is a
+  `search-index` error, so the build fails. `-skip-search-index` (Config
+  `SkipSearchIndex`) skips the run: an error in production, a warning in
+  preview. A build that already failed is not indexed.
+- **What is indexed.** Explainer and Brief templates put
+  `data-pagefind-body` on `<article class="h-entry">`; once any page has it,
+  pages without it (listings, static pages, `/search/`, 404) are not
+  indexed. Inside the article, ad slots, the newsletter box and the reading
+  lists carry `data-pagefind-ignore="all"`; diagram figures, the Explainer's
+  Sources section (`div.sources`) and the Brief's source line carry
+  `data-pagefind-ignore`. Header, footer and breadcrumbs are outside the
+  article. (A tree with no published Explainer or Brief has no
+  `data-pagefind-body` at all, so Pagefind falls back to indexing every
+  page's `<body>`; this ends with the first Explainer.)
+- **Search page.** Plain HTML first: a `role=search` form with a labelled
+  `input type=search`, a `<noscript>` note that search needs JavaScript,
+  and links to every Vertical hub and the Briefs. The inline loader fetches
+  `/pagefind/pagefind-modular-ui.js` on the first focus of the input, a
+  submit, or a `?q=` in the URL; the modular UI then loads `pagefind.js` and
+  the index chunks on demand. Results are styled in `site.css` with the
+  colour tokens (light, dark, toggle); Pagefind's CSS is never loaded.
+- **Caching.** `/pagefind/*` keeps Vercel's default revalidating cache: its
+  entry files have stable names (see "Routes and caching").
+- **Tests** (`builder/search_test.go`) read the index through
+  `buildtest.SearchIndex(t, out)` (URL -> indexed text, decoded from the
+  gzipped fragments). `buildtest.Build` skips a test when `node` or
+  `node_modules/pagefind` is missing, unless the config skips indexing.
+
+**Vercel build command** (ticket 15). Install: `npm ci` (Vercel's default
+install step does this when `package-lock.json` exists). Build:
+
+```sh
+make build            # = go run ./cmd/builder ... -mode production (generate first)
+```
+
+No separate `npx pagefind` step: the builder runs Pagefind and fails the
+build if the index is missing. If the install step is overridden, use
+`npm ci && make build`. Preview deployments may use `make build
+MODE=preview`, which still indexes; `FLAGS=-skip-search-index` (preview
+mode only) is for quick local builds.
 
 ## Mermaid diagrams
 

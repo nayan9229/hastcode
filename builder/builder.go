@@ -64,6 +64,10 @@ type Config struct {
 	// <ToolsDir>/node_modules/.cache/hastcode: Vercel persists only
 	// node_modules/** between builds.
 	CacheDir string `yaml:"-"`
+	// SkipSearchIndex leaves out the Pagefind post-step (search index under
+	// /pagefind/). Allowed in preview builds only, for quick local runs;
+	// a production build that skips it fails (rule search-index).
+	SkipSearchIndex bool `yaml:"-"`
 }
 
 // DefaultImageCacheDir is where encoded hero variants are cached between

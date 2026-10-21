@@ -11,6 +11,8 @@ CONTENT ?= content
 CONFIG  ?= site.yaml
 OUT     ?= .vercel/output
 MODE    ?= production
+# Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
+FLAGS   ?=
 
 .PHONY: generate build test vet check
 
@@ -18,7 +20,7 @@ generate:
 	go generate ./...
 
 build: generate
-	go run ./cmd/builder -content $(CONTENT) -config $(CONFIG) -out $(OUT) -mode $(MODE)
+	go run ./cmd/builder -content $(CONTENT) -config $(CONFIG) -out $(OUT) -mode $(MODE) $(FLAGS)
 
 test: generate
 	go test ./...

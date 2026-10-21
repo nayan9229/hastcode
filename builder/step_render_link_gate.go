@@ -133,13 +133,12 @@ func hrefs(doc []byte) []string {
 
 // linkTargetsNotWritten are site paths pages may link although this build
 // does not write them: the subscribe function (a Vercel function), and
-// paths later tickets write (feeds and sitemaps: ticket 09; /search/:
-// ticket 13). Once a ticket writes its path, its entry here is redundant
-// but harmless.
+// paths written after this gate (feeds and sitemaps: write phase, ticket
+// 09). The search page is rendered before the gate, so it is checked like
+// any page.
 func (s *site) linkTargetsNotWritten() map[string]bool {
 	allowed := map[string]bool{
 		subscribe.Path:      true,
-		searchURL:           true,
 		siteFeedURL:         true,
 		briefsFeedURL:       true,
 		"/sitemap.xml":      true,
