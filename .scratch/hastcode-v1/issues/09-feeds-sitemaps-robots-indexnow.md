@@ -4,11 +4,11 @@
 
 **Blocked by:** 06 (Briefs), 07 (Listing pages and internal linking)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests parse each feed as XML: item count, order, full HTML body, absolute links, site tagline as channel description
-- [ ] Sitemap contains every page from the fixture tree exactly once, no drafts, trailing-slash URLs
-- [ ] News sitemap contains only Briefs within 48 h of the builder's clock; an older Brief fixture is excluded; Explainers never included; at most 1,000 entries
-- [ ] robots.txt content asserted exactly; `Google-Extended` and `GPTBot` not disallowed
-- [ ] IndexNow key file present at root; changed-URL artefact lists new/modified pages between two builds of differing fixtures
-- [ ] `WebSite` and `Organization` JSON-LD on home with name "Hast Code", tagline, logo URL and search action
+- [x] Build-seam tests parse each feed as XML: item count, order, full HTML body, absolute links, site tagline as channel description
+- [x] Sitemap contains every page from the fixture tree exactly once, no drafts, trailing-slash URLs
+- [x] News sitemap contains only Briefs within 48 h of the builder's clock; an older Brief fixture is excluded; Explainers never included; at most 1,000 entries
+- [x] robots.txt content asserted exactly; `Google-Extended` and `GPTBot` not disallowed
+- [x] IndexNow key file present at root; changed-URL artefact lists new/modified pages between two builds of differing fixtures
+- [x] `WebSite` and `Organization` JSON-LD on home with name "Hast Code", tagline, logo URL and search action

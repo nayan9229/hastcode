@@ -8,6 +8,12 @@ plausible_domain: hastcode.com
 # is required when ads_enabled is true.
 ads_enabled: false
 adsense_client: ""
+# IndexNow key (indexnow.org): public by design, served at /<key>.txt.
+# Keep it stable; changing it invalidates the key Bing has verified.
+# Blank turns IndexNow off.
+indexnow_key: 465f05c90b9917457c1ad83b8df48051
+# The publication's own profiles elsewhere (home Organization sameAs).
+same_as: []
 # Hero image cache (encoded variants keyed on source bytes). Default
 # node_modules/.cache/hastcode/images, which Vercel restores between builds.
 # images:

@@ -76,14 +76,16 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/step_render_link_gate.go` | The site-wide broken internal link gate (rule `broken-link`), last in the render phase. |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
-| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
+| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
-| `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on). |
+| `builder/step_write_page_index.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`), diffs it against the previous build's page manifest in the build cache, and saves the new manifest when the build passed. |
+| `builder/step_write_feeds.go`, `step_write_sitemaps.go`, `step_write_robots.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
+| `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
@@ -109,7 +111,10 @@ photos 16, render explainers 20, render briefs 30, render author pages 40,
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
 render 404 page 65, check internal links 1000 (keep it last: it reads
-every written page); write config.json 100.
+every written page); validate IndexNow key 6; write phase: index written
+pages 5 (reads the output back; later write steps use `s.index`), feeds 20,
+sitemap 30, news sitemap 35, robots.txt 40, IndexNow key + changed URLs 50,
+config.json 100, save page manifest 900 (keep it last).
 
 **Internal links.** After every page is written, `checkInternalLinks`
 reads each HTML file in the output and resolves every `href` that stays on
@@ -118,8 +123,9 @@ query and fragment ignored). It must name a written file or a directory
 index (`/a/` -> `/a/index.html`; `/a` without the slash is broken), or a
 path the build does not write itself (`linkTargetsNotWritten`:
 `/api/subscribe`, `/search/`, `/feed.xml`, `/{vertical}/feed.xml`,
-`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`; entries become
-redundant once tickets 09/13 write them). Otherwise it is a `broken-link`
+`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`; feeds and
+sitemaps are written in the write phase, after the gate, so their entries
+stay; `/search/` becomes redundant once ticket 13 renders it). Otherwise it is a `broken-link`
 error naming the page and the target, attributed to the page's content
 file ("" for home and listings), and the page is removed from the output.
 Header and footer links are checked on every page, so the About, Contact
@@ -319,6 +325,53 @@ deploy: ticket 15's first preview verifies a working POST. The builder's
 routes keep `/api/*` out of the trailing-slash redirects (a pass-through
 route before them) and put the 404 catch-all after `{"handle":"filesystem"}`,
 so a POST is never redirected to `/api/subscribe/` or answered by the 404.
+
+## Feeds, sitemaps, robots and IndexNow
+
+All written in the write phase, after the link gate, from what the build
+actually wrote (a page the gate removed is in no feed or sitemap).
+
+- **Feeds** (RSS 2.0, full text in `content:encoded`, root-relative links
+  made absolute): `/feed.xml` (Explainers and Briefs), `/{vertical}/feed.xml`,
+  `/briefs/feed.xml`; newest 50 each, channel description = tagline.
+- **`/sitemap.xml`**: the canonical URL of every written page that is not
+  noindex, once. `lastmod`: an Explainer's Review date (or publication, if
+  later), a Brief's publication, else the newest `<time datetime>` on the
+  page (listings, Author pages), else when the page's `<main>` last changed
+  between builds (static pages).
+- **`/news-sitemap.xml`**: Briefs published in the 48 h up to the build
+  clock (`Config.Now`), newest first, at most 1,000, with `news:name`
+  "Hast Code", `news:language` `en`, `news:publication_date` (RFC 3339) and
+  `news:title` (Google's news sitemap doc, last updated 2025-12-10).
+  Explainers never appear. Vercel only rebuilds on deploy, so a Brief drops
+  out of the file at the first build after it is 48 h old, not on the dot.
+- **`/robots.txt`**: allow all, explicit allow groups for `Googlebot`,
+  `Bingbot`, `OAI-SearchBot`, `PerplexityBot`, both sitemap lines. Training
+  crawlers (`GPTBot`, `Google-Extended`) fall under `*` (allowed).
+- **IndexNow**: `indexnow_key` in `site.yaml` (public by design; keep it
+  stable) is served as `/<key>.txt`. The build diffs every indexable page's
+  `<main>` hash against the previous successful build's manifest
+  (`<cache>/pages/<mode>.json`, default `node_modules/.cache/hastcode/`,
+  which Vercel persists; never in `static/`) and, when anything is new,
+  changed or gone, writes `.vercel/output/indexnow.json`: a ready IndexNow
+  POST body `{host, key, keyLocation, urlList}` (≤ 10,000 URLs). It sits
+  beside `static/`, so it is not served. No artefact means nothing to ping.
+  The build itself makes no network call. A failed build does not update the
+  manifest, so its changes are listed again next time; a build that passes
+  but is never deployed (or whose ping fails) does, so those changes are
+  not re-listed.
+
+Post-deploy ping (ticket 15; run after the production deployment is live,
+from the machine that ran the build, e.g. a CI job doing `vercel build` +
+`vercel deploy --prebuilt --prod`):
+
+```sh
+test -f .vercel/output/indexnow.json && curl -fsS -X POST https://api.indexnow.org/indexnow \
+  -H 'Content-Type: application/json; charset=utf-8' --data-binary @.vercel/output/indexnow.json
+```
+
+200/202 are success; 403 means the key file is not live yet; 422 means a
+URL is not on `host`. Only ping production builds of `site_url`.
 
 ## Routes and caching
 
