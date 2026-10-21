@@ -1,8 +1,28 @@
 package views
 
-// SiteHeader is the header on every page.
-templ SiteHeader() {
+// SiteHeader is the header on every page: wordmark (text; the teal mark is
+// CSS), tagline, Briefs/Search links, the theme toggle (hidden until the
+// inline theme script reveals it, so no dead control without JS) and the
+// Vertical hubs.
+templ SiteHeader(c Chrome) {
 	<header class="site-header">
-		<a class="wordmark" href="/">hastcode</a>
+		<div class="wrap bar">
+			<div class="brand">
+				<a class="wordmark" href="/">hastcode</a>
+				<p class="tagline">{ Tagline }</p>
+			</div>
+			<nav class="site-nav" aria-label="Site">
+				<a href={ templ.SafeURL(c.Briefs.URL) }>{ c.Briefs.Name }</a>
+				<a href={ templ.SafeURL(c.Search.URL) }>{ c.Search.Name }</a>
+				<button type="button" class="theme-toggle" data-theme-toggle hidden aria-label="Toggle dark mode" title="Toggle dark mode"></button>
+			</nav>
+		</div>
+		<nav class="wrap verticals" aria-label="Verticals">
+			<ul>
+				for _, v := range c.Verticals {
+					<li><a href={ templ.SafeURL(v.URL) }>{ v.Name }</a></li>
+				}
+			</ul>
+		</nav>
 	</header>
 }
