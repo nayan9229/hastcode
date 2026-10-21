@@ -88,11 +88,15 @@ func (s *site) run() {
 	})
 	for _, st := range ordered {
 		if err := st.run(s); err != nil {
-			s.fail("", st.name, "%v", err)
+			s.fail("", ruleBuildStep, "step %q: %v", st.name, err)
 			return
 		}
 	}
 }
+
+// ruleBuildStep is a step that returned an error (fatal I/O, a tool that
+// would not run): the build stops there.
+const ruleBuildStep = "build-step"
 
 // fail records a build error for a content file and excludes that file's
 // page from output. file is relative to the content directory ("" for

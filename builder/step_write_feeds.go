@@ -1,10 +1,8 @@
 package builder
 
 import (
-	"bytes"
 	"cmp"
 	"encoding/xml"
-	"os"
 	"regexp"
 	"slices"
 	"time"
@@ -196,29 +194,4 @@ func (s *site) writeFeed(urlPath, title, link, description string, items []feedI
 		})
 	}
 	return s.writeXML(urlPath, doc)
-}
-
-// writeXML writes v as an indented UTF-8 XML document at urlPath.
-func (s *site) writeXML(urlPath string, v any) error {
-	var buf bytes.Buffer
-	buf.WriteString(xml.Header)
-	enc := xml.NewEncoder(&buf)
-	enc.Indent("", "  ")
-	if err := enc.Encode(v); err != nil {
-		return err
-	}
-	buf.WriteByte('\n')
-	return s.out.WriteStatic(urlPath, buf.Bytes())
-}
-
-// isWritten reports whether the build wrote a file for urlPath ("/a/" is
-// the directory index). Steps after the link gate use it so manifests
-// list only pages that really exist.
-func (s *site) isWritten(urlPath string) bool {
-	p, err := s.out.StaticFile(urlPath)
-	if err != nil {
-		return false
-	}
-	_, err = os.Stat(p)
-	return err == nil
 }

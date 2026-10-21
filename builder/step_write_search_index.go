@@ -17,10 +17,6 @@ func init() {
 // builds must ship it (spec "Search"); preview builds may skip it.
 const ruleSearchIndex = "search-index"
 
-// pagefindBundleURL is where the browser loads Pagefind from: the search
-// page's lazy loader reads it, and the index step writes it.
-const pagefindBundleURL = "/" + pagefind.BundleDir + "/"
-
 // indexSearch runs Pagefind over the written site (Config.ToolsDir must
 // hold node_modules/pagefind). Only regions marked data-pagefind-body (the
 // Explainer and Brief articles) are indexed. A build that has already

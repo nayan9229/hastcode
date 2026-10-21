@@ -7,11 +7,9 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
-	"regexp"
 )
 
 func init() {
-	registerStep(phaseValidate, 6, "validate IndexNow key", validateIndexNowKey)
 	registerStep(phaseWrite, 50, "write IndexNow key and changed URLs", writeIndexNow)
 }
 
@@ -23,20 +21,10 @@ func init() {
 // served) and a post-deploy step sends it. See README "Feeds, sitemaps,
 // robots and IndexNow".
 const (
-	ruleIndexNowKey     = "indexnow-key"
 	indexNowArtefact    = "indexnow.json"
 	indexNowMaxURLs     = 10000
 	ruleIndexNowTooMany = "indexnow-urls"
 )
-
-var indexNowKeyPattern = regexp.MustCompile(`^[a-zA-Z0-9-]{8,128}$`)
-
-func validateIndexNowKey(s *site) error {
-	if k := s.cfg.IndexNowKey; k != "" && !indexNowKeyPattern.MatchString(k) {
-		s.fail("", ruleIndexNowKey, "indexnow_key %q must be 8 to 128 characters of a-z, A-Z, 0-9 and -", k)
-	}
-	return nil
-}
 
 // indexNowRequest is the IndexNow JSON POST body.
 type indexNowRequest struct {

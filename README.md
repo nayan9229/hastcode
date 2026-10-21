@@ -115,8 +115,9 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`. Everything else unexported. |
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, `publishedExplainers()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
-| `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …). |
-| `builder/render.go` | `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`); output reset step. |
+| `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …), every fixed page, feed and sitemap path, the asset directories, and the retired paths (`retiredSections`, `homeAliasURL`). |
+| `builder/render.go` | Output helpers: `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`), `writeXML`, `isWritten`, rule `markdown`. The output reset is `step_render_reset.go`. |
+| `builder/load.go` | `eachMarkdown` and rule `frontmatter`, shared by the `step_load_*.go` steps. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`. No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
@@ -125,8 +126,8 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
-| `builder/step_render_authors.go`, `step_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo encode. |
-| `builder/step_static_pages.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
+| `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo (validate, encode, write). |
+| `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
 | `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestExplainers`/`newestBriefs`, `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
 | `builder/step_render_link_gate.go` | The site-wide broken internal link gate (rule `broken-link`), last in the render phase. |
@@ -142,21 +143,23 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
-| `builder/step_write_page_index.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`), diffs it against the previous build's page manifest in the build cache, and saves the new manifest when the build passed. |
-| `builder/step_write_feeds.go`, `step_write_sitemaps.go`, `step_write_robots.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
+| `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
+| `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
 | `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
-hero images -> `builder/step_transform_heroes.go` +
+hero images -> `builder/step_validate_heroes.go`, `step_transform_heroes.go`, `step_render_hero_assets.go` +
 `internal/images/`; Mermaid -> `builder/step_transform_diagrams.go` +
 `internal/mermaid/`; design system -> `internal/views/layout_*.templ` + CSS.
 
 ## Conventions
 
 **Adding a pipeline step.** Create `builder/step_<phase>_<what>.go` with an
-`init()` that calls `registerStep(phase, order, name, fn)`. Do not edit a
-central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
+`init()` that calls `registerStep(phase, order, name, fn)`: one step per
+file, so a feature spanning phases (heroes: validate, encode, write) is one
+file per phase. Do not edit a central list. A step returning an error stops
+the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
 load static pages 25, load briefs 25, exclude drafts (production only; Explainers
@@ -203,7 +206,7 @@ production. Verticals come only from `site.yaml` (`slug`, `name`,
 home entry.
 
 **Briefs.** `content/briefs/<slug>.md` -> `/briefs/<slug>/` (NewsArticle via
-`s.articlePage`). Skeleton (`step_validate_briefs.go`): ≤ 250 words incl.
+`s.articlePage`). Skeleton (`step_validate_brief_skeleton.go`): ≤ 250 words incl.
 headings (`brief-length`), H2s exactly "What happened" then "Why it matters"
 (`brief-sections`; an intro is allowed), absolute http(s) `source_url`
 (`brief-source`), ≥ 1 body link to an Explainer and `explainers` frontmatter
@@ -552,8 +555,8 @@ with inline SVG and a `<figcaption>` from the fence's first line
   is not written. The renderer itself is lenient, so these checks run in Go.
 - **Output:** colours are `currentColor` and CSS variables only; the renderer's
   `<style>` (Google Fonts `@import`, page-global rules) is stripped and its
-  rules live once in `internal/views/diagram.css`, appended to the hashed site
-  stylesheet (ADR-0003). Each SVG maps its `--bg`/`--fg`/`--accent` to
+  rules live once in `internal/views/site.css` (the `.diagram` block), in the
+  hashed site stylesheet (ADR-0003). Each SVG maps its `--bg`/`--fg`/`--accent` to
   `--diagram-bg`/`currentColor`/`--diagram-accent`, which `.diagram` sets from
   the palette tokens, so light, dark and the theme toggle all apply. Element ids are prefixed per diagram (`d1-`, `d2-`…). Labels stay
   `<text>`. `width`/`height`/`viewBox` are kept (no layout shift).

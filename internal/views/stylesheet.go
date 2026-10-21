@@ -21,10 +21,10 @@ var (
 	stylesheetPath = "/assets/site." + contentHash(stylesheet) + ".css"
 )
 
-// buildStylesheet is the palette tokens (from brand.go) followed by the
-// base styles and the diagram styles (diagram.css), lightly minified.
+// buildStylesheet is the palette tokens (from brand.go) followed by
+// site.css, lightly minified.
 func buildStylesheet() []byte {
-	return []byte(paletteCSS() + minifyLines(baseCSS) + minifyLines(diagramCSS))
+	return []byte(paletteCSS() + minifyLines(baseCSS))
 }
 
 // paletteCSS defines the colour tokens: light by default, dark when the

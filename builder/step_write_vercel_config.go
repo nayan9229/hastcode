@@ -10,15 +10,7 @@ func init() {
 	registerStep(phaseWrite, 100, "write config.json", writeVercelConfig)
 }
 
-// retiredSections are the Genuin community's top-level paths, gone for good
-// (ADR-0001): every URL under them answers 410.
-var retiredSections = []string{"video", "community", "group"}
-
 const (
-	// assetsDir holds only content-hashed files (heroAssetDir,
-	// authorPhotoDir, the stylesheet): safe to cache forever.
-	assetsDir = "/assets/"
-
 	htmlCacheControl      = "public, max-age=0, must-revalidate"
 	htmlCDNCacheControl   = "s-maxage=31536000, stale-while-revalidate=86400"
 	immutableCacheControl = "public, max-age=31536000, immutable"
@@ -52,7 +44,7 @@ func routes() []vercel.Route {
 		// Retired community (ADR-0001): 410 with the 404 page as the body.
 		{Src: "^/(?:" + strings.Join(retiredSections, "|") + ")(?:/.*)?$", Status: 410, Dest: notFoundURL},
 		// The old app's home alias (ADR-0001).
-		{Src: "^/home/?$", Status: 301, Headers: map[string]string{"Location": "/"}},
+		{Src: "^" + homeAliasURL + "/?$", Status: 301, Headers: map[string]string{"Location": homeURL}},
 		// Functions and /.well-known keep their exact path: no slash
 		// redirect may turn POST /api/subscribe into /api/subscribe/.
 		{Src: "^/(?:api|\\.well-known)(?:/.*)?$"},

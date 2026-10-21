@@ -20,12 +20,12 @@ func renderBriefs(s *site) error {
 		lead, rest := b.Body.SplitAfterSection(headingWhatHappened)
 		leadHTML, err := markdown.RenderBlocks(b.Body, lead)
 		if err != nil {
-			s.fail(b.File, "markdown", "%v", err)
+			s.fail(b.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		body, err := markdown.RenderBlocks(b.Body, rest)
 		if err != nil {
-			s.fail(b.File, "markdown", "%v", err)
+			s.fail(b.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		if err := s.writePage(briefURL(b), views.BriefArticle(briefPage(s, b, leadHTML, body))); err != nil {

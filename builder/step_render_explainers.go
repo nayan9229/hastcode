@@ -16,18 +16,18 @@ func renderExplainers(s *site) error {
 		lead, rest := e.Body.SplitAfterSection(headingTLDR)
 		leadHTML, err := markdown.RenderBlocks(e.Body, lead)
 		if err != nil {
-			s.fail(e.File, "markdown", "%v", err)
+			s.fail(e.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		rest, sources := e.Body.SplitAtSection(rest, headingSources)
 		body, err := markdown.RenderBlocks(e.Body, rest)
 		if err != nil {
-			s.fail(e.File, "markdown", "%v", err)
+			s.fail(e.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		sourcesHTML, err := markdown.RenderBlocks(e.Body, sources)
 		if err != nil {
-			s.fail(e.File, "markdown", "%v", err)
+			s.fail(e.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		page := explainerPage(s, e, leadHTML, body)

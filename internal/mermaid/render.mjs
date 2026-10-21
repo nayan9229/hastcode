@@ -11,7 +11,7 @@ const out = JSON.parse(input).map((src) => {
   try {
     return {
       svg: renderMermaidSVG(src, {
-        // Theme hooks resolved by the site CSS (.diagram in diagram.css).
+        // Theme hooks resolved by the site CSS (.diagram in internal/views/site.css).
         // Do not name these --bg/--accent: the renderer emits
         // --accent:var(--accent), a cycle.
         bg: 'var(--diagram-bg)',

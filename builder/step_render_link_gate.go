@@ -138,14 +138,14 @@ func hrefs(doc []byte) []string {
 // any page.
 func (s *site) linkTargetsNotWritten() map[string]bool {
 	allowed := map[string]bool{
-		subscribe.Path:      true,
-		siteFeedURL:         true,
-		briefsFeedURL:       true,
-		"/sitemap.xml":      true,
-		"/news-sitemap.xml": true,
+		subscribe.Path: true,
+		siteFeedURL:    true,
+		briefsFeedURL:  true,
+		sitemapURL:     true,
+		newsSitemapURL: true,
 	}
 	for slug := range s.verticals {
-		allowed[verticalURL(slug)+"feed.xml"] = true
+		allowed[verticalFeedURL(slug)] = true
 	}
 	return allowed
 }

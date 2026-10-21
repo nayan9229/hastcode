@@ -4,39 +4,13 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-
-	"hastcode.com/site/internal/content"
 )
 
-func init() {
-	registerStep(phaseLoad, 10, "load authors", loadAuthors)
-	registerStep(phaseLoad, 20, "load explainers", loadExplainers)
-}
+// Shared by the load steps (step_load_*.go): reading content files.
 
-// Rule names for load-time problems.
+// ruleFrontmatter is a content file whose frontmatter does not parse or
+// lacks a required field.
 const ruleFrontmatter = "frontmatter"
-
-func loadAuthors(s *site) error {
-	return s.eachMarkdown("authors", func(rel string, data []byte) {
-		a, err := content.ParseAuthor(rel, data)
-		if err != nil {
-			s.fail(rel, ruleFrontmatter, "%v", err)
-			return
-		}
-		s.authors[a.Slug] = a
-	})
-}
-
-func loadExplainers(s *site) error {
-	return s.eachMarkdown("explainers", func(rel string, data []byte) {
-		e, err := content.ParseExplainer(rel, data)
-		if err != nil {
-			s.fail(rel, ruleFrontmatter, "%v", err)
-			return
-		}
-		s.explainers = append(s.explainers, e)
-	})
-}
 
 // eachMarkdown calls fn for every .md file under contentDir/sub (in lexical
 // order) with its content-relative path. A missing sub directory is not an

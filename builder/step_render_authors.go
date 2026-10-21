@@ -39,7 +39,7 @@ func renderAuthors(s *site) error {
 		}
 		bio, err := markdown.Render(a.Bio)
 		if err != nil {
-			s.fail(a.File, "markdown", "%v", err)
+			s.fail(a.File, ruleMarkdown, "%v", err)
 			continue
 		}
 		if err := s.writePage(authorURL(a.Slug), views.AuthorProfile(authorPage(s, a, bio))); err != nil {

@@ -10,8 +10,8 @@ import (
 	"strings"
 	"testing"
 
-	"hastcode.com/site/subscribe"
 	"hastcode.com/site/internal/vercel"
+	"hastcode.com/site/subscribe"
 )
 
 // Server serves a build output the way the local run command does: the
