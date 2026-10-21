@@ -1,0 +1,21 @@
+package views
+
+import "strconv"
+
+// PaginationNav links a listing page to its neighbours with rel="prev" and
+// rel="next". A single-page listing renders nothing.
+templ PaginationNav(p Pagination) {
+	if p.Total > 1 {
+		<nav class="pagination" aria-label="Pagination">
+			<ul class="inline-list">
+				if p.Prev != "" {
+					<li><a rel="prev" href={ templ.SafeURL(p.Prev) }>Newer</a></li>
+				}
+				<li aria-current="page">Page { strconv.Itoa(p.Current) } of { strconv.Itoa(p.Total) }</li>
+				if p.Next != "" {
+					<li><a rel="next" href={ templ.SafeURL(p.Next) }>Older</a></li>
+				}
+			</ul>
+		</nav>
+	}
+}

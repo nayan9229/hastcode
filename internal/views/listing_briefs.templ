@@ -1,0 +1,27 @@
+package views
+
+import "time"
+
+// BriefsIndex is one page of the Briefs index. Each item is an h-entry
+// (p-name, u-url, p-summary, dt-published); tests select on those classes.
+templ BriefsIndex(p BriefsIndexPage) {
+	@Layout(p.Page) {
+		<section class="listing">
+			<h1>{ p.Heading }</h1>
+			if len(p.Items) == 0 {
+				<p class="muted">No Briefs yet.</p>
+			} else {
+				<ol class="brief-list">
+					for _, b := range p.Items {
+						<li class="h-entry">
+							<h2 class="p-name"><a class="u-url" href={ templ.SafeURL(b.URL) }>{ b.Title }</a></h2>
+							<p class="p-summary">{ b.Description }</p>
+							<p class="muted"><time class="dt-published" datetime={ b.Published.Format(time.RFC3339) }>{ humanDate(b.Published) }</time></p>
+						</li>
+					}
+				</ol>
+			}
+			@PaginationNav(p.Pagination)
+		</section>
+	}
+}

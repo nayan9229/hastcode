@@ -62,7 +62,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …). |
 | `builder/render.go` | `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`); output reset step. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
-| `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Author`, `Page` (later `Brief`). No config or output knowledge. |
+| `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`. No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -87,8 +87,6 @@ Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.
 hero images -> `builder/step_transform_heroes.go` +
 `internal/images/`; Mermaid -> `builder/step_transform_diagrams.go` +
 `internal/mermaid/`; design system -> `internal/views/layout_*.templ` + CSS.
-Briefs: end the Brief template with `@NewsletterForm(views.Newsletter{Source: briefURL(b)})`
-like `article_explainer.templ` does.
 
 ## Conventions
 
@@ -97,14 +95,35 @@ like `article_explainer.templ` does.
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
-load static pages 25, exclude drafts (production only) 30; validate ads
-config 5, references 10, unique slugs 20, static page paths 25, Explainer
-skeleton 30, section-length warning 40, Review-overdue warning 50, validate
-heroes 50, author photos 55; transform render diagrams 10, encode heroes 50,
-encode author photos 55; render reset 0, write site assets 10, write hero
-assets 15, write author photos 16, render explainers 20, render author pages
-40, render static pages 45, render subscribed page 60, render 404 page 65;
-write config.json 100.
+load static pages 25, load briefs 25, exclude drafts (production only; Explainers
+and Briefs) 30; validate ads config 5, references 10, Brief references 12,
+unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
+35, section-length warning 40, Review-overdue warning 50, validate heroes 50
+(Explainers and Briefs), author photos 55; transform render diagrams 10,
+rewrite Brief Explainer links 20, encode heroes 50, encode author photos 55;
+render reset 0, write site assets 10, write hero assets 15, write author
+photos 16, render explainers 20, render briefs 30, render author pages 40,
+render briefs index 40, render static pages 45, render subscribed page 60,
+render 404 page 65; write config.json 100.
+
+**Briefs.** `content/briefs/<slug>.md` -> `/briefs/<slug>/` (NewsArticle via
+`s.articlePage`). Skeleton (`step_validate_briefs.go`): ≤ 250 words incl.
+headings (`brief-length`), H2s exactly "What happened" then "Why it matters"
+(`brief-sections`; an intro is allowed), absolute http(s) `source_url`
+(`brief-source`), ≥ 1 body link to an Explainer and `explainers` frontmatter
+= the linked slugs (`brief-explainer-link`). Body Explainer links are a bare
+slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
+`#fragment` optional); an unknown target is `broken-link`, a known one is
+rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
+ad slot follows "What happened".
+
+**Paginated listings.** `paginate(items, listingPageSize, baseURL)` in
+`builder/pagination.go` returns `[]listingPage[T]{Items, URL, Pagination}`
+(items already in display order; page 1 at `baseURL`, page n at
+`baseURL + "page/n/"`; always ≥ 1 page, never an empty later page). Pass
+`lp.Pagination` to the view and render `@PaginationNav(p)`
+(`partial_pagination.templ`: `<a rel="prev">`/`<a rel="next">`, nothing on
+a single page). Example: `step_render_briefs_index.go`.
 Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
 never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
 (intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
@@ -197,7 +216,9 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `ValidComparison()` (adds a `## Trade-offs` table), `DefaultAuthor()`,
+  `ValidComparison()` (adds a `## Trade-offs` table), `ValidBrief()` +
+  `Tree.WithBrief(b)` (meets the Brief skeleton; links `ValidExplainer()` by
+  slug, so use it with `ValidTree()`), `DefaultAuthor()`,
   `HeroPNG(w, h)`, `HeroPNGFilled(w, h, colour)`, `Config()` (launch Verticals,
   production; set `cfg.Now` to pin the clock; fast hero encoding into the
   shared `SharedImageCacheDir()` so each fixture hero is encoded once; set

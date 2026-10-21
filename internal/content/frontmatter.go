@@ -1,5 +1,5 @@
 // Package content parses content files (Markdown with YAML frontmatter)
-// into domain types: Explainer, Author. It knows nothing about Verticals
+// into domain types: Explainer, Brief, Author. It knows nothing about Verticals
 // config or output; the builder validates and renders.
 package content
 

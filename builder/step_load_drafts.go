@@ -19,5 +19,6 @@ func excludeDrafts(s *site) error {
 		return nil
 	}
 	s.explainers = slices.DeleteFunc(s.explainers, func(e *content.Explainer) bool { return e.Draft })
+	s.briefs = slices.DeleteFunc(s.briefs, func(b *content.Brief) bool { return b.Draft })
 	return nil
 }

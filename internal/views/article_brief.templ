@@ -1,0 +1,31 @@
+package views
+
+import "time"
+
+// BriefArticle is the Brief page: what happened, why it matters, links
+// into Explainers, and the source. Markup follows microformats2 h-entry
+// like ExplainerArticle; tests select on those classes, so keep them.
+templ BriefArticle(b BriefPage) {
+	@Layout(b.Page) {
+		<article class="h-entry">
+			<header>
+				<p class="vertical">Brief</p>
+				<h1 class="p-name">{ b.Title }</h1>
+				<p class="p-summary">{ b.Description }</p>
+				@Byline(b.Author)
+				<p class="dates">
+					Published <time class="dt-published" datetime={ b.Published.Format(time.RFC3339) }>{ humanDate(b.Published) }</time>
+				</p>
+			</header>
+			@HeroPicture(b.Hero)
+			<div class="e-content">
+				@templ.Raw(b.LeadHTML)
+				@AdSlot(b.Page.Ads, AdAfterTLDR)
+				@templ.Raw(b.BodyHTML)
+				<p class="brief-source">Source: <a href={ templ.SafeURL(b.Source) }>{ b.SourceName }</a></p>
+			</div>
+			@AdSlot(b.Page.Ads, AdAfterBody)
+			@NewsletterForm(b.Newsletter)
+		</article>
+	}
+}

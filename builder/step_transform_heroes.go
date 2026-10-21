@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/images"
 	"hastcode.com/site/internal/views"
 )
@@ -56,30 +55,53 @@ type hero struct {
 	files map[string]string // site path -> cached file
 }
 
-// validateHeroes checks that every Explainer names a hero that exists beside
-// its Markdown, decodes, and is at least heroMinWidth wide.
-func validateHeroes(s *site) error {
+// heroRef is a piece that must carry a hero (an Explainer or a Brief):
+// its content file and its `hero` / `hero_alt` frontmatter.
+type heroRef struct {
+	file, hero, alt string
+}
+
+// heroRefs lists every Explainer and Brief; with published set, only those
+// that passed every gate so far.
+func (s *site) heroRefs(published bool) []heroRef {
+	var refs []heroRef
 	for _, e := range s.explainers {
-		if e.Hero == "" {
-			s.fail(e.File, ruleHeroMissing, "no hero: set `hero` in frontmatter to a raster image beside the Markdown, at least %d px wide", heroMinWidth)
+		if !published || !s.failed[e.File] {
+			refs = append(refs, heroRef{file: e.File, hero: e.Hero, alt: e.HeroAlt})
+		}
+	}
+	for _, b := range s.briefs {
+		if !published || !s.failed[b.File] {
+			refs = append(refs, heroRef{file: b.File, hero: b.Hero, alt: b.HeroAlt})
+		}
+	}
+	return refs
+}
+
+// validateHeroes checks that every Explainer and Brief names a hero that
+// exists beside its Markdown, decodes, and is at least heroMinWidth wide.
+func validateHeroes(s *site) error {
+	for _, e := range s.heroRefs(false) {
+		if e.hero == "" {
+			s.fail(e.file, ruleHeroMissing, "no hero: set `hero` in frontmatter to a raster image beside the Markdown, at least %d px wide", heroMinWidth)
 			continue
 		}
-		rel := path.Join(path.Dir(e.File), e.Hero)
+		rel := path.Join(path.Dir(e.file), e.hero)
 		src := filepath.Join(s.contentDir, filepath.FromSlash(rel))
 		if _, err := os.Stat(src); err != nil {
-			s.fail(e.File, ruleHeroMissing, "hero %s not found", rel)
+			s.fail(e.file, ruleHeroMissing, "hero %s not found", rel)
 			continue
 		}
 		w, h, _, err := images.Probe(src)
 		if err != nil {
-			s.fail(e.File, ruleHeroFormat, "hero %s: %v", rel, err)
+			s.fail(e.file, ruleHeroFormat, "hero %s: %v", rel, err)
 			continue
 		}
 		if w < heroMinWidth {
-			s.fail(e.File, ruleHeroTooNarrow, "hero %s is %d px wide; heroes must be at least %d px wide", rel, w, heroMinWidth)
+			s.fail(e.file, ruleHeroTooNarrow, "hero %s is %d px wide; heroes must be at least %d px wide", rel, w, heroMinWidth)
 			continue
 		}
-		s.heroes[e.File] = &hero{source: src, width: w, height: h}
+		s.heroes[e.file] = &hero{source: src, width: w, height: h}
 	}
 	return nil
 }
@@ -103,15 +125,15 @@ func heroVariants(w, h int) []images.Variant {
 	)
 }
 
-// encodeHeroes encodes the heroes of every published Explainer in one
-// parallel run, reusing the image cache, and builds their view models.
+// encodeHeroes encodes the heroes of every published Explainer and Brief in
+// one parallel run, reusing the image cache, and builds their view models.
 func encodeHeroes(s *site) error {
 	var (
 		jobs   []images.Job
-		owners []*content.Explainer
+		owners []heroRef
 	)
-	for _, e := range s.publishedExplainers() {
-		hr := s.heroes[e.File]
+	for _, e := range s.heroRefs(true) {
+		hr := s.heroes[e.file]
 		if hr == nil {
 			continue
 		}
@@ -130,12 +152,12 @@ func encodeHeroes(s *site) error {
 	for i, res := range results {
 		e := owners[i]
 		if res.Err != nil {
-			s.fail(e.File, ruleHeroFormat, "hero: %v", res.Err)
+			s.fail(e.file, ruleHeroFormat, "hero: %v", res.Err)
 			continue
 		}
-		hr := s.heroes[e.File]
+		hr := s.heroes[e.file]
 		hr.files = map[string]string{}
-		base := strings.TrimSuffix(path.Base(e.Hero), path.Ext(e.Hero))
+		base := strings.TrimSuffix(path.Base(e.hero), path.Ext(e.hero))
 		imgs := make([]views.Image, len(res.Files))
 		for j, f := range res.Files {
 			url := fmt.Sprintf("%s%s-%dx%d.%s%s", heroAssetDir, base, f.Width, f.Height, f.Hash[:10], f.Format.Ext())
@@ -145,7 +167,7 @@ func encodeHeroes(s *site) error {
 		// Split in heroVariants order: AVIF, WebP, JPEG widths, then crops.
 		n := (len(imgs) - 3) / 3
 		v := views.Hero{
-			Alt:      e.HeroAlt,
+			Alt:      e.alt,
 			Sizes:    heroSizes,
 			AVIF:     imgs[:n],
 			WebP:     imgs[n : 2*n],
@@ -166,8 +188,8 @@ func encodeHeroes(s *site) error {
 
 // writeHeroAssets copies encoded hero files from the cache into the output.
 func writeHeroAssets(s *site) error {
-	for _, e := range s.publishedExplainers() {
-		hr := s.heroes[e.File]
+	for _, e := range s.heroRefs(true) {
+		hr := s.heroes[e.file]
 		if hr == nil {
 			continue
 		}
