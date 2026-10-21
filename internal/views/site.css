@@ -11,6 +11,7 @@
   --measure: 68ch;
   --wide: 72rem;
   --radius: 8px;
+  --ad-slot-height: 280px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -115,3 +116,7 @@ article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1
   .site-header nav, .site-footer, .skip-link { display: none; }
   a { color: inherit; }
 }
+
+/* partial_ad_slot: fixed height in both states (placeholder, AdSense unit) so enabling ads never shifts layout */
+.ad-slot { display: block; height: var(--ad-slot-height); margin-block: 2rem; overflow: hidden; background: var(--surface); border-radius: var(--radius); }
+.ad-slot > .adsbygoogle { display: block; width: 100%; height: 100%; }

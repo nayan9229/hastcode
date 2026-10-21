@@ -35,6 +35,15 @@ type Config struct {
 	// SiteURL is the absolute origin, e.g. "https://hastcode.com".
 	SiteURL   string     `yaml:"site_url"`
 	Verticals []Vertical `yaml:"verticals"`
+	// AdsEnabled turns every ad slot from an empty placeholder into an
+	// AdSense unit. Off in v1.
+	AdsEnabled bool `yaml:"ads_enabled"`
+	// AdSenseClient is the AdSense publisher id ("ca-pub-..."), required
+	// when AdsEnabled.
+	AdSenseClient string `yaml:"adsense_client"`
+	// PlausibleDomain is the Plausible analytics site; blank omits the
+	// analytics script.
+	PlausibleDomain string `yaml:"plausible_domain"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
 	// Now is the build's clock for date rules (Review age, news windows).

@@ -25,6 +25,19 @@ type Page struct {
 	Title       string
 	Description string
 	Chrome      Chrome
+	// Ads is the site-wide ad configuration every ad slot reads.
+	Ads Ads
+	// PlausibleDomain is the Plausible analytics site domain; "" omits
+	// the analytics script (tests, local builds).
+	PlausibleDomain string
+}
+
+// Ads is the one flag (plus account) that turns every AdSlot from an
+// empty placeholder into an AdSense unit.
+type Ads struct {
+	Enabled bool
+	// Client is the AdSense publisher id ("ca-pub-..."); required when Enabled.
+	Client string
 }
 
 // Link is a named site-relative URL.
@@ -55,6 +68,9 @@ type ExplainerPage struct {
 	AuthorName   string
 	Published    time.Time
 	Reviewed     time.Time
-	// BodyHTML is the rendered Markdown body (trusted: built from content).
+	// LeadHTML is the rendered intro and TL;DR, before the first ad slot;
+	// BodyHTML is the rest of the Markdown body (both trusted: built from
+	// content).
+	LeadHTML string
 	BodyHTML string
 }

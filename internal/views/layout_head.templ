@@ -3,7 +3,7 @@ package views
 // Head is the <head> every page carries: charset, viewport, title,
 // description, both theme-colors, the inline theme script (before the
 // stylesheet so a stored override applies before first paint), the hashed
-// stylesheet and the SVG mark as favicon.
+// stylesheet, the SVG mark as favicon and (when configured) analytics.
 templ Head(p Page) {
 	<meta charset="utf-8"/>
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -15,4 +15,5 @@ templ Head(p Page) {
 	@templ.Raw("<script>" + themeScript + "</script>")
 	<link rel="stylesheet" href={ stylesheetPath }/>
 	<link rel="icon" type="image/svg+xml" href={ MarkPath }/>
+	@Analytics(p.PlausibleDomain)
 }

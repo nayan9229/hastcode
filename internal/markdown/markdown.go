@@ -34,3 +34,16 @@ func Render(doc *Document) (string, error) {
 	}
 	return buf.String(), nil
 }
+
+// RenderBlocks renders some of doc's top-level blocks (e.g. one half of
+// SplitAfterSection) to HTML. Rendering every top-level block in order
+// gives the same HTML as Render.
+func RenderBlocks(doc *Document, blocks []ast.Node) (string, error) {
+	var buf bytes.Buffer
+	for _, b := range blocks {
+		if err := md.Renderer().Render(&buf, doc.Source, b); err != nil {
+			return "", err
+		}
+	}
+	return buf.String(), nil
+}

@@ -36,17 +36,17 @@ Add a Vertical by adding one entry to `site.yaml`.
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, `publishedExplainers()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …). |
-| `builder/render.go` | `writePage(urlPath, templComponent)`; output reset step. |
+| `builder/render.go` | `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`); output reset step. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Author` (later `Brief`, `Page`). No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
-| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav. |
+| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav, ads flag and Plausible domain. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
-| `site.yaml` | Site config: `site_url`, `verticals`. |
+| `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on). |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
 Mermaid -> `builder/step_transform_diagrams.go` (+ helper package under
@@ -62,7 +62,7 @@ newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
-exclude drafts (production only) 30; validate references 10, unique slugs 20,
+exclude drafts (production only) 30; validate ads config 5, references 10, unique slugs 20,
 Explainer skeleton 30, section-length warning 40, Review-overdue warning 50;
 render reset 0, write site assets 10, render explainers 20; write config.json 100.
 Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
@@ -108,7 +108,23 @@ e.g. TL;DR, newsletter), `.muted`, `.inline-list` (breadcrumbs, tags,
 links), `.visually-hidden`. Add component-specific rules to `site.css` under
 a comment naming the partial, one declaration block per line. The only
 inline script is the theme toggle (≤ 1 KB); analytics and Pagefind are the
-only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`).
+only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`),
+plus the AdSense library and its per-unit push only when `ads_enabled`.
+Total client JS per page stays ≤ 60 KB (`TestJSBudget_EveryPageStaysWithin60KB`;
+give any new third-party script a size there).
+
+**Weight, ads, analytics.** Every page written through `s.writePage` is
+checked against the 50 KB uncompressed HTML gate (the stylesheet is external
+and not counted, ADR-0003); an oversized page is a site-wide `html-size`
+error naming the URL and is not written. Ads come from one component,
+`@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterBody)`
+(`partial_ad_slot.templ`): an empty `aria-hidden` placeholder with ads off,
+an AdSense unit with ads on, in a box whose height is fixed by
+`--ad-slot-height` so enabling ads causes no layout shift; it carries
+`data-pagefind-ignore="all"`. Article layouts render the body in two halves
+(`Document.SplitAfterSection("TL;DR")` + `markdown.RenderBlocks`) with the
+first slot between them and the second after `.e-content`. Plausible comes
+from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set.
 Everything must work without JS.
 
 **Tests.** Only two seams are tested (spec "Testing Decisions"): the Build seam

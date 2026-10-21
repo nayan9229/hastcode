@@ -122,3 +122,36 @@ func (d *Document) FenceLanguage(n ast.Node) string {
 	}
 	return ""
 }
+
+// SplitAfterSection splits the top-level blocks at the end of the H2
+// section named heading: before runs from the start through that section,
+// after is everything from the next H1/H2 on. Without such a section it
+// splits after the intro. Layouts use it to place content (an ad slot)
+// between the two halves.
+func (d *Document) SplitAfterSection(heading string) (before, after []ast.Node) {
+	var all []ast.Node
+	for n := d.Root.FirstChild(); n != nil; n = n.NextSibling() {
+		all = append(all, n)
+	}
+	cut, in := -1, false
+	for i, n := range all {
+		h, ok := n.(*ast.Heading)
+		if !ok || h.Level > 2 {
+			continue
+		}
+		if cut < 0 {
+			cut = i // end of the intro: the fallback
+		}
+		if in {
+			return all[:i], all[i:]
+		}
+		in = h.Level == 2 && d.Text(h) == heading
+	}
+	if in {
+		return all, nil
+	}
+	if cut < 0 {
+		cut = len(all)
+	}
+	return all[:cut], all[cut:]
+}

@@ -1,6 +1,13 @@
 # Site config for the builder (builder.LoadConfig). Mode comes from the
 # -mode flag, not this file. Add a Vertical by adding one entry here.
 site_url: https://hastcode.com
+# Plausible analytics site (cookieless). Blank omits the script entirely.
+plausible_domain: hastcode.com
+# Ads: one flag switches every ad slot from an empty fixed-height
+# placeholder to an AdSense unit. Off in v1; adsense_client (ca-pub-...)
+# is required when ads_enabled is true.
+ads_enabled: false
+adsense_client: ""
 verticals:
   - slug: distributed-systems
     name: Distributed Systems
