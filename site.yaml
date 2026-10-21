@@ -1,0 +1,22 @@
+# Site config for the builder (builder.LoadConfig). Mode comes from the
+# -mode flag, not this file. Add a Vertical by adding one entry here.
+site_url: https://hastcode.com
+verticals:
+  - slug: distributed-systems
+    name: Distributed Systems
+    order: 1
+  - slug: databases-storage
+    name: Databases & Storage
+    order: 2
+  - slug: apis-networking
+    name: APIs & Networking
+    order: 3
+  - slug: infrastructure-cloud
+    name: Infrastructure & Cloud
+    order: 4
+  - slug: ai-ml-systems
+    name: AI/ML Systems
+    order: 5
+  - slug: languages-runtimes
+    name: Languages & Runtimes
+    order: 6

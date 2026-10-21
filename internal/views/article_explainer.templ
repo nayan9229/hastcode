@@ -1,0 +1,21 @@
+package views
+
+// ExplainerArticle is the Explainer page. Markup follows microformats2
+// h-entry (p-name, p-category, p-author, dt-published, dt-updated,
+// e-content); tests select on those classes, so keep them.
+templ ExplainerArticle(e ExplainerPage) {
+	@Layout(e.Page) {
+		<article class="h-entry">
+			<header>
+				<p class="vertical"><span class="p-category">{ e.VerticalName }</span></p>
+				<h1 class="p-name">{ e.Title }</h1>
+				<p class="p-summary">{ e.Description }</p>
+				<p class="byline">By <span class="p-author">{ e.AuthorName }</span></p>
+				@PieceDates(e.Published, e.Reviewed)
+			</header>
+			<div class="e-content">
+				@templ.Raw(e.BodyHTML)
+			</div>
+		</article>
+	}
+}

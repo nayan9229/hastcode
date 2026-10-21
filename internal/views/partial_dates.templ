@@ -1,0 +1,15 @@
+package views
+
+import "time"
+
+// PieceDates shows the published and last-reviewed dates. datetime carries
+// the exact RFC 3339 instant (with the frontmatter's offset) so it matches
+// the JSON-LD dates; the visible text is the calendar date in that offset.
+templ PieceDates(published, reviewed time.Time) {
+	<p class="dates">
+		Published <time class="dt-published" datetime={ published.Format(time.RFC3339) }>{ humanDate(published) }</time>
+		· Last reviewed <time class="dt-updated" datetime={ reviewed.Format(time.RFC3339) }>{ humanDate(reviewed) }</time>
+	</p>
+}
+
+func humanDate(t time.Time) string { return t.Format("2 January 2006") }

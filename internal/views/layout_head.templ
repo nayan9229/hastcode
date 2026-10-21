@@ -1,0 +1,9 @@
+package views
+
+// Head is the minimal <head> every page carries.
+templ Head(p Page) {
+	<meta charset="utf-8"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1"/>
+	<title>{ p.Title }</title>
+	<meta name="description" content={ p.Description }/>
+}
