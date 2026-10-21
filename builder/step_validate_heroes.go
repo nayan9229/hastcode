@@ -5,6 +5,7 @@ import (
 	"path"
 	"path/filepath"
 
+	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/images"
 	"hastcode.com/site/internal/views"
 )
@@ -43,47 +44,58 @@ type heroRef struct {
 	file, hero, alt string
 }
 
-// heroRefs lists every Explainer and Brief; with published set, only those
-// that passed every gate so far.
-func (s *site) heroRefs(published bool) []heroRef {
+// heroRefsOf lists the given Explainers and Briefs as heroRefs.
+func heroRefsOf(es []*content.Explainer, bs []*content.Brief) []heroRef {
 	var refs []heroRef
-	for _, e := range s.explainers {
-		if !published || !s.failed[e.File] {
-			refs = append(refs, heroRef{file: e.File, hero: e.Hero, alt: e.HeroAlt})
-		}
+	for _, e := range es {
+		refs = append(refs, heroRef{file: e.File, hero: e.Hero, alt: e.HeroAlt})
 	}
-	for _, b := range s.briefs {
-		if !published || !s.failed[b.File] {
-			refs = append(refs, heroRef{file: b.File, hero: b.Hero, alt: b.HeroAlt})
-		}
+	for _, b := range bs {
+		refs = append(refs, heroRef{file: b.File, hero: b.Hero, alt: b.HeroAlt})
 	}
 	return refs
+}
+
+// publishedHeroRefs are the heroRefs of the pieces that passed every gate
+// so far.
+func (s *site) publishedHeroRefs() []heroRef {
+	return heroRefsOf(s.publishedExplainers(), s.publishedBriefs())
+}
+
+// heroView is the encoded hero of a published piece's content file (every
+// published Explainer and Brief has one, see validateHeroes), or the zero
+// Hero.
+func (s *site) heroView(file string) views.Hero {
+	if hr := s.heroes[file]; hr != nil {
+		return hr.view
+	}
+	return views.Hero{}
 }
 
 // validateHeroes checks that every Explainer and Brief names a hero that
 // exists beside its Markdown, decodes, and is at least heroMinWidth wide.
 func validateHeroes(s *site) error {
-	for _, e := range s.heroRefs(false) {
-		if e.hero == "" {
-			s.fail(e.file, ruleHeroMissing, "no hero: set `hero` in frontmatter to a raster image beside the Markdown, at least %d px wide", heroMinWidth)
+	for _, ref := range heroRefsOf(s.explainers, s.briefs) {
+		if ref.hero == "" {
+			s.fail(ref.file, ruleHeroMissing, "no hero: set `hero` in frontmatter to a raster image beside the Markdown, at least %d px wide", heroMinWidth)
 			continue
 		}
-		rel := path.Join(path.Dir(e.file), e.hero)
+		rel := path.Join(path.Dir(ref.file), ref.hero)
 		src := filepath.Join(s.contentDir, filepath.FromSlash(rel))
 		if _, err := os.Stat(src); err != nil {
-			s.fail(e.file, ruleHeroMissing, "hero %s not found", rel)
+			s.fail(ref.file, ruleHeroMissing, "hero %s not found", rel)
 			continue
 		}
 		w, h, _, err := images.Probe(src)
 		if err != nil {
-			s.fail(e.file, ruleHeroFormat, "hero %s: %v", rel, err)
+			s.fail(ref.file, ruleHeroFormat, "hero %s: %v", rel, err)
 			continue
 		}
 		if w < heroMinWidth {
-			s.fail(e.file, ruleHeroTooNarrow, "hero %s is %d px wide; heroes must be at least %d px wide", rel, w, heroMinWidth)
+			s.fail(ref.file, ruleHeroTooNarrow, "hero %s is %d px wide; heroes must be at least %d px wide", rel, w, heroMinWidth)
 			continue
 		}
-		s.heroes[e.file] = &hero{source: src, width: w, height: h}
+		s.heroes[ref.file] = &hero{source: src, width: w, height: h}
 	}
 	return nil
 }

@@ -1,7 +1,5 @@
 package builder
 
-import "os"
-
 func init() {
 	registerStep(phaseRender, 16, "write author photos", writeAuthorPhotos)
 }
@@ -13,11 +11,7 @@ func writeAuthorPhotos(s *site) error {
 		if ph == nil || ph.cached == "" || s.failed[a.File] {
 			continue
 		}
-		data, err := os.ReadFile(ph.cached)
-		if err != nil {
-			return err
-		}
-		if err := s.out.WriteStatic(ph.view.URL, data); err != nil {
+		if err := s.copyCachedFile(ph.view.URL, ph.cached); err != nil {
 			return err
 		}
 	}

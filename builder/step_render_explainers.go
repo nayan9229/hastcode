@@ -42,10 +42,7 @@ func renderExplainers(s *site) error {
 // explainerPage maps an Explainer to its view model. lead is the intro and
 // TL;DR (the first ad slot follows it), body the rest.
 func explainerPage(s *site, e *content.Explainer, lead, body string) views.ExplainerPage {
-	var hero views.Hero // every published Explainer has one (validateHeroes)
-	if hr := s.heroes[e.File]; hr != nil {
-		hero = hr.view
-	}
+	hero := s.heroView(e.File)
 	author := s.authors[e.Author]
 	vertical := s.verticals[e.Vertical]
 	page := s.articlePage(articleHead{

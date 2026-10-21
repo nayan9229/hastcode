@@ -7,7 +7,7 @@ templ ExplainerArticle(e ExplainerPage) {
 	@Layout(e.Page) {
 		<article class="h-entry" data-pagefind-body>
 			<header>
-				<p class="vertical"><span class="p-category">{ e.VerticalName }</span></p>
+				<p class="article-label"><span class="p-category">{ e.VerticalName }</span></p>
 				<h1 class="p-name">{ e.Title }</h1>
 				<p class="p-summary">{ e.Description }</p>
 				@Byline(e.Author)

@@ -113,7 +113,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 |------|------------------|
 | `cmd/builder/` | CLI only: flags, `LoadConfig`, print `Result`, exit code. No logic. |
 | `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`. Everything else unexported. |
-| `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, `publishedExplainers()`. |
+| `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, the "skip failed files" filter `passed` behind `publishedExplainers()`/`publishedBriefs()`/`publishedPages()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …), every fixed page, feed and sitemap path, the asset directories, and the retired paths (`retiredSections`, `homeAliasURL`). |
 | `builder/render.go` | Output helpers: `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`), `writeXML`, `isWritten`, rule `markdown`. The output reset is `step_render_reset.go`. |
@@ -129,7 +129,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
-| `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestExplainers`/`newestBriefs`, `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
+| `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestFirst` (via `newestExplainers`/`newestBriefs`), `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
 | `builder/step_render_link_gate.go` | The site-wide broken internal link gate (rule `broken-link`), last in the render phase. |
 | `builder/step_render_search.go`, `step_write_search_index.go` | The noindex `/search/` page and the Pagefind post-step (rule `search-index`) that indexes the written output into `/pagefind/`. |
 | `internal/pagefind/` | Runs the Pagefind CLI (`node node_modules/pagefind/lib/runner/bin.cjs --site …`) and reads the bundle's page count. |

@@ -16,15 +16,3 @@ func loadBriefs(s *site) error {
 		s.briefs = append(s.briefs, b)
 	})
 }
-
-// publishedBriefs are the Briefs that passed every gate so far, in load
-// order. Render and write steps must use this, not s.briefs.
-func (s *site) publishedBriefs() []*content.Brief {
-	var ok []*content.Brief
-	for _, b := range s.briefs {
-		if !s.failed[b.File] {
-			ok = append(ok, b)
-		}
-	}
-	return ok
-}

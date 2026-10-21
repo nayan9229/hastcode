@@ -37,10 +37,7 @@ func renderBriefs(s *site) error {
 
 // briefPage maps a Brief to its view model.
 func briefPage(s *site, b *content.Brief, lead, body string) views.BriefPage {
-	var hero views.Hero // every published Brief has one (validateHeroes)
-	if hr := s.heroes[b.File]; hr != nil {
-		hero = hr.view
-	}
+	hero := s.heroView(b.File)
 	author := s.authors[b.Author]
 	page := s.articlePage(articleHead{
 		Type:        schema.TypeNewsArticle,

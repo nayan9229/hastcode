@@ -1,7 +1,12 @@
 package builder
 
 import (
+	"fmt"
+	"path"
+	"strings"
+
 	"hastcode.com/site/internal/content"
+	"hastcode.com/site/internal/images"
 	"hastcode.com/site/internal/pagefind"
 )
 
@@ -56,6 +61,14 @@ const (
 var retiredSections = []string{"video", "community", "group"}
 
 const homeAliasURL = "/home"
+
+// encodedImageURL is where an encoded image variant is served:
+// <dir><source name>-<w>x<h>.<hash>.<ext>, named by a hash of its bytes so
+// it can be cached immutably (heroes, Author photos).
+func encodedImageURL(dir, source string, f images.File) string {
+	base := strings.TrimSuffix(path.Base(source), path.Ext(source))
+	return fmt.Sprintf("%s%s-%dx%d.%s%s", dir, base, f.Width, f.Height, f.Hash[:10], f.Format.Ext())
+}
 
 // Asset directories. assetsDir holds only content-hashed files (the
 // stylesheet, heroAssetDir, authorPhotoDir), so the routes

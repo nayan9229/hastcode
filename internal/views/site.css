@@ -95,7 +95,7 @@ button { cursor: pointer; padding: .55rem 1rem; background: var(--link); color: 
 
 /* Article chrome (h-entry classes from article templates) */
 .p-category { color: var(--link); font-size: .8125rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-.vertical { margin-bottom: .5rem; }
+.article-label { margin-bottom: .5rem; }
 .p-summary { color: var(--muted); font-size: 1.125rem; line-height: 1.5; }
 .byline, .dates { margin-bottom: .25rem; color: var(--muted); font-size: .875rem; }
 article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }

@@ -7,7 +7,6 @@ import (
 	"slices"
 	"time"
 
-	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/markdown"
 	"hastcode.com/site/internal/views"
 )
@@ -31,7 +30,11 @@ func writeFeeds(s *site) error {
 		if !s.isWritten(explainerURL(e)) {
 			continue
 		}
-		it, err := s.explainerFeedItem(e)
+		it, err := s.withFullText(feedItem{
+			url: explainerURL(e), title: e.Title, description: e.Description,
+			category: s.verticals[e.Vertical].Name, author: s.authors[e.Author].Name,
+			published: e.Published,
+		}, e.Body)
 		if err != nil {
 			return err
 		}
@@ -42,7 +45,11 @@ func writeFeeds(s *site) error {
 		if !s.isWritten(briefURL(b)) {
 			continue
 		}
-		it, err := s.briefFeedItem(b)
+		it, err := s.withFullText(feedItem{
+			url: briefURL(b), title: b.Title, description: b.Description,
+			category: "Briefs", author: s.authors[b.Author].Name,
+			published: b.Published,
+		}, b.Body)
 		if err != nil {
 			return err
 		}
@@ -71,28 +78,15 @@ type feedItem struct {
 	html                                      string // full body, absolute links
 }
 
-func (s *site) explainerFeedItem(e *content.Explainer) (feedItem, error) {
-	body, err := markdown.Render(e.Body)
+// withFullText completes it with the piece's full body rendered for feed
+// readers: root-relative links made absolute.
+func (s *site) withFullText(it feedItem, body *markdown.Document) (feedItem, error) {
+	html, err := markdown.Render(body)
 	if err != nil {
 		return feedItem{}, err
 	}
-	return feedItem{
-		url: explainerURL(e), title: e.Title, description: e.Description,
-		category: s.verticals[e.Vertical].Name, author: s.authors[e.Author].Name,
-		published: e.Published, html: s.absoluteLinks(body),
-	}, nil
-}
-
-func (s *site) briefFeedItem(b *content.Brief) (feedItem, error) {
-	body, err := markdown.Render(b.Body)
-	if err != nil {
-		return feedItem{}, err
-	}
-	return feedItem{
-		url: briefURL(b), title: b.Title, description: b.Description,
-		category: "Briefs", author: s.authors[b.Author].Name,
-		published: b.Published, html: s.absoluteLinks(body),
-	}, nil
+	it.html = s.absoluteLinks(html)
+	return it, nil
 }
 
 // siteRelativeRef matches an href or src attribute holding a root-relative

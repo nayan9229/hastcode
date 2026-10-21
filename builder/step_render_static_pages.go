@@ -11,10 +11,7 @@ func init() {
 }
 
 func renderStaticPages(s *site) error {
-	for _, p := range s.pages {
-		if s.failed[p.File] {
-			continue
-		}
+	for _, p := range s.publishedPages() {
 		body, err := markdown.Render(p.Body)
 		if err != nil {
 			s.fail(p.File, ruleMarkdown, "%v", err)

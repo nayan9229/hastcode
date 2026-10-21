@@ -9,7 +9,7 @@ templ BriefArticle(b BriefPage) {
 	@Layout(b.Page) {
 		<article class="h-entry" data-pagefind-body>
 			<header>
-				<p class="vertical">Brief</p>
+				<p class="article-label">Brief</p>
 				<h1 class="p-name">{ b.Title }</h1>
 				<p class="p-summary">{ b.Description }</p>
 				@Byline(b.Author)

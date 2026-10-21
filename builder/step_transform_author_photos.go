@@ -1,10 +1,6 @@
 package builder
 
 import (
-	"fmt"
-	"path"
-	"strings"
-
 	"hastcode.com/site/internal/images"
 	"hastcode.com/site/internal/views"
 )
@@ -44,14 +40,9 @@ func encodeAuthorPhotos(s *site) error {
 			continue
 		}
 		f := res.Files[0]
-		base := strings.TrimSuffix(path.Base(a.Photo), path.Ext(a.Photo))
 		ph := s.authorPhotos[a.Slug]
 		ph.cached = f.Path
-		ph.view = views.Image{
-			URL:    fmt.Sprintf("%s%s-%dx%d.%s%s", authorPhotoDir, base, f.Width, f.Height, f.Hash[:10], f.Format.Ext()),
-			Width:  f.Width,
-			Height: f.Height,
-		}
+		ph.view = views.Image{URL: encodedImageURL(authorPhotoDir, a.Photo, f), Width: f.Width, Height: f.Height}
 	}
 	return nil
 }

@@ -3,6 +3,7 @@ package builder
 import (
 	"cmp"
 	"slices"
+	"time"
 
 	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/views"
@@ -11,23 +12,26 @@ import (
 // Shared by every listing (home, Vertical hubs, kind pages, Briefs index,
 // an Explainer's "More in" and "Related"): order and list items.
 
-// newestExplainers returns a copy of es, newest published first (ties by
-// slug, so output is stable).
-func newestExplainers(es []*content.Explainer) []*content.Explainer {
-	es = slices.Clone(es)
-	slices.SortStableFunc(es, func(a, b *content.Explainer) int {
-		return cmp.Or(b.Published.Compare(a.Published), cmp.Compare(a.Slug, b.Slug))
+// newestFirst returns a copy of pieces, newest published first (ties by
+// slug, so output is stable). key reads a piece's publication and slug.
+func newestFirst[T any](pieces []T, key func(T) (time.Time, string)) []T {
+	pieces = slices.Clone(pieces)
+	slices.SortStableFunc(pieces, func(a, b T) int {
+		ta, sa := key(a)
+		tb, sb := key(b)
+		return cmp.Or(tb.Compare(ta), cmp.Compare(sa, sb))
 	})
-	return es
+	return pieces
 }
 
-// newestBriefs returns a copy of bs, newest published first (ties by slug).
+// newestExplainers returns a copy of es, newest published first.
+func newestExplainers(es []*content.Explainer) []*content.Explainer {
+	return newestFirst(es, func(e *content.Explainer) (time.Time, string) { return e.Published, e.Slug })
+}
+
+// newestBriefs returns a copy of bs, newest published first.
 func newestBriefs(bs []*content.Brief) []*content.Brief {
-	bs = slices.Clone(bs)
-	slices.SortStableFunc(bs, func(a, b *content.Brief) int {
-		return cmp.Or(b.Published.Compare(a.Published), cmp.Compare(a.Slug, b.Slug))
-	})
-	return bs
+	return newestFirst(bs, func(b *content.Brief) (time.Time, string) { return b.Published, b.Slug })
 }
 
 // explainerItems maps Explainers, in order, to listing items.
@@ -64,11 +68,11 @@ func (s *site) briefItems(bs []*content.Brief) []views.ListingItem {
 // thumbnail is the smallest (480 px) hero variant of a published piece.
 // Every published piece has an encoded hero (validateHeroes).
 func (s *site) thumbnail(file string) views.Thumbnail {
-	hr := s.heroes[file]
-	if hr == nil || len(hr.view.JPEG) == 0 {
+	h := s.heroView(file)
+	if len(h.JPEG) == 0 {
 		return views.Thumbnail{}
 	}
-	return views.Thumbnail{AVIF: hr.view.AVIF[0], WebP: hr.view.WebP[0], JPEG: hr.view.JPEG[0]}
+	return views.Thumbnail{AVIF: h.AVIF[0], WebP: h.WebP[0], JPEG: h.JPEG[0]}
 }
 
 // explainerKind is an Explainer kind as Readers see it, with its kind

@@ -113,14 +113,32 @@ func (s *site) warn(file, rule, format string, args ...any) {
 	s.result.Warnings = append(s.result.Warnings, Problem{File: file, Rule: rule, Message: fmt.Sprintf(format, args...)})
 }
 
-// publishedExplainers are the Explainers that passed every gate so far, in
-// load order. Render and write steps must use this, not s.explainers.
-func (s *site) publishedExplainers() []*content.Explainer {
-	var ok []*content.Explainer
-	for _, e := range s.explainers {
-		if !s.failed[e.File] {
-			ok = append(ok, e)
+// passed returns the items whose content file (file(item)) has produced
+// no error so far, in their original order: the one "skip failed files"
+// filter behind publishedExplainers, publishedBriefs and publishedPages.
+func passed[T any](s *site, items []T, file func(T) string) []T {
+	var ok []T
+	for _, it := range items {
+		if !s.failed[file(it)] {
+			ok = append(ok, it)
 		}
 	}
 	return ok
+}
+
+// publishedExplainers are the Explainers that passed every gate so far, in
+// load order. Render and write steps must use this, not s.explainers.
+func (s *site) publishedExplainers() []*content.Explainer {
+	return passed(s, s.explainers, func(e *content.Explainer) string { return e.File })
+}
+
+// publishedBriefs are the Briefs that passed every gate so far, in load
+// order. Render and write steps must use this, not s.briefs.
+func (s *site) publishedBriefs() []*content.Brief {
+	return passed(s, s.briefs, func(b *content.Brief) string { return b.File })
+}
+
+// publishedPages are the static pages that passed every gate so far.
+func (s *site) publishedPages() []*content.Page {
+	return passed(s, s.pages, func(p *content.Page) string { return p.File })
 }
