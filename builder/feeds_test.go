@@ -155,6 +155,34 @@ func TestSiteFeed_ItemsCarryTheFullHTMLBodyWithAbsoluteLinks(t *testing.T) {
 	}
 }
 
+// Feed readers load no site CSS, so a diagram painted through CSS
+// variables would come out black boxes with invisible edges. Feeds carry
+// the diagrams with the light palette resolved (spec brand values: fg
+// #111827, accent #0D9488); pages keep the themable variables.
+func TestSiteFeed_DiagramsAreReadableWithoutTheSiteStylesheet(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+	f := readFeed(t, out, "/feed.xml")
+	if len(f.Channel.Items) != 1 {
+		t.Fatalf("feed has %d items, want 1", len(f.Channel.Items))
+	}
+	content := f.Channel.Items[0].Content
+	svg := content[strings.Index(content, "<svg"):strings.Index(content, "</svg>")]
+	if strings.Contains(svg, "var(--") {
+		t.Errorf("feed diagram still paints through CSS variables, which feed readers do not define:\n%.600s", svg)
+	}
+	for _, want := range []string{`fill="#111827"`, `fill="#0D9488"`} {
+		if !strings.Contains(strings.ToUpper(svg), strings.ToUpper(want)) {
+			t.Errorf("feed diagram lacks %s (text in the brand fg, arrows in the brand accent)", want)
+		}
+	}
+
+	page := buildtest.Page(t, out, explainerPath)
+	pageSVG, _ := page.Find("figure.diagram svg").Html()
+	if !strings.Contains(pageSVG, "var(--_text)") {
+		t.Errorf("page diagram lost its CSS variables; it must stay themable (light, dark, toggle)")
+	}
+}
+
 func TestVerticalAndBriefsFeeds_CarryOnlyTheirOwnPieces(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), feedTree())
 

@@ -85,7 +85,7 @@ func (s *site) withFullText(it feedItem, body *markdown.Document) (feedItem, err
 	if err != nil {
 		return feedItem{}, err
 	}
-	it.html = s.absoluteLinks(html)
+	it.html = views.FeedSafeDiagrams(s.absoluteLinks(html))
 	return it, nil
 }
 

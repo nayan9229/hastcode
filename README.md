@@ -426,6 +426,9 @@ actually wrote (a page the gate removed is in no feed or sitemap).
 - **Feeds** (RSS 2.0, full text in `content:encoded`, root-relative links
   made absolute): `/feed.xml` (Explainers and Briefs), `/{vertical}/feed.xml`,
   `/briefs/feed.xml`; newest 50 each, channel description = tagline.
+  Feed readers load no site CSS, so diagrams in feeds have their CSS
+  variables resolved to the light palette (`views.FeedSafeDiagrams`);
+  pages keep the themable variables.
 - **`/sitemap.xml`**: the canonical URL of every written page that is not
   noindex, once. `lastmod`: an Explainer's Review date (or publication, if
   later), a Brief's publication, else the newest `<time datetime>` on the
@@ -580,7 +583,9 @@ with inline SVG and a `<figcaption>` from the fence's first line
   rules live once in `internal/views/site.css` (the `.diagram` block), in the
   hashed site stylesheet (ADR-0003). Each SVG maps its `--bg`/`--fg`/`--accent` to
   `--diagram-bg`/`currentColor`/`--diagram-accent`, which `.diagram` sets from
-  the palette tokens, so light, dark and the theme toggle all apply. Element ids are prefixed per diagram (`d1-`, `d2-`…). Labels stay
+  the palette tokens, so light, dark and the theme toggle all apply. Feeds
+  carry a copy with those variables resolved to light-palette colours,
+  computed from the same `.diagram` rules (`internal/views/feed_diagrams.go`). Element ids are prefixed per diagram (`d1-`, `d2-`…). Labels stay
   `<text>`. `width`/`height`/`viewBox` are kept (no layout shift).
 - **Cache:** rendered SVG is stored at `<cache>/mermaid/<sha256>.svg`, keyed on
   the fence source, the installed renderer version and a post-processing
