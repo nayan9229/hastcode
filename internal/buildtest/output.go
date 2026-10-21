@@ -15,8 +15,18 @@ import (
 
 // Build writes tree to a temp content dir, runs the builder with cfg into a
 // fresh temp output dir, and returns the output dir and the builder's Result.
+//
+// Builds get a fresh diagram cache unless cfg.CacheDir is set. A tree with a
+// Mermaid fence skips the test when the renderer (node + npm packages) is
+// not installed.
 func Build(tb testing.TB, cfg builder.Config, tree Tree) (outDir string, res builder.Result) {
 	tb.Helper()
+	if tree.hasDiagram() {
+		requireDiagramRenderer(tb, cfg)
+	}
+	if cfg.CacheDir == "" {
+		cfg.CacheDir = tb.TempDir()
+	}
 	contentDir := tree.Write(tb)
 	outDir = filepath.Join(tb.TempDir(), "output")
 	res = builder.Build(cfg, contentDir, outDir)

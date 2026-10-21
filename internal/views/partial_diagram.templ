@@ -1,0 +1,12 @@
+package views
+
+// Diagram is a Mermaid diagram as an inline-SVG figure, captioned from the
+// fence's title line. Styled by diagram.css (in the site stylesheet).
+templ Diagram(d DiagramFigure) {
+	<figure class="diagram">
+		@templ.Raw(d.SVG)
+		if d.Caption != "" {
+			<figcaption>{ d.Caption }</figcaption>
+		}
+	</figure>
+}

@@ -171,6 +171,11 @@ func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled b
 		case "application/ld+json":
 			return
 		case "", "text/javascript", "module":
+			if s.Closest(".newsletter").Length() > 0 {
+				// The newsletter form's enhancement (spec allows it); its
+				// budget is checked in newsletter_test.go.
+				return
+			}
 		default:
 			t.Errorf("unexpected script type %q", typ)
 		}

@@ -99,6 +99,14 @@ button { cursor: pointer; padding: .55rem 1rem; background: var(--link); color: 
 .byline, .dates { margin-bottom: .25rem; color: var(--muted); font-size: .875rem; }
 article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
 
+/* Newsletter form (partial_newsletter.templ) */
+.newsletter { margin-top: 3rem; }
+.newsletter h2 { margin-top: 0; }
+.newsletter-form { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.newsletter-form label { flex-basis: 100%; font-weight: 600; font-size: .875rem; }
+.newsletter-form input[type=email] { flex: 1 1 14rem; }
+.newsletter-status { flex-basis: 100%; margin: 0; min-height: 1.5em; color: var(--muted); font-size: .875rem; }
+
 /* Site footer */
 .site-footer { border-top: 1px solid var(--border); padding-block: 2rem 3rem; color: var(--muted); font-size: .875rem; }
 .site-footer a { color: inherit; }

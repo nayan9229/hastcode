@@ -19,6 +19,7 @@ templ ExplainerArticle(e ExplainerPage) {
 				@templ.Raw(e.BodyHTML)
 			</div>
 			@AdSlot(e.Page.Ads, AdAfterBody)
+			@NewsletterForm(e.Newsletter)
 		</article>
 	}
 }

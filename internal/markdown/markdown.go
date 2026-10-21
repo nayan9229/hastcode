@@ -9,7 +9,9 @@ import (
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/extension"
+	"github.com/yuin/goldmark/renderer"
 	"github.com/yuin/goldmark/text"
+	"github.com/yuin/goldmark/util"
 )
 
 // Document is a parsed Markdown body. Root nodes reference Source by
@@ -19,7 +21,10 @@ type Document struct {
 	Root   ast.Node
 }
 
-var md = goldmark.New(goldmark.WithExtensions(extension.GFM))
+var md = goldmark.New(
+	goldmark.WithExtensions(extension.GFM),
+	goldmark.WithRendererOptions(renderer.WithNodeRenderers(util.Prioritized(rawHTMLRenderer{}, 100))),
+)
 
 // Parse parses a Markdown body (frontmatter already removed).
 func Parse(src []byte) *Document {

@@ -9,6 +9,9 @@ templ Head(p Page) {
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<title>{ p.Title }</title>
 	<meta name="description" content={ p.Description }/>
+	if p.NoIndex {
+		<meta name="robots" content="noindex"/>
+	}
 	<meta name="color-scheme" content="light dark"/>
 	<meta name="theme-color" media="(prefers-color-scheme: light)" content={ lightPalette.bg }/>
 	<meta name="theme-color" media="(prefers-color-scheme: dark)" content={ darkPalette.bg }/>

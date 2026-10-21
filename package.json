@@ -1,0 +1,11 @@
+{
+  "name": "hastcode-build-tools",
+  "private": true,
+  "description": "Node tools the Go builder shells out to at build time (Mermaid diagrams). Not a JS app.",
+  "engines": {
+    "node": ">=22"
+  },
+  "devDependencies": {
+    "beautiful-mermaid": "1.1.3"
+  }
+}

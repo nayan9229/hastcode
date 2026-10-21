@@ -25,6 +25,8 @@ type Page struct {
 	Title       string
 	Description string
 	Chrome      Chrome
+	// NoIndex keeps the page out of search indexes (meta robots noindex).
+	NoIndex bool
 	// Ads is the site-wide ad configuration every ad slot reads.
 	Ads Ads
 	// PlausibleDomain is the Plausible analytics site domain; "" omits
@@ -73,4 +75,21 @@ type ExplainerPage struct {
 	// content).
 	LeadHTML string
 	BodyHTML string
+	// Newsletter is the subscribe form that ends the article.
+	Newsletter Newsletter
+}
+
+// Newsletter is the view model for the newsletter form partial.
+type Newsletter struct {
+	// Source is the site-relative path of the page the form is on; it is
+	// posted as `source` and becomes the subscriber's Buttondown tag.
+	Source string
+}
+
+// DiagramFigure is a rendered Mermaid diagram placed in an article body.
+type DiagramFigure struct {
+	// SVG is the inline SVG (trusted: built by internal/mermaid).
+	SVG string
+	// Caption is from the fence's "%% title:" line; "" means no figcaption.
+	Caption string
 }

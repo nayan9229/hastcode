@@ -247,11 +247,13 @@ func HeroPNG(w, h int) []byte {
 }
 
 // Config returns the builder configuration used by tests: the launch
-// Verticals, a fixed site URL, production mode.
+// Verticals, a fixed site URL, production mode, and the repo's Node tools
+// (Build adds a per-build cache dir).
 func Config() builder.Config {
 	return builder.Config{
-		SiteURL: "https://hastcode.test",
-		Mode:    builder.Production,
+		SiteURL:  "https://hastcode.test",
+		Mode:     builder.Production,
+		ToolsDir: RepoRoot(),
 		Verticals: []builder.Vertical{
 			{Slug: "distributed-systems", Name: "Distributed Systems", Order: 1},
 			{Slug: "databases-storage", Name: "Databases & Storage", Order: 2},
