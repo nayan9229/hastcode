@@ -9,6 +9,7 @@ package builder
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -36,6 +37,18 @@ type Config struct {
 	Verticals []Vertical `yaml:"verticals"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
+
+	// Build tooling, set by the caller (CLI flags, tests), not site.yaml.
+
+	// ToolsDir holds package.json and node_modules (Node build tools such
+	// as the Mermaid renderer). Default ".".
+	ToolsDir string `yaml:"-"`
+	// Node is the node executable. Default "node" (from PATH).
+	Node string `yaml:"-"`
+	// CacheDir is the build cache root (rendered diagrams, …). Default
+	// <ToolsDir>/node_modules/.cache/hastcode: Vercel persists only
+	// node_modules/** between builds.
+	CacheDir string `yaml:"-"`
 }
 
 // Problem is one build error or warning, attributed to a content file
@@ -79,6 +92,15 @@ func (r Result) String() string {
 func Build(cfg Config, contentDir, outDir string) Result {
 	if cfg.Mode == "" {
 		cfg.Mode = Production
+	}
+	if cfg.ToolsDir == "" {
+		cfg.ToolsDir = "."
+	}
+	if cfg.Node == "" {
+		cfg.Node = "node"
+	}
+	if cfg.CacheDir == "" {
+		cfg.CacheDir = filepath.Join(cfg.ToolsDir, "node_modules", ".cache", "hastcode")
 	}
 	s := newSite(cfg, contentDir, outDir)
 	s.run()

@@ -10,3 +10,6 @@ dist/
 .claude/
 .agents/
 skills-lock.json
+
+# Node build tools (package.json) and the build cache under node_modules/.cache/
+node_modules/

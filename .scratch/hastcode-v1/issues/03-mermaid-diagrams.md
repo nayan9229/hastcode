@@ -4,11 +4,11 @@
 
 **Blocked by:** 01 (Walking skeleton)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test: Explainer with two Mermaid fences → two `<figure>` elements each containing an `<svg>` and a `<figcaption>`
-- [ ] Node label text from the fence is present as text nodes inside the SVG
-- [ ] No hard-coded fill/stroke colours that would break dark mode; theme adaptation verified by inspecting attributes/styles
-- [ ] A malformed Mermaid fence is a build error naming the page
-- [ ] Rendering result cached by fence content hash so unchanged diagrams are not re-rendered
-- [ ] Renderer choice and its install step documented in the repo README so the Vercel build command can run it
+- [x] Build-seam test: Explainer with two Mermaid fences → two `<figure>` elements each containing an `<svg>` and a `<figcaption>`
+- [x] Node label text from the fence is present as text nodes inside the SVG
+- [x] No hard-coded fill/stroke colours that would break dark mode; theme adaptation verified by inspecting attributes/styles
+- [x] A malformed Mermaid fence is a build error naming the page
+- [x] Rendering result cached by fence content hash so unchanged diagrams are not re-rendered
+- [x] Renderer choice and its install step documented in the repo README so the Vercel build command can run it

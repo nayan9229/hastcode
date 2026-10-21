@@ -36,3 +36,11 @@ type ExplainerPage struct {
 	// BodyHTML is the rendered Markdown body (trusted: built from content).
 	BodyHTML string
 }
+
+// DiagramFigure is a rendered Mermaid diagram placed in an article body.
+type DiagramFigure struct {
+	// SVG is the inline SVG (trusted: built by internal/mermaid).
+	SVG string
+	// Caption is from the fence's "%% title:" line; "" means no figcaption.
+	Caption string
+}
