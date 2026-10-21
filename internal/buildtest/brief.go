@@ -19,8 +19,10 @@ type Brief struct {
 	HeroImage   []byte
 	SourceURL   string
 	Explainers  []string
-	Draft       bool
-	Body        string
+	// Sources is the optional `sources` frontmatter list.
+	Sources []Source
+	Draft   bool
+	Body    string
 }
 
 // ValidBrief returns a Brief that satisfies the Brief skeleton: under 250
@@ -78,6 +80,7 @@ func (b Brief) Markdown() string {
 	field(&s, "hero_alt", b.HeroAlt)
 	field(&s, "source_url", b.SourceURL)
 	list(&s, "explainers", b.Explainers)
+	sources(&s, b.Sources)
 	if b.Draft {
 		s.WriteString("draft: true\n")
 	}

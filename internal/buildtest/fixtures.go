@@ -106,8 +106,26 @@ type Explainer struct {
 	HeroAlt     string
 	HeroImage   []byte
 	Related     []string
-	Draft       bool
-	Body        string
+	// Sources is the optional `sources` frontmatter list.
+	Sources []Source
+	Draft   bool
+	Body    string
+}
+
+// Source is one `sources` frontmatter entry (Explainers and Briefs).
+type Source struct {
+	Title, URL string
+}
+
+// sources writes a `sources` frontmatter list.
+func sources(b *strings.Builder, ss []Source) {
+	if len(ss) == 0 {
+		return
+	}
+	b.WriteString("sources:\n")
+	for _, s := range ss {
+		fmt.Fprintf(b, "  - title: %q\n    url: %q\n", s.Title, s.URL)
+	}
 }
 
 // ValidExplainer returns an Explainer that satisfies the whole editorial
@@ -214,6 +232,7 @@ func (e Explainer) Markdown() string {
 	field(&b, "hero", e.Hero)
 	field(&b, "hero_alt", e.HeroAlt)
 	list(&b, "related", e.Related)
+	sources(&b, e.Sources)
 	if e.Draft {
 		b.WriteString("draft: true\n")
 	}

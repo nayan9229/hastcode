@@ -132,9 +132,9 @@ type BriefPage struct {
 	// first ad slot; BodyHTML is the rest (both trusted: built from content).
 	LeadHTML string
 	BodyHTML string
-	// Source is the public source the Brief is curated from (absolute URL);
-	// SourceName is the text shown for it.
-	Source, SourceName string
+	// Sources are the public sources the Brief is curated from (absolute
+	// URLs): source_url first, then the frontmatter `sources`.
+	Sources []Link
 	// Newsletter is the subscribe form that ends the Brief.
 	Newsletter Newsletter
 }

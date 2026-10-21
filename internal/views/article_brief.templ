@@ -22,7 +22,19 @@ templ BriefArticle(b BriefPage) {
 				@templ.Raw(b.LeadHTML)
 				@AdSlot(b.Page.Ads, AdAfterWhatHappened)
 				@templ.Raw(b.BodyHTML)
-				<p class="brief-source" data-pagefind-ignore>Source: <a href={ templ.SafeURL(b.Source) }>{ b.SourceName }</a></p>
+				<p class="brief-source" data-pagefind-ignore>
+					if len(b.Sources) == 1 {
+						Source:
+					} else {
+						Sources:
+					}
+					for i, src := range b.Sources {
+						if i > 0 {
+							,
+						}
+						<a href={ templ.SafeURL(src.URL) }>{ src.Name }</a>
+					}
+				</p>
 			</div>
 			@AdSlot(b.Page.Ads, AdAfterBody)
 			@NewsletterForm(b.Newsletter)

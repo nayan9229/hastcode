@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"cmp"
 	"net/url"
 	"strings"
 
@@ -64,10 +65,19 @@ func briefPage(s *site, b *content.Brief, lead, body string) views.BriefPage {
 		Hero:        hero,
 		LeadHTML:    lead,
 		BodyHTML:    body,
-		Source:      b.SourceURL,
-		SourceName:  sourceName(b.SourceURL),
+		Sources:     briefSources(b),
 		Newsletter:  views.Newsletter{Source: briefURL(b)},
 	}
+}
+
+// briefSources are a Brief's source_url (shown as its host) followed by its
+// frontmatter `sources` (shown by title), once per URL.
+func briefSources(b *content.Brief) []views.Link {
+	links := []views.Link{{Name: sourceName(b.SourceURL), URL: b.SourceURL}}
+	for _, src := range newSources([]string{b.SourceURL}, b.Sources) {
+		links = append(links, views.Link{Name: cmp.Or(src.Title, sourceName(src.URL)), URL: src.URL})
+	}
+	return links
 }
 
 // sourceName is the host a source URL points at, without "www.".

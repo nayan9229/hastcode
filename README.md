@@ -93,7 +93,11 @@ Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`
 `content/authors/<slug>.md` (frontmatter `name`, `same_as` list, optional
 `photo` raster beside it + `photo_alt`; body = bio), `content/pages/<slug>.md`
 (static pages at `/<slug>/`: `title`, `description`, Markdown body). Briefs come
-in `content/briefs/<slug>.md`. Lines marked `TODO(author):` in `content/` are facts only the
+in `content/briefs/<slug>.md`. Optional frontmatter `sources` (list of
+`title` + `url`) adds to the inline links: an Explainer's are appended to
+its `## Sources` list (page and feed), a Brief's are listed after its
+`source_url`; a URL already linked there is not repeated
+(`step_transform_sources.go`). Lines marked `TODO(author):` in `content/` are facts only the
 Author can supply; fill them before cutover.
 Add a Vertical by adding one entry to `site.yaml`.
 
@@ -167,7 +171,8 @@ and Briefs) 30; validate ads config 5, references 10, Brief references 12,
 unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
 35, section-length warning 40, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
-rewrite Brief Explainer links 20, encode heroes 50, encode author photos 55;
+rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30,
+encode heroes 50, encode author photos 55;
 render reset 0, write site assets 10, write hero assets 15, write author
 photos 16, render explainers 20, render briefs 30, render author pages 40,
 render briefs index 40, render static pages 45, render vertical hubs 50,
