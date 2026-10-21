@@ -88,6 +88,32 @@ func JSONLDOfType(tb testing.TB, doc *goquery.Document, typ string) map[string]a
 	return nil
 }
 
+// FilesContaining returns the output files (relative to outDir, slash
+// separated) whose bytes contain s. Use it to prove a piece appears nowhere:
+// no page, listing, feed, sitemap or manifest.
+func FilesContaining(tb testing.TB, outDir, s string) []string {
+	tb.Helper()
+	var hits []string
+	err := filepath.WalkDir(outDir, func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		data, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		if bytes.Contains(data, []byte(s)) {
+			rel, _ := filepath.Rel(outDir, p)
+			hits = append(hits, filepath.ToSlash(rel))
+		}
+		return nil
+	})
+	if err != nil && !os.IsNotExist(err) {
+		tb.Fatalf("walk %s: %v", outDir, err)
+	}
+	return hits
+}
+
 // VercelConfig reads and decodes the Build Output API config.json.
 func VercelConfig(tb testing.TB, outDir string) map[string]any {
 	tb.Helper()

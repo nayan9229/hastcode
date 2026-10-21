@@ -137,6 +137,54 @@ Every follower waits a random **150–300 ms** before standing for election, so 
 - [In Search of an Understandable Consensus Algorithm](https://raft.github.io/raft.pdf)
 `
 
+// ValidComparison returns a Comparison Explainer that satisfies the whole
+// editorial skeleton, including a Markdown table under ## Trade-offs.
+func ValidComparison() Explainer {
+	return Explainer{
+		Vertical:    "databases-storage",
+		Slug:        "btree-vs-lsm-tree",
+		Title:       "B-trees vs LSM-trees",
+		Description: "B-trees favour reads and in-place updates; LSM-trees favour write throughput at the cost of compaction.",
+		Kind:        "comparison",
+		Tags:        []string{"storage-engines"},
+		Published:   "2026-10-02T09:00:00Z",
+		Reviewed:    "2026-10-16T09:00:00Z",
+		Author:      DefaultAuthor().Slug,
+		Hero:        "btree-vs-lsm-tree.png",
+		HeroAlt:     "A B-tree beside an LSM-tree's levels",
+		HeroImage:   HeroPNG(1600, 900),
+		Body:        ValidComparisonBody,
+	}
+}
+
+// ValidComparisonTradeOffs is the ## Trade-offs section of ValidComparisonBody.
+const ValidComparisonTradeOffs = `## Trade-offs
+
+| | B-tree | LSM-tree |
+|---|---|---|
+| Writes | Random, in place | Sequential, batched |
+| Reads | One tree walk | Several levels plus Bloom filters |
+`
+
+// ValidComparisonBody is the Markdown body of ValidComparison.
+const ValidComparisonBody = `Storage engines trade read cost against write cost.
+
+## TL;DR
+
+- B-trees update pages in place.
+- LSM-trees buffer writes and merge sorted runs later.
+- Pick by read/write ratio and tolerance for compaction.
+
+## Writes take different paths
+
+` + "```mermaid\n%% title: Write paths\nflowchart LR\n  Write --> Memtable --> SSTable\n```" + `
+
+` + ValidComparisonTradeOffs + `
+## Sources
+
+- [The Log-Structured Merge-Tree](https://www.cs.umb.edu/~poneil/lsmtree.pdf)
+`
+
 // Markdown renders the fixture as a content file.
 func (e Explainer) Markdown() string {
 	var b strings.Builder
