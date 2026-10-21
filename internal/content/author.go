@@ -16,12 +16,18 @@ type Author struct {
 	// SameAs are the Author's profiles elsewhere (GitHub, LinkedIn, …):
 	// absolute URLs, the Person's sameAs in JSON-LD.
 	SameAs []string
-	Bio    *markdown.Document
+	// Photo is a raster beside the Markdown (authors/<photo>); "" = none.
+	// PhotoAlt is its alt text.
+	Photo    string
+	PhotoAlt string
+	Bio      *markdown.Document
 }
 
 type authorFrontmatter struct {
-	Name   string   `yaml:"name"`
-	SameAs []string `yaml:"same_as"`
+	Name     string   `yaml:"name"`
+	SameAs   []string `yaml:"same_as"`
+	Photo    string   `yaml:"photo"`
+	PhotoAlt string   `yaml:"photo_alt"`
 }
 
 // ParseAuthor parses an Author file (content/authors/<slug>.md).
@@ -35,10 +41,12 @@ func ParseAuthor(file string, data []byte) (*Author, error) {
 		return nil, err
 	}
 	return &Author{
-		File:   file,
-		Slug:   strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)),
-		Name:   fm.Name,
-		SameAs: fm.SameAs,
-		Bio:    markdown.Parse(body),
+		File:     file,
+		Slug:     strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)),
+		Name:     fm.Name,
+		SameAs:   fm.SameAs,
+		Photo:    fm.Photo,
+		PhotoAlt: fm.PhotoAlt,
+		Bio:      markdown.Parse(body),
 	}, nil
 }

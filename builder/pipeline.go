@@ -51,7 +51,11 @@ type site struct {
 	verticals  map[string]Vertical // by slug
 	authors    map[string]*content.Author
 	explainers []*content.Explainer
+	pages      []*content.Page  // static pages; see step_static_pages.go
 	heroes     map[string]*hero // by content file; see step_transform_heroes.go
+	// authorPhotos are encoded Author photos by Author slug; see
+	// step_author_photos.go.
+	authorPhotos map[string]*authorPhoto
 
 	failed map[string]bool // content-relative files that produced an error
 	result Result

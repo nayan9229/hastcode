@@ -1,0 +1,25 @@
+package views
+
+// NotFound is the static 404 page (noindex) that Vercel serves for any
+// unknown path. It points the Reader somewhere useful: home, search and
+// every Vertical hub (from the site chrome).
+templ NotFound(p Page) {
+	@Layout(p) {
+		<section class="not-found">
+			<h1>Page not found</h1>
+			<p>There is nothing at this address. It may have moved, or the link may be mistyped.</p>
+			<ul class="inline-list">
+				<li><a href="/">Go to the home page</a></li>
+				<li><a href={ templ.SafeURL(p.Chrome.Search.URL) }>Search Hast Code</a></li>
+			</ul>
+			if len(p.Chrome.Verticals) > 0 {
+				<h2>Browse a Vertical</h2>
+				<ul>
+					for _, v := range p.Chrome.Verticals {
+						<li><a href={ templ.SafeURL(v.URL) }>{ v.Name }</a></li>
+					}
+				</ul>
+			}
+		</section>
+	}
+}

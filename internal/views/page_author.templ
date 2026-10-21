@@ -1,0 +1,45 @@
+package views
+
+import (
+	"strconv"
+	"time"
+)
+
+// AuthorProfile is an Author page: who is accountable for the pieces
+// (Google News transparency). Markup is a microformats2 h-card (p-name,
+// u-photo, p-note, u-url); tests select on those classes, so keep them.
+templ AuthorProfile(a AuthorPage) {
+	@Layout(a.Page) {
+		<article class="author h-card">
+			<header>
+				if a.Photo != nil {
+					<img class="u-photo" src={ a.Photo.URL } width={ strconv.Itoa(a.Photo.Width) } height={ strconv.Itoa(a.Photo.Height) } alt={ a.PhotoAlt }/>
+				}
+				<h1 class="p-name">{ a.Name }</h1>
+			</header>
+			<div class="p-note">
+				@templ.Raw(a.BioHTML)
+			</div>
+			if len(a.Profiles) > 0 {
+				<ul class="inline-list profiles">
+					for _, l := range a.Profiles {
+						<li><a class="u-url" rel="me" href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>
+					}
+				</ul>
+			}
+			if len(a.Latest) > 0 {
+				<section class="latest">
+					<h2>Latest from { a.Name }</h2>
+					<ul>
+						for _, p := range a.Latest {
+							<li>
+								<a href={ templ.SafeURL(p.URL) }>{ p.Title }</a>
+								<span class="muted">{ p.Type } · <time datetime={ p.Published.Format(time.RFC3339) }>{ humanDate(p.Published) }</time></span>
+							</li>
+						}
+					</ul>
+				</section>
+			}
+		</article>
+	}
+}
