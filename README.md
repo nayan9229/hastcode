@@ -56,7 +56,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, `publishedExplainers()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …). |
-| `builder/render.go` | `writePage(urlPath, templComponent)`; output reset step. |
+| `builder/render.go` | `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`); output reset step. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Author` (later `Brief`, `Page`). No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
@@ -65,13 +65,13 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
-| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav. |
+| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav, ads flag and Plausible domain. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site. |
-| `site.yaml` | Site config: `site_url`, `verticals`. |
+| `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
@@ -88,11 +88,11 @@ like `article_explainer.templ` does.
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
-exclude drafts (production only) 30; validate references 10, unique slugs 20,
-Explainer skeleton 30, section-length warning 40, Review-overdue warning 50,
-validate heroes 50; transform render diagrams 10, encode heroes 50; render
-reset 0, write site assets 10, write hero assets 15, render explainers 20,
-render subscribed page 60; write config.json 100.
+exclude drafts (production only) 30; validate ads config 5, references 10,
+unique slugs 20, Explainer skeleton 30, section-length warning 40,
+Review-overdue warning 50, validate heroes 50; transform render diagrams 10,
+encode heroes 50; render reset 0, write site assets 10, write hero assets 15,
+render explainers 20, render subscribed page 60; write config.json 100.
 Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
 never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
 (intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
@@ -138,7 +138,23 @@ a comment naming the partial, one declaration block per line. The inline
 scripts are the theme toggle (≤ 1 KB, in `<head>`) and the newsletter form's
 enhancement (≤ 1 KB, inside `.newsletter`); analytics and Pagefind are the
 only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
-`TestNewsletter_EnhancementScriptIsSmall`).
+`TestNewsletter_EnhancementScriptIsSmall`), plus the AdSense library and its
+per-unit push only when `ads_enabled`. Total client JS per page stays
+≤ 60 KB (`TestJSBudget_EveryPageStaysWithin60KB`; give any new third-party
+script a size there).
+
+**Weight, ads, analytics.** Every page written through `s.writePage` is
+checked against the 50 KB uncompressed HTML gate (the stylesheet is external
+and not counted, ADR-0003); an oversized page is a site-wide `html-size`
+error naming the URL and is not written. Ads come from one component,
+`@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterBody)`
+(`partial_ad_slot.templ`): an empty `aria-hidden` placeholder with ads off,
+an AdSense unit with ads on, in a box whose height is fixed by
+`--ad-slot-height` so enabling ads causes no layout shift; it carries
+`data-pagefind-ignore="all"`. Article layouts render the body in two halves
+(`Document.SplitAfterSection("TL;DR")` + `markdown.RenderBlocks`) with the
+first slot between them and the second after `.e-content`. Plausible comes
+from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set.
 Everything must work without JS.
 
 **Tests.** Only two seams are tested (spec "Testing Decisions"): the Build seam

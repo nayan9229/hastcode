@@ -4,9 +4,9 @@
 
 **Blocked by:** 11 (Design system, dark mode and brand)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test: a fixture page padded past 50 KB fails the build naming the page; a normal page passes
-- [ ] With `ads_enabled=false`: two placeholder elements with fixed height present, no third-party script; with `ads_enabled=true`: AdSense script and two ad units present
-- [ ] Plausible script present only when a domain is configured; `defer`, no cookies
-- [ ] Total client JS per page stays within the 60 KB budget from the spec (asserted by summing script sizes in output)
+- [x] Build-seam test: a fixture page padded past 50 KB fails the build naming the page; a normal page passes
+- [x] With `ads_enabled=false`: two placeholder elements with fixed height present, no third-party script; with `ads_enabled=true`: AdSense script and two ad units present
+- [x] Plausible script present only when a domain is configured; `defer`, no cookies
+- [x] Total client JS per page stays within the 60 KB budget from the spec (asserted by summing script sizes in output)

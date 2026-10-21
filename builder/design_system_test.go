@@ -9,6 +9,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 
+	"hastcode.com/site/builder"
 	"hastcode.com/site/internal/buildtest"
 )
 
@@ -140,8 +141,28 @@ func TestStylesheet_DefinesBrandPaletteForLightDarkAndOverride(t *testing.T) {
 }
 
 func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
-	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
-	doc := buildtest.Page(t, out, explainerPath)
+	analytics := buildtest.Config()
+	analytics.PlausibleDomain = "hastcode.com"
+	ads := buildtest.Config()
+	ads.PlausibleDomain = "hastcode.com"
+	ads.AdsEnabled = true
+	ads.AdSenseClient = "ca-pub-1234567890123456"
+
+	for name, cfg := range map[string]builder.Config{"default": buildtest.Config(), "analytics": analytics, "ads": ads} {
+		t.Run(name, func(t *testing.T) {
+			out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
+			requireOnlyAllowedScripts(t, buildtest.Page(t, out, explainerPath), cfg.AdsEnabled)
+		})
+	}
+}
+
+// requireOnlyAllowedScripts: the theme toggle is the one inline script of
+// our own; the only other scripts allowed are Plausible (analytics),
+// Pagefind (search) and, only when ads are enabled, the AdSense library
+// and its one-line per-unit push.
+func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled bool) {
+	t.Helper()
+	const adsensePush = "(adsbygoogle=window.adsbygoogle||[]).push({});"
 
 	// Executable scripts only: JSON-LD blocks are data, not code.
 	var inline []*goquery.Selection
@@ -159,10 +180,16 @@ func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
 			t.Errorf("unexpected script type %q", typ)
 		}
 		if src, ok := s.Attr("src"); ok {
-			// Later tickets may add Plausible (analytics) and Pagefind (search); nothing else.
-			if !strings.Contains(src, "plausible") && !strings.Contains(src, "pagefind") {
+			switch {
+			case src == "https://plausible.io/js/script.js":
+			case strings.HasPrefix(src, "/pagefind/"):
+			case adsEnabled && strings.HasPrefix(src, "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="):
+			default:
 				t.Errorf("unexpected external script %q", src)
 			}
+			return
+		}
+		if adsEnabled && strings.TrimSpace(s.Text()) == adsensePush {
 			return
 		}
 		inline = append(inline, s)

@@ -8,10 +8,16 @@ import (
 )
 
 // page returns the view model every page passes to views.Layout: head
-// fields plus the site chrome (header nav, footer links). Every render step
+// fields plus the site chrome (header nav, footer links), ads and analytics. Every render step
 // builds its views.Page through this so the chrome is never missing.
 func (s *site) page(title, description string) views.Page {
-	return views.Page{Title: title, Description: description, Chrome: s.chrome()}
+	return views.Page{
+		Title:           title,
+		Description:     description,
+		Chrome:          s.chrome(),
+		Ads:             views.Ads{Enabled: s.cfg.AdsEnabled, Client: s.cfg.AdSenseClient},
+		PlausibleDomain: s.cfg.PlausibleDomain,
+	}
 }
 
 func (s *site) chrome() views.Chrome {

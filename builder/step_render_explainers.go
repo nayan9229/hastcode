@@ -12,19 +12,27 @@ func init() {
 
 func renderExplainers(s *site) error {
 	for _, e := range s.publishedExplainers() {
-		body, err := markdown.Render(e.Body)
+		lead, rest := e.Body.SplitAfterSection(headingTLDR)
+		leadHTML, err := markdown.RenderBlocks(e.Body, lead)
 		if err != nil {
 			s.fail(e.File, "markdown", "%v", err)
 			continue
 		}
-		if err := s.writePage(explainerURL(e), views.ExplainerArticle(explainerPage(s, e, body))); err != nil {
+		body, err := markdown.RenderBlocks(e.Body, rest)
+		if err != nil {
+			s.fail(e.File, "markdown", "%v", err)
+			continue
+		}
+		if err := s.writePage(explainerURL(e), views.ExplainerArticle(explainerPage(s, e, leadHTML, body))); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPage {
+// explainerPage maps an Explainer to its view model. lead is the intro and
+// TL;DR (the first ad slot follows it), body the rest.
+func explainerPage(s *site, e *content.Explainer, lead, body string) views.ExplainerPage {
 	var hero views.Hero // every published Explainer has one (validateHeroes)
 	if hr := s.heroes[e.File]; hr != nil {
 		hero = hr.view
@@ -40,6 +48,7 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
 		Hero:         hero,
+		LeadHTML:     lead,
 		BodyHTML:     body,
 		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 	}

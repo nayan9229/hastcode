@@ -1,0 +1,9 @@
+package views
+
+// Analytics is the Plausible script: cookieless, so no consent banner.
+// Omitted entirely when no domain is configured (tests, local builds).
+templ Analytics(domain string) {
+	if domain != "" {
+		<script defer data-domain={ domain } src="https://plausible.io/js/script.js"></script>
+	}
+}

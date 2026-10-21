@@ -15,8 +15,11 @@ templ ExplainerArticle(e ExplainerPage) {
 			</header>
 			@HeroPicture(e.Hero)
 			<div class="e-content">
+				@templ.Raw(e.LeadHTML)
+				@AdSlot(e.Page.Ads, AdAfterTLDR)
 				@templ.Raw(e.BodyHTML)
 			</div>
+			@AdSlot(e.Page.Ads, AdAfterBody)
 			@NewsletterForm(e.Newsletter)
 		</article>
 	}
