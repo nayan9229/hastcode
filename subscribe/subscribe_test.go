@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"hastcode.com/site/internal/subscribe"
+	"hastcode.com/site/subscribe"
 )
 
 const testAPIKey = "test-buttondown-key-0123456789"

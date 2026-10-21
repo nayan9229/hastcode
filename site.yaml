@@ -15,7 +15,7 @@ indexnow_key: 465f05c90b9917457c1ad83b8df48051
 # The publication's own profiles elsewhere (home Organization sameAs).
 same_as: []
 # Hero image cache (encoded variants keyed on source bytes). Default
-# node_modules/.cache/hastcode/images, which Vercel restores between builds.
+# node_modules/.cache/hastcode/images, which CI persists between deploys.
 # images:
 #   cache_dir: node_modules/.cache/hastcode/images
 # Verticals: slug (hub at /<slug>/), name, description (shown on the home

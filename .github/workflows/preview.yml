@@ -1,0 +1,120 @@
+# Preview deployment per pull request, then Lighthouse CI against it.
+#
+# Deploys go through the Vercel CLI from this runner (`vercel build` +
+# `vercel deploy --prebuilt`), not Vercel's Git integration, which
+# vercel.json turns off: Vercel's build image has no Go toolchain on PATH for
+# the build command, and production needs the build machine afterwards for
+# the IndexNow ping (see production.yml and README "Deploying").
+#
+# Secrets (names only; values come from scripts/setup-deploy.sh):
+#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
+#   VERCEL_AUTOMATION_BYPASS_SECRET  Protection Bypass for Automation, so
+#                                    Lighthouse can load a protected preview
+name: Preview
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: make test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: make test
+
+  deploy:
+    name: Deploy preview
+    # Pull requests from forks get no secrets: nothing to deploy with.
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+      lighthouse-urls: ${{ steps.urls.outputs.list }}
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+        with:
+          vercel-cli: "true"
+      # After npm ci (which wipes node_modules/). Hero image variants,
+      # rendered diagrams and the per-mode page manifests. A PR restores its
+      # own latest cache, else main's.
+      - uses: actions/cache/restore@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-build-${{ github.run_id }}
+          restore-keys: hastcode-build-
+      - run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+      # vercel.json: no install step (done above), build command `make
+      # build`, which reads MODE from the environment. Preview mode
+      # includes drafts, so a draft PR can be read on its preview URL.
+      - run: vercel build --token="$VERCEL_TOKEN"
+        env:
+          MODE: preview
+      # Previews never ping IndexNow; keep the artefact out of the upload.
+      - run: rm -f .vercel/output/indexnow.json
+      - id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+      - id: urls
+        run: |
+          {
+            echo 'list<<EOF'
+            scripts/lighthouse-urls.sh "${{ steps.deploy.outputs.url }}" .vercel/output
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+      - uses: actions/cache/save@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-build-${{ github.run_id }}-${{ github.run_attempt }}
+
+  lighthouse:
+    name: Lighthouse CI
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
+      # Budgets live in lighthouserc.json: mobile LCP <= 1500 ms (median of
+      # 3 runs), CLS 0 (worst run), script transfer <= 60 KB. Any miss fails
+      # this check. Reports are uploaded as a build artefact, never to
+      # public storage (preview pages may hold drafts).
+      - name: Run Lighthouse against the preview
+        env:
+          URLS: ${{ needs.deploy.outputs.lighthouse-urls }}
+          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+        run: |
+          headers='{}'
+          if [ -n "$BYPASS" ]; then
+            headers=$(jq -nc --arg s "$BYPASS" '{"x-vercel-protection-bypass": $s}')
+          fi
+          args=()
+          while IFS= read -r u; do
+            [ -n "$u" ] && args+=("--collect.url=$u")
+          done <<< "$URLS"
+          lhci autorun --config=lighthouserc.json "${args[@]}" \
+            "--collect.settings.extraHeaders=$headers"
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: lighthouse-reports
+          path: .lighthouseci/
+          if-no-files-found: ignore

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"hastcode.com/site/internal/subscribe"
+	"hastcode.com/site/subscribe"
 	"hastcode.com/site/internal/vercel"
 )
 

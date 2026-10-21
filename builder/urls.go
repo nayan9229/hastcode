@@ -2,7 +2,7 @@ package builder
 
 import (
 	"hastcode.com/site/internal/content"
-	"hastcode.com/site/internal/subscribe"
+	"hastcode.com/site/subscribe"
 )
 
 // Site URL scheme (spec "URLs"). Paths are site-relative with a trailing

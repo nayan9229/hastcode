@@ -14,7 +14,18 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check
+.PHONY: generate build test vet check dev
+
+# `make dev`: build (preview mode by default, so drafts show) and serve the
+# output plus the subscribe function behind the built config.json routes
+# (410s, /home 301, trailing-slash 308s, 404) on http://localhost:$(PORT).
+# BUTTONDOWN_API_KEY / BUTTONDOWN_BASE_URL come from the shell, else from
+# .env (scripts/setup-deploy.sh writes the test newsletter's key there),
+# else stay unset (every subscribe POST then answers 502).
+# MODE is also read from the environment: the CI preview job sets
+# MODE=preview for `vercel build`, which runs `make build` (vercel.json).
+DEV_MODE ?= preview
+PORT     ?= 3000
 
 generate:
 	go generate ./...
@@ -29,3 +40,11 @@ vet: generate
 	go vet ./...
 
 check: vet test
+
+dev:
+	$(MAKE) build MODE=$(DEV_MODE)
+	key="$${BUTTONDOWN_API_KEY-}"; base="$${BUTTONDOWN_BASE_URL-}"; \
+	  set -a; [ ! -f .env ] || . ./.env; set +a; \
+	  BUTTONDOWN_API_KEY="$${key:-$${BUTTONDOWN_API_KEY-}}" \
+	  BUTTONDOWN_BASE_URL="$${base:-$${BUTTONDOWN_BASE_URL-}}" \
+	  go run ./cmd/subscribe -addr localhost:$(PORT) -out $(OUT)

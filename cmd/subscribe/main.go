@@ -18,7 +18,7 @@ import (
 	"net/http"
 	"os"
 
-	"hastcode.com/site/internal/subscribe"
+	"hastcode.com/site/subscribe"
 	"hastcode.com/site/internal/vercel"
 )
 

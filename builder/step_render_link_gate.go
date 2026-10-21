@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/net/html"
 
-	"hastcode.com/site/internal/subscribe"
+	"hastcode.com/site/subscribe"
 )
 
 func init() {

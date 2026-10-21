@@ -19,7 +19,62 @@ make generate   # go generate ./...  (runs `go tool templ generate`)
 make test       # generate + go test ./...
 make vet        # generate + go vet ./...
 make build      # generate + go run ./cmd/builder (content/ -> .vercel/output/)
+make dev        # build (preview mode) + serve site and subscribe on http://localhost:3000
 ```
+
+## Working on the site
+
+**Run the tests.** `npm ci` once, then `make test` (templ generate + `go
+test ./...`, about a minute; `go test -short ./...` skips the slow
+1,000-entry news-sitemap case). Build-seam tests skip, with the reason,
+when Node or the npm packages are missing, so run `npm ci` first or most
+of them will not run. `make vet` before committing. CI runs `make test`
+on every pull request and before every production deploy.
+
+**Check pages locally.** `make dev` builds in **preview mode** (drafts
+included) and serves `.vercel/output` plus the subscribe function on
+http://localhost:3000 (`PORT=3001 make dev` for another port) behind the
+built `config.json` routes: `/video/*` 410, `/home` 301, `/x` -> `/x/`
+308, missing paths 404 with the 404 page. `DEV_MODE=production make dev`
+shows exactly what production will publish. Signups go to whatever
+`BUTTONDOWN_API_KEY` says: the shell first, else `.env` (the setup wizard
+writes the *test* newsletter's key there), else none (every POST 502s).
+To try the form without Buttondown, point it at any fake that answers
+`POST /v1/subscribers` with 201:
+`BUTTONDOWN_API_KEY=x BUTTONDOWN_BASE_URL=http://127.0.0.1:8089 make dev`.
+
+**Draft and preview flow.** Write the piece with `draft: true` in its
+frontmatter on a branch. `make dev` shows it locally; push the branch and
+open a pull request, and the Preview workflow deploys a preview build
+(drafts included, behind Vercel Authentication) and posts its URL in the
+run summary, then runs Lighthouse CI against it. Production builds never
+contain drafts.
+
+**Publish flow.** Remove `draft: true`, merge the pull request to `main`.
+The Production workflow runs `make test`, builds in production mode,
+deploys with `vercel deploy --prebuilt --prod`, then pings IndexNow with
+the pages that changed (after the domain cutover). Feeds, sitemaps and the
+news sitemap update in the same build. A build error (failed editorial
+gate, broken link, oversized page) fails the workflow and nothing deploys.
+
+**Add a Vertical.** Add one entry to `site.yaml` `verticals` (`slug`,
+`name`, `description`, `order`), then put its Explainers in
+`content/explainers/<slug>/`. The build gives it a hub at `/<slug>/`, a
+header nav link, a home page entry and `/<slug>/feed.xml`. No code change.
+The slug is a top-level URL forever: pick it once.
+
+**Environment variables.** Nothing in the build reads secrets. The
+subscribe function reads two (Vercel project settings, see "Subscribe
+function"): `BUTTONDOWN_API_KEY` (required, Sensitive; production list in
+Production, test list in Preview) and `BUTTONDOWN_BASE_URL` (optional,
+default `https://api.buttondown.com`). CI uses GitHub secrets
+`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+`VERCEL_AUTOMATION_BYPASS_SECRET` and the repository variable
+`INDEXNOW_ENABLED`. `make build` itself also reads `MODE`, `FLAGS`, `OUT`
+from the environment (the preview job sets `MODE=preview`).
+
+**Deploy.** See "Deploying" below; first-time setup is
+`scripts/setup-deploy.sh`.
 
 The Makefile exports `CGO_ENABLED=0` and `GOFLAGS=-tags=nodynamic`: the AVIF
 and WebP encoders (gen2brain/avif, gen2brain/webp) then run as WASM in-process
@@ -48,7 +103,7 @@ than 1200 px. It writes AVIF, WebP and JPEG at 480/800/1200/1600 px wide (never
 upscaled) plus 1200 px JPEG crops at 16:9, 4:3 and 1:1, to
 `/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of the file bytes, so
 immutable). Encoded variants are cached in `images.cache_dir` (default
-`node_modules/.cache/hastcode/images`, which Vercel persists between builds),
+`node_modules/.cache/hastcode/images`, which CI persists between deploys),
 keyed on the source bytes and encoder settings; an unchanged hero is never
 re-encoded. `images.fast: true` trades file size for encode speed (tests).
 
@@ -83,7 +138,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
-| `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
+| `subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
@@ -287,7 +342,7 @@ parsed output. Helpers in `internal/buildtest`:
   `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`
   (prove a piece appears in no output file).
 
-Subscribe-seam tests live in `internal/subscribe/subscribe_test.go` (package
+Subscribe-seam tests live in `subscribe/subscribe_test.go` (package
 `subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,
 BaseURL: fake.URL})`, send form posts through `ServeHTTP`, and assert status,
 `Location`/JSON body and what the `httptest` fake Buttondown received.
@@ -314,24 +369,29 @@ Environment (Vercel project settings, Production and Preview):
 The Buttondown plan must include tags (otherwise Buttondown answers 403
 `feature_disabled` and every signup is a 502).
 
-Local run (no Vercel CLI needed): `make build`, then
-`BUTTONDOWN_API_KEY=... go run ./cmd/subscribe` serves the built site and the
-function on http://localhost:3000 behind the built `config.json` routes
+Local run (no Vercel CLI needed): `make dev` (see "Working on the site"),
+or by hand `make build` then `BUTTONDOWN_API_KEY=... go run ./cmd/subscribe`
 (`-out` picks the Build Output dir; `-out ""` for the function only).
-`vercel dev` should also serve `api/subscribe.go` through the Go runtime, but
-that has not been tried yet (ticket 15).
+`vercel dev` is not used: `cmd/subscribe` runs the same handler behind the
+same routes without a Vercel login.
 
 Deploying: Vercel's zero-config detection turns `api/subscribe.go` into the
-function `api/subscribe` (Go runtime, built from the root `go.mod`). On a
-project whose build command writes `.vercel/output` (this one), `vc build`
-runs the frontend builder first, keeps that Build Output tree, then lets
-`@vercel/go` add `functions/api/subscribe.func` and merges its routes into
-`config.json` (vercel/vercel `internals/builder-orchestration`
-`sort-builders.ts`, `write-build-result.ts`). Not yet checked on a real
-deploy: ticket 15's first preview verifies a working POST. The builder's
-routes keep `/api/*` out of the trailing-slash redirects (a pass-through
-route before them) and put the 404 catch-all after `{"handle":"filesystem"}`,
-so a POST is never redirected to `/api/subscribe/` or answered by the 404.
+function `api/subscribe` (Go runtime, built from the root `go.mod`).
+`vercel build` runs our build command first (`make build`, which writes
+`.vercel/output`), keeps that tree, then `@vercel/go` adds
+`functions/api/subscribe.func` and appends its routes to `config.json`
+after ours. Checked with a local `vercel build` (CLI 65.0.0, a hand-written
+`.vercel/project.json`, no login): the merged `config.json` keeps every
+builder route in order and adds `{"src":"^/api(/.*)?$","status":404}`
+after `{"handle":"filesystem"}` plus `error`/`miss` phases. That check
+found one trap: `@vercel/go` renames the root module to `handler` while
+compiling, so `api/subscribe.go` cannot import anything under
+`internal/` ("use of internal package not allowed"); the function's
+package therefore lives at `subscribe/`. The builder's routes keep `/api/*`
+out of the trailing-slash redirects (a pass-through route before them) and
+put the 404 catch-all after `{"handle":"filesystem"}`, so a POST is never
+redirected to `/api/subscribe/` or answered by the 404. A POST on a real
+deployment is still to be seen (setup wizard, stage 10).
 
 ## Feeds, sitemaps, robots and IndexNow
 
@@ -359,7 +419,7 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   stable) is served as `/<key>.txt`. The build diffs every indexable page's
   `<main>` hash against the previous successful build's manifest
   (`<cache>/pages/<mode>.json`, default `node_modules/.cache/hastcode/`,
-  which Vercel persists; never in `static/`) and, when anything is new,
+  which CI persists; never in `static/`) and, when anything is new,
   changed or gone, writes `.vercel/output/indexnow.json`: a ready IndexNow
   POST body `{host, key, keyLocation, urlList}` (≤ 10,000 URLs). It sits
   beside `static/`, so it is not served. No artefact means nothing to ping.
@@ -368,17 +428,22 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   but is never deployed (or whose ping fails) does, so those changes are
   not re-listed.
 
-Post-deploy ping (ticket 15; run after the production deployment is live,
-from the machine that ran the build, e.g. a CI job doing `vercel build` +
-`vercel deploy --prebuilt --prod`):
+Post-deploy ping: the Production workflow moves the artefact out of
+`.vercel/output` before `vercel deploy --prebuilt --prod` (so it is never
+uploaded) and, once the deploy is live and the repository variable
+`INDEXNOW_ENABLED` is `true`, runs the equivalent of
 
 ```sh
-test -f .vercel/output/indexnow.json && curl -fsS -X POST https://api.indexnow.org/indexnow \
-  -H 'Content-Type: application/json; charset=utf-8' --data-binary @.vercel/output/indexnow.json
+curl -fsS -X POST https://api.indexnow.org/indexnow \
+  -H 'Content-Type: application/json; charset=utf-8' --data-binary @indexnow.json
 ```
 
 200/202 are success; 403 means the key file is not live yet; 422 means a
-URL is not on `host`. Only ping production builds of `site_url`.
+URL is not on `host`. Only production builds of `site_url` ping, so
+`INDEXNOW_ENABLED` stays `false` until hastcode.com points at Vercel (the
+setup wizard flips it at cutover and clears the Actions cache, so the
+first build after cutover lists every page). A failed ping fails the job
+before the build cache is saved, so the next build lists those URLs again.
 
 ## Routes and caching
 
@@ -404,7 +469,7 @@ In order:
 5. `{"handle":"filesystem"}` (static files, the subscribe function), then
    any miss -> `/404.html` with status 404.
 
-Check locally: `make build`, `go run ./cmd/subscribe`, then
+Check locally: `make dev` (or `make build`, `go run ./cmd/subscribe`), then
 
 ```sh
 for p in /video/abc /home /about /about/ /about/index.html /mark.svg/ /nope/; do
@@ -415,7 +480,10 @@ done   # 410, 301 /, 308 /about/, 200, 308 /about/, 308 /mark.svg, 404
 The local router (`vercel.NewRouter`) refuses a `config.json` using route
 features it does not implement (other `handle` phases, `has`/`missing`, a
 non-RE2 regex), so the check cannot silently diverge from the file. It is not
-Vercel itself: ticket 15 repeats the check against the first preview.
+Vercel itself: the setup wizard (stage 10) repeats the check against the
+first preview. Note that `vercel build`'s merged `config.json` (with
+`@vercel/go`'s `error`/`miss` phases) is not servable by this router: run
+`make dev`, which serves the builder's own output.
 
 ## Search
 
@@ -456,18 +524,12 @@ no backend.
   gzipped fragments). `buildtest.Build` skips a test when `node` or
   `node_modules/pagefind` is missing, unless the config skips indexing.
 
-**Vercel build command** (ticket 15). Install: `npm ci` (Vercel's default
-install step does this when `package-lock.json` exists). Build:
-
-```sh
-make build            # = go run ./cmd/builder ... -mode production (generate first)
-```
-
-No separate `npx pagefind` step: the builder runs Pagefind and fails the
-build if the index is missing. If the install step is overridden, use
-`npm ci && make build`. Preview deployments may use `make build
-MODE=preview`, which still indexes; `FLAGS=-skip-search-index` (preview
-mode only) is for quick local builds.
+**Build command.** `npm ci && make build`: CI runs `npm ci` itself and
+`vercel build` then runs `make build` (vercel.json; see "Deploying"). No
+separate `npx pagefind` step: the builder runs Pagefind and fails the build
+if the index is missing. Preview deployments build with `MODE=preview`,
+which still indexes; `FLAGS=-skip-search-index` (preview mode only) is for
+quick local builds.
 
 ## Mermaid diagrams
 
@@ -498,10 +560,73 @@ with inline SVG and a `<figcaption>` from the fence's first line
 - **Cache:** rendered SVG is stored at `<cache>/mermaid/<sha256>.svg`, keyed on
   the fence source, the installed renderer version and a post-processing
   version (`cacheVersion` in `internal/mermaid`; bump it when changing render
-  options or post-processing). The default cache dir is under
-  `node_modules/.cache/` because Vercel persists only `node_modules/**`
-  between builds. Fully cached builds never start Node.
-- **Vercel build:** the install step must run `npm ci` (Vercel does this by
-  default when `package.json` is present) before the build command runs the
-  Go builder from the repo root, e.g. `npm ci && make build` if the install
-  step is overridden. Node 22+ is in the default build image.
+  options or post-processing). The default cache dir is
+  `node_modules/.cache/hastcode/`, which CI persists between deploys with
+  `actions/cache` (restored after `npm ci`, which deletes `node_modules/`).
+  Fully cached builds never start Node.
+- **CI build:** `npm ci` runs before `make build` from the repo root, with
+  Node 24 (Node 22+ works).
+
+## Deploying
+
+Production is `git push` to `main` (ADR-0002); every pull request gets a
+preview. Both run in GitHub Actions with the Vercel CLI, not in Vercel's
+Git integration, which `vercel.json` turns off (`git.deploymentEnabled:
+false`):
+
+- `vercel.json`: `framework: null` ("Other"), `installCommand: ""` (CI
+  installs; an empty string skips Vercel's install step), `buildCommand:
+  "make build"`. No `outputDirectory`: the build writes Build Output API v3
+  to `.vercel/output` directly, which `vercel build` detects and keeps.
+  `api/subscribe.go` is picked up by zero-config detection and compiled by
+  `@vercel/go` with the Go version from `go.mod`.
+- **Why CI and not Vercel's own builds.** (1) The build command needs Go on
+  `PATH`; Vercel's build image lists Node, Python and Ruby for builds and
+  provides Go only to the `@vercel/go` function builder. (2) The IndexNow
+  artefact exists only on the build machine and must be POSTed after the
+  deploy is live (ticket 09). (3) The build cache (heroes, diagrams, page
+  manifest) persists in `actions/cache` under our control.
+- `.github/workflows/production.yml` (push to `main`, or run by hand):
+  `make test`, then `vercel pull` -> `vercel build --prod` -> `vercel deploy
+  --prebuilt --prod` -> IndexNow ping (when `INDEXNOW_ENABLED`) -> save the
+  build cache. One run at a time, in order.
+- `.github/workflows/preview.yml` (pull requests from this repo): `make
+  test`; `vercel build` with `MODE=preview` -> `vercel deploy --prebuilt`
+  (URL in the run summary); then **Lighthouse CI** (`lighthouserc.json`)
+  against home, `/search/`, `/briefs/`, a Vertical hub, an Explainer and a
+  Brief (`scripts/lighthouse-urls.sh` picks them from the build's sitemap).
+  Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
+  (median of 3 runs), CLS 0 (worst run), script transfer ≤ 60 KB. A miss
+  fails the check; reports are the `lighthouse-reports` artefact (never
+  public storage: previews hold drafts). The preview is behind Vercel
+  Authentication, so Lighthouse sends `x-vercel-protection-bypass`; it
+  blocks Plausible and ad hosts so no third party sees that header and runs
+  are not counted as pageviews (third-party JS sizes are covered by
+  `TestJSBudget_EveryPageStaysWithin60KB` instead).
+- Shared setup: `.github/actions/setup` (Go from `go.mod`, Node 24, `npm
+  ci`, `vercel@65.0.0`).
+
+**First-time setup** is a script that walks you through every account
+step and writes the values where they belong:
+
+```sh
+scripts/setup-deploy.sh
+```
+
+Stages: tools and logins; GitHub repo (private, remote `origin`); Vercel
+team on Pro; Vercel project + `vercel link` + Node 24.x; Buttondown
+production and test newsletter keys; Vercel env vars
+(`BUTTONDOWN_API_KEY`, Sensitive, Production and Preview); Protection
+Bypass for Automation secret; Vercel token and GitHub secrets
+(`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+`VERCEL_AUTOMATION_BYPASS_SECRET`, variable `INDEXNOW_ENABLED=false`);
+first push and a draft PR; an automated check of the first preview
+(every route, cache header and subscribe POST that could not be checked
+without a real deploy); then the **domain cutover**, behind a
+confirmation that ADR-0001's threshold is met (≥ 30 Explainers across all
+six Verticals and ≥ 20 Briefs): `vercel domains add`, Cloudflare records
+DNS only, `www` -> apex 301 at Vercel, live checks, `INDEXNOW_ENABLED=true`.
+It is safe to re-run; values are kept in `.env` (gitignored).
+
+Local equivalent of a CI build, for debugging: `npm ci`, `vercel pull`,
+`vercel build` (needs the project linked). For page checks use `make dev`.

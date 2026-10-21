@@ -224,6 +224,34 @@ func TestThemeToggle_IsHiddenUntilJavaScriptRuns(t *testing.T) {
 	}
 }
 
+// Revealing the toggle must not move the header (CLS 0 budget, ticket 15:
+// Lighthouse measured a 0.0008 shift on nav.site-nav when `hidden` meant
+// display:none). The hidden toggle keeps its box but is invisible, so it is
+// still no dead control for readers without JS.
+func TestThemeToggle_RevealCausesNoLayoutShift(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+	css := stylesheet(t, out, buildtest.Page(t, out, explainerPath))
+
+	rule := strings.NewReplacer(" ", "", "\n", "", "\t", "").Replace(findRule(css, func(p string) bool {
+		return p == ".theme-toggle[hidden]"
+	}))
+	if rule == "" {
+		t.Fatalf("no .theme-toggle[hidden] rule: the UA's [hidden]{display:none} collapses the toggle, so revealing it shifts the nav")
+	}
+	if !strings.Contains(rule, "visibility:hidden") {
+		t.Errorf(".theme-toggle[hidden] = {%s}, want visibility:hidden", rule)
+	}
+	if !strings.Contains(rule, "display:") || strings.Contains(rule, "display:none") {
+		t.Errorf(".theme-toggle[hidden] = {%s}, want a display that keeps its box (not none)", rule)
+	}
+	// A global [hidden]{display:none !important} beats a plain declaration
+	// whatever its specificity.
+	global := strings.ReplaceAll(findRule(css, func(p string) bool { return p == "[hidden]" }), " ", "")
+	if strings.Contains(global, "!important") && !regexp.MustCompile(`display:[a-z-]+!important`).MatchString(rule) {
+		t.Errorf(".theme-toggle[hidden] = {%s}: the stylesheet's [hidden] rule is !important, so the toggle's display must be too", rule)
+	}
+}
+
 // stylesheet returns the (lower-cased) text of the page's single linked
 // stylesheet, read from the build output.
 func stylesheet(t *testing.T, outDir string, doc *goquery.Document) string {
