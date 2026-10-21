@@ -69,5 +69,6 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 		LeadHTML:     lead,
 		BodyHTML:     body,
 		Newsletter:   views.Newsletter{Source: explainerURL(e)},
+		ReadNext:     s.readingLists(e),
 	}
 }

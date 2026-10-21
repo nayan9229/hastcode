@@ -280,12 +280,12 @@ func Config() builder.Config {
 		ToolsDir: RepoRoot(),
 		Images:   builder.ImageConfig{CacheDir: SharedImageCacheDir(), Fast: true},
 		Verticals: []builder.Vertical{
-			{Slug: "distributed-systems", Name: "Distributed Systems", Order: 1},
-			{Slug: "databases-storage", Name: "Databases & Storage", Order: 2},
-			{Slug: "apis-networking", Name: "APIs & Networking", Order: 3},
-			{Slug: "infrastructure-cloud", Name: "Infrastructure & Cloud", Order: 4},
-			{Slug: "ai-ml-systems", Name: "AI/ML Systems", Order: 5},
-			{Slug: "languages-runtimes", Name: "Languages & Runtimes", Order: 6},
+			{Slug: "distributed-systems", Name: "Distributed Systems", Description: "Consensus, replication and clocks.", Order: 1},
+			{Slug: "databases-storage", Name: "Databases & Storage", Description: "Storage engines, indexes and transactions.", Order: 2},
+			{Slug: "apis-networking", Name: "APIs & Networking", Description: "Protocols, gateways and service meshes.", Order: 3},
+			{Slug: "infrastructure-cloud", Name: "Infrastructure & Cloud", Description: "Schedulers, deploys and the cloud underneath.", Order: 4},
+			{Slug: "ai-ml-systems", Name: "AI/ML Systems", Description: "Training, serving and retrieval at scale.", Order: 5},
+			{Slug: "languages-runtimes", Name: "Languages & Runtimes", Description: "Compilers, garbage collectors and schedulers.", Order: 6},
 		},
 	}
 }

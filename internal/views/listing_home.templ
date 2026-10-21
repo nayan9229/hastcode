@@ -1,0 +1,42 @@
+package views
+
+// Home is the home page: the latest Explainers, the latest Briefs, every
+// Vertical with its description, and the kind pages.
+templ Home(p HomePage) {
+	@Layout(p.Page) {
+		<h1 class="visually-hidden">{ PublicationName }: { Tagline }</h1>
+		<section class="home-section latest-explainers">
+			<h2>Latest Explainers</h2>
+			if len(p.Explainers) == 0 {
+				<p class="muted">No Explainers yet.</p>
+			} else {
+				@PieceList("", p.Explainers, 3)
+			}
+			<ul class="inline-list kinds">
+				for _, k := range p.Kinds {
+					<li><a href={ templ.SafeURL(k.URL) }>{ k.Name }</a></li>
+				}
+			</ul>
+		</section>
+		<section class="home-section latest-briefs">
+			<h2>Latest Briefs</h2>
+			if len(p.Briefs) == 0 {
+				<p class="muted">No Briefs yet.</p>
+			} else {
+				@PieceList("", p.Briefs, 3)
+			}
+			<p><a href={ templ.SafeURL(p.Page.Chrome.Briefs.URL) }>All Briefs</a></p>
+		</section>
+		<section class="home-section verticals-list">
+			<h2>Verticals</h2>
+			<ul>
+				for _, v := range p.Verticals {
+					<li>
+						<h3><a href={ templ.SafeURL(v.URL) }>{ v.Name }</a></h3>
+						<p>{ v.Description }</p>
+					</li>
+				}
+			</ul>
+		</section>
+	}
+}

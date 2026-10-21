@@ -19,6 +19,9 @@ func subscribedURL() string { return subscribe.SubscribedPath }
 
 func verticalURL(slug string) string { return "/" + slug + "/" }
 
+// kindURL is the kind page listing every Explainer of kind k.
+func kindURL(k content.Kind) string { return kindPagesURL + string(k) + "/" }
+
 // authorURL is the Author page (written by ticket 08); Person JSON-LD
 // uses it as the author's url.
 func authorURL(slug string) string { return "/authors/" + slug + "/" }
@@ -35,6 +38,7 @@ const notFoundURL = "/404.html"
 const (
 	homeURL            = "/"
 	briefsIndexURL     = "/briefs/"
+	kindPagesURL       = "/explainers/" // kind pages live under it; no page of its own
 	searchURL          = "/search/"
 	aboutURL           = "/about/"
 	contactURL         = "/contact/"

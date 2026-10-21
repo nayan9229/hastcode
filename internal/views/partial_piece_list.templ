@@ -1,0 +1,42 @@
+package views
+
+import (
+	"strconv"
+	"time"
+)
+
+// PieceList is a list of pieces in a listing. Each item is an h-entry
+// (p-name, u-url, p-summary, dt-published); tests select on those classes.
+// level is the heading level of each item's title: 2 under a page's h1,
+// 3 inside an h2 section.
+templ PieceList(class string, items []ListingItem, level int) {
+	<ol class={ "piece-list", class }>
+		for _, it := range items {
+			@listingEntry(it, level)
+		}
+	</ol>
+}
+
+// listingEntry is one piece: 480 px hero thumbnail, kind badge
+// (Explainers only), title, description and date.
+templ listingEntry(it ListingItem, level int) {
+	<li class="h-entry">
+		<picture class="thumb">
+			<source type="image/avif" srcset={ it.Thumb.AVIF.URL }/>
+			<source type="image/webp" srcset={ it.Thumb.WebP.URL }/>
+			<img src={ it.Thumb.JPEG.URL } width={ strconv.Itoa(it.Thumb.JPEG.Width) } height={ strconv.Itoa(it.Thumb.JPEG.Height) } alt="" loading="lazy" decoding="async"/>
+		</picture>
+		<div class="entry">
+			if it.Kind != "" {
+				<p class="badge">{ it.Kind }</p>
+			}
+			if level == 3 {
+				<h3 class="p-name"><a class="u-url" href={ templ.SafeURL(it.URL) }>{ it.Title }</a></h3>
+			} else {
+				<h2 class="p-name"><a class="u-url" href={ templ.SafeURL(it.URL) }>{ it.Title }</a></h2>
+			}
+			<p class="p-summary">{ it.Description }</p>
+			<p class="muted"><time class="dt-published" datetime={ it.Published.Format(time.RFC3339) }>{ humanDate(it.Published) }</time></p>
+		</div>
+	</li>
+}

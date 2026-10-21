@@ -24,9 +24,14 @@ func (s *site) page(urlPath, title, description string) views.Page {
 	}
 }
 
-func (s *site) chrome() views.Chrome {
+// sortedVerticals are the configured Verticals in their configured order.
+func (s *site) sortedVerticals() []Vertical {
 	verticals := slices.Clone(s.cfg.Verticals)
 	slices.SortStableFunc(verticals, func(a, b Vertical) int { return cmp.Compare(a.Order, b.Order) })
+	return verticals
+}
+
+func (s *site) chrome() views.Chrome {
 	c := views.Chrome{
 		Briefs: views.Link{Name: "Briefs", URL: briefsIndexURL},
 		Search: views.Link{Name: "Search", URL: searchURL},
@@ -40,7 +45,7 @@ func (s *site) chrome() views.Chrome {
 			{Name: "RSS (Briefs)", URL: briefsFeedURL},
 		},
 	}
-	for _, v := range verticals {
+	for _, v := range s.sortedVerticals() {
 		c.Verticals = append(c.Verticals, views.Link{Name: v.Name, URL: verticalURL(v.Slug)})
 	}
 	return c

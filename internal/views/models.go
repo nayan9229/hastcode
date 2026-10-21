@@ -109,8 +109,11 @@ type ExplainerPage struct {
 	// content).
 	LeadHTML string
 	BodyHTML string
-	// Newsletter is the subscribe form that ends the article.
+	// Newsletter is the subscribe form after the body.
 	Newsletter Newsletter
+	// ReadNext are the "More in {Vertical}" and "Related" lists that end
+	// the article.
+	ReadNext RelatedLinks
 }
 
 // BriefPage is the view model for a Brief article page.
@@ -137,16 +140,8 @@ type BriefPage struct {
 type BriefsIndexPage struct {
 	Page       Page
 	Heading    string
-	Items      []BriefItem
+	Items      []ListingItem
 	Pagination Pagination
-}
-
-// BriefItem is a Brief in a listing.
-type BriefItem struct {
-	Title       string
-	URL         string
-	Description string
-	Published   time.Time
 }
 
 // Pagination is a listing page's place in its sequence: Prev and Next are

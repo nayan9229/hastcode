@@ -1,0 +1,20 @@
+package views
+
+// Listing is one page of a Vertical hub or kind page: the heading, its
+// description, the Explainers newest first and the pagination links.
+templ Listing(p ListingPage) {
+	@Layout(p.Page) {
+		<section class="listing">
+			<h1>{ p.Heading }</h1>
+			if p.Intro != "" {
+				<p class="p-summary">{ p.Intro }</p>
+			}
+			if len(p.Items) == 0 {
+				<p class="muted">{ p.Empty }</p>
+			} else {
+				@PieceList("", p.Items, 2)
+			}
+			@PaginationNav(p.Pagination)
+		</section>
+	}
+}

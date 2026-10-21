@@ -34,7 +34,7 @@ func loadStaticPages(s *site) error {
 // route) already uses, besides the Vertical hubs.
 func reservedTopLevel() []string {
 	var reserved []string
-	for _, u := range []string{authorURL(""), briefsIndexURL, searchURL, subscribedURL(), heroAssetDir, "/explainers/", "/api/", "/pagefind/"} {
+	for _, u := range []string{authorURL(""), briefsIndexURL, searchURL, subscribedURL(), heroAssetDir, kindPagesURL, "/api/", "/pagefind/"} {
 		reserved = append(reserved, strings.Split(strings.Trim(u, "/"), "/")[0])
 	}
 	// Retired community URLs (410) and /home (301 to /), ADR-0001.

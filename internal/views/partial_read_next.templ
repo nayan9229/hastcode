@@ -1,0 +1,18 @@
+package views
+
+// ReadNext ends an Explainer: "More in {Vertical}" and "Related", each
+// omitted when empty. Kept out of the search index like the ad slots.
+templ ReadNext(r RelatedLinks) {
+	if len(r.More) > 0 {
+		<section class="read-next more-in-vertical" data-pagefind-ignore="all">
+			<h2>{ r.MoreHeading }</h2>
+			@PieceList("compact", r.More, 3)
+		</section>
+	}
+	if len(r.Related) > 0 {
+		<section class="read-next related" data-pagefind-ignore="all">
+			<h2>Related</h2>
+			@PieceList("compact", r.Related, 3)
+		</section>
+	}
+}

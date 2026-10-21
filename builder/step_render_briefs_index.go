@@ -1,9 +1,7 @@
 package builder
 
 import (
-	"cmp"
 	"fmt"
-	"slices"
 
 	"hastcode.com/site/internal/content"
 	"hastcode.com/site/internal/views"
@@ -19,10 +17,7 @@ const briefsIndexDescription = "Short, dated commentary on what just happened in
 // Brief, newest first, listingPageSize per page. /briefs/ is written even
 // with no Briefs, since every page's header links it.
 func renderBriefsIndex(s *site) error {
-	briefs := slices.Clone(s.publishedBriefs())
-	slices.SortStableFunc(briefs, func(a, b *content.Brief) int {
-		return cmp.Or(b.Published.Compare(a.Published), cmp.Compare(a.Slug, b.Slug))
-	})
+	briefs := newestBriefs(s.publishedBriefs())
 	for _, lp := range paginate(briefs, listingPageSize, briefsIndexURL) {
 		if err := s.writePage(lp.URL, views.BriefsIndex(briefsIndexPage(s, lp))); err != nil {
 			return err
@@ -41,10 +36,5 @@ func briefsIndexPage(s *site, lp listingPage[*content.Brief]) views.BriefsIndexP
 	page := s.page(lp.URL, heading+" | "+views.PublicationName, briefsIndexDescription)
 	page.Breadcrumbs = trail
 	page.StructuredData = append(page.StructuredData, s.breadcrumbs(trail))
-
-	items := make([]views.BriefItem, len(lp.Items))
-	for i, b := range lp.Items {
-		items[i] = views.BriefItem{Title: b.Title, URL: briefURL(b), Description: b.Description, Published: b.Published}
-	}
-	return views.BriefsIndexPage{Page: page, Heading: heading, Items: items, Pagination: lp.Pagination}
+	return views.BriefsIndexPage{Page: page, Heading: heading, Items: s.briefItems(lp.Items), Pagination: lp.Pagination}
 }
