@@ -31,10 +31,9 @@ accountable for every piece published here. Every piece carries our house
 byline, [Mira Vance](/authors/mira-vance/): one consistent editorial voice,
 openly disclosed as a house name rather than a real individual.
 
-TODO(author): who publishes HastCode. Either "HastCode is an independent
-publication run by [name], based in [country]" or the name and country of the
-company that owns it. Google News asks for the person or company behind the
-content.
+HastCode is an independent publication, run by its editorial team and
+published at hastcode.com. It is not owned by, or affiliated with, any of the
+companies it writes about.
 
 ## How we work
 
