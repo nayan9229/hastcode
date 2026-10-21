@@ -6,4 +6,7 @@ templ Head(p Page) {
 	<meta name="viewport" content="width=device-width, initial-scale=1"/>
 	<title>{ p.Title }</title>
 	<meta name="description" content={ p.Description }/>
+	if p.HeroPreload != nil {
+		@HeroPreloadLink(*p.HeroPreload)
+	}
 }

@@ -1,6 +1,10 @@
 # Site config for the builder (builder.LoadConfig). Mode comes from the
 # -mode flag, not this file. Add a Vertical by adding one entry here.
 site_url: https://hastcode.com
+# Hero image cache (encoded variants keyed on source bytes). Default
+# node_modules/.cache/hastcode/images, which Vercel restores between builds.
+# images:
+#   cache_dir: node_modules/.cache/hastcode/images
 verticals:
   - slug: distributed-systems
     name: Distributed Systems

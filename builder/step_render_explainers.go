@@ -25,10 +25,15 @@ func renderExplainers(s *site) error {
 }
 
 func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPage {
+	var hero views.Hero // every published Explainer has one (validateHeroes)
+	if hr := s.heroes[e.File]; hr != nil {
+		hero = hr.view
+	}
 	return views.ExplainerPage{
 		Page: views.Page{
 			Title:       e.Title + " | Hast Code",
 			Description: e.Description,
+			HeroPreload: &hero,
 		},
 		Title:        e.Title,
 		Description:  e.Description,
@@ -36,6 +41,7 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 		AuthorName:   s.authors[e.Author].Name,
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
+		Hero:         hero,
 		BodyHTML:     body,
 	}
 }

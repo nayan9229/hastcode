@@ -182,13 +182,18 @@ func (a Author) Markdown() string {
 	return b.String()
 }
 
-// HeroPNG returns a solid-colour PNG of the given size, for hero fixtures.
+// HeroPNG returns a solid teal PNG of the given size, for hero fixtures.
 func HeroPNG(w, h int) []byte {
+	return HeroPNGFilled(w, h, color.RGBA{R: 0x0D, G: 0x94, B: 0x88, A: 0xFF})
+}
+
+// HeroPNGFilled returns a solid PNG of the given size and colour, for
+// fixtures that need a hero with different content but the same size.
+func HeroPNGFilled(w, h int, c color.Color) []byte {
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
-	teal := color.RGBA{R: 0x0D, G: 0x94, B: 0x88, A: 0xFF}
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
-			img.Set(x, y, teal)
+			img.Set(x, y, c)
 		}
 	}
 	var buf bytes.Buffer
@@ -199,11 +204,14 @@ func HeroPNG(w, h int) []byte {
 }
 
 // Config returns the builder configuration used by tests: the launch
-// Verticals, a fixed site URL, production mode.
+// Verticals, a fixed site URL, production mode, and fast hero encoding with
+// an image cache shared by every test (SharedImageCacheDir), so a fixture
+// hero is encoded once, not once per test.
 func Config() builder.Config {
 	return builder.Config{
 		SiteURL: "https://hastcode.test",
 		Mode:    builder.Production,
+		Images:  builder.ImageConfig{CacheDir: SharedImageCacheDir(), Fast: true},
 		Verticals: []builder.Vertical{
 			{Slug: "distributed-systems", Name: "Distributed Systems", Order: 1},
 			{Slug: "databases-storage", Name: "Databases & Storage", Order: 2},
@@ -230,4 +238,12 @@ func list(b *strings.Builder, key string, values []string) {
 	for _, v := range values {
 		fmt.Fprintf(b, "  - %q\n", v)
 	}
+}
+
+// SharedImageCacheDir is the hero image cache Config uses: one directory
+// under the OS temp dir, reused across tests and test runs. The cache is
+// keyed on source bytes and encoder settings, so sharing it is safe. Tests
+// about caching itself set Images.CacheDir to their own t.TempDir().
+func SharedImageCacheDir() string {
+	return filepath.Join(os.TempDir(), "hastcode-buildtest-image-cache")
 }

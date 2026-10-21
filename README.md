@@ -19,13 +19,29 @@ make vet        # generate + go vet ./...
 make build      # generate + go run ./cmd/builder (content/ -> .vercel/output/)
 ```
 
+The Makefile exports `CGO_ENABLED=0` and `GOFLAGS=-tags=nodynamic`: the AVIF
+and WebP encoders (gen2brain/avif, gen2brain/webp) then run as WASM in-process
+and never load a system libavif/libwebp, so image output is byte-identical
+everywhere. Use the same settings when calling `go` directly.
+
 Builder flags: `-content` (default `content`), `-config` (default `site.yaml`),
-`-out` (default `.vercel/output`), `-mode production|preview`. It prints every
+`-out` (default `.vercel/output`), `-mode production|preview`, `-image-cache`
+(overrides `images.cache_dir`). It prints every
 error and warning and exits non-zero if the build failed.
 
 Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`,
 `content/authors/<slug>.md`; Briefs and static pages come in later tickets.
 Add a Vertical by adding one entry to `site.yaml`.
+
+Heroes: the Explainer names a raster beside its Markdown in `hero` (and
+`hero_alt`). The build fails if it is missing, does not decode, or is narrower
+than 1200 px. It writes AVIF, WebP and JPEG at 480/800/1200/1600 px wide (never
+upscaled) plus 1200 px JPEG crops at 16:9, 4:3 and 1:1, to
+`/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of the file bytes, so
+immutable). Encoded variants are cached in `images.cache_dir` (default
+`node_modules/.cache/hastcode/images`, which Vercel persists between builds),
+keyed on the source bytes and encoder settings; an unchanged hero is never
+re-encoded. `images.fast: true` trades file size for encode speed (tests).
 
 ## Codebase map
 
@@ -41,14 +57,14 @@ Add a Vertical by adding one entry to `site.yaml`.
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Author` (later `Brief`, `Page`). No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
+| `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `site.yaml` | Site config: `site_url`, `verticals`. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
 Mermaid -> `builder/step_transform_diagrams.go` (+ helper package under
-`internal/`); hero images -> `builder/step_transform_heroes.go` +
-`internal/images/`; design system -> `internal/views/layout_*.templ` + CSS;
+`internal/`); design system -> `internal/views/layout_*.templ` + CSS;
 newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
 `internal/views/partial_newsletter.templ`.
 
@@ -59,7 +75,8 @@ newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20;
-validate references 10; render reset 0, render explainers 20; write config.json 100.
+validate references 10, validate heroes 50; transform encode heroes 50; render
+reset 0, write hero assets 10, render explainers 20; write config.json 100.
 `fn(s *site) error` returns an error only for fatal I/O (aborts the build).
 Content problems go through `s.fail(file, rule, fmt, args…)` (error; marks that
 file failed so its page is not written) or `s.warn(...)` (never fails). `file`
@@ -89,10 +106,15 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `DefaultAuthor()`, `HeroPNG(w, h)`, `Config()` (launch Verticals, production).
+  `DefaultAuthor()`, `HeroPNG(w, h)`, `HeroPNGFilled(w, h, colour)`, `Config()`
+  (launch Verticals, production, fast hero encoding into the shared
+  `SharedImageCacheDir()` so each fixture hero is encoded once; set
+  `cfg.Images.CacheDir = t.TempDir()` to test caching itself).
   Mutate a copy of `ValidExplainer()` to make an invalid fixture.
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
+  `DecodeImage(t, outDir, urlPath)` / `Images(t, outDir)` (decode output images
+  and measure them), `Srcset(t, attr)`,
   `RequireError(t, res, file, substring)`, `RequireWarning(...)`.
