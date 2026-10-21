@@ -12,22 +12,31 @@ adsense_client: ""
 # node_modules/.cache/hastcode/images, which Vercel restores between builds.
 # images:
 #   cache_dir: node_modules/.cache/hastcode/images
+# Verticals: slug (hub at /<slug>/), name, description (shown on the home
+# page and the hub), order (header nav and home order). Adding an entry
+# adds its hub, nav link and home entry; no code change.
 verticals:
   - slug: distributed-systems
     name: Distributed Systems
+    description: Consensus, replication, clocks and how systems that span many machines fail.
     order: 1
   - slug: databases-storage
     name: Databases & Storage
+    description: Storage engines, indexes, transactions and how real databases keep data safe and fast.
     order: 2
   - slug: apis-networking
     name: APIs & Networking
+    description: Protocols, API design, gateways, load balancing and the network between services.
     order: 3
   - slug: infrastructure-cloud
     name: Infrastructure & Cloud
+    description: Schedulers, deploy pipelines, cloud primitives and the platforms systems run on.
     order: 4
   - slug: ai-ml-systems
     name: AI/ML Systems
+    description: Training, serving, retrieval and the infrastructure behind production machine learning.
     order: 5
   - slug: languages-runtimes
     name: Languages & Runtimes
+    description: Compilers, garbage collectors, concurrency models and the runtimes code executes in.
     order: 6

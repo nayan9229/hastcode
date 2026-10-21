@@ -23,11 +23,21 @@ import (
 // Tree is a fixture content tree: content-relative path -> file bytes.
 type Tree map[string][]byte
 
-// NewTree returns a tree holding the default Author only. Add pieces with
-// the With* methods.
+// NewTree returns a tree holding the default Author and the transparency
+// pages (TransparencyPages) every page's footer links, so the broken-link
+// gate passes. Add pieces with the With* methods; drop files with Without.
 func NewTree() Tree {
 	t := Tree{}
 	t.WithAuthor(DefaultAuthor())
+	for _, p := range TransparencyPages() {
+		t.WithPage(p)
+	}
+	return t
+}
+
+// Without removes a content-relative file from the tree.
+func (t Tree) Without(path string) Tree {
+	delete(t, path)
 	return t
 }
 

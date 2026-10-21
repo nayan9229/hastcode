@@ -37,7 +37,7 @@ Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`
 `content/authors/<slug>.md` (frontmatter `name`, `same_as` list, optional
 `photo` raster beside it + `photo_alt`; body = bio), `content/pages/<slug>.md`
 (static pages at `/<slug>/`: `title`, `description`, Markdown body). Briefs come
-in a later ticket. Lines marked `TODO(author):` in `content/` are facts only the
+in `content/briefs/<slug>.md`. Lines marked `TODO(author):` in `content/` are facts only the
 Author can supply; fill them before cutover.
 Add a Vertical by adding one entry to `site.yaml`.
 
@@ -71,6 +71,9 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo encode. |
 | `builder/step_static_pages.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
+| `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
+| `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestExplainers`/`newestBriefs`, `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
+| `builder/step_render_link_gate.go` | The site-wide broken internal link gate (rule `broken-link`), last in the render phase. |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
@@ -102,8 +105,35 @@ unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
 rewrite Brief Explainer links 20, encode heroes 50, encode author photos 55;
 render reset 0, write site assets 10, write hero assets 15, write author
 photos 16, render explainers 20, render briefs 30, render author pages 40,
-render briefs index 40, render static pages 45, render subscribed page 60,
-render 404 page 65; write config.json 100.
+render briefs index 40, render static pages 45, render vertical hubs 50,
+render kind pages 52, render home 54, render subscribed page 60,
+render 404 page 65, check internal links 1000 (keep it last: it reads
+every written page); write config.json 100.
+
+**Internal links.** After every page is written, `checkInternalLinks`
+reads each HTML file in the output and resolves every `href` that stays on
+the site (root-relative, page-relative, or absolute on `site_url`'s host;
+query and fragment ignored). It must name a written file or a directory
+index (`/a/` -> `/a/index.html`; `/a` without the slash is broken), or a
+path the build does not write itself (`linkTargetsNotWritten`:
+`/api/subscribe`, `/search/`, `/feed.xml`, `/{vertical}/feed.xml`,
+`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`; entries become
+redundant once tickets 09/13 write them). Otherwise it is a `broken-link`
+error naming the page and the target, attributed to the page's content
+file ("" for home and listings), and the page is removed from the output.
+Header and footer links are checked on every page, so the About, Contact
+and Editorial Policy pages must exist (`buildtest.NewTree()` includes them).
+Brief Explainer links and `related` slugs are checked earlier, at the
+source, under the same rule.
+
+**Listings.** Every listing shows `views.ListingItem`s through
+`@PieceList(class, items, headingLevel)` (`partial_piece_list.templ`):
+480 px hero thumbnail (AVIF/WebP/JPEG, lazy, size reserved), kind badge
+(Explainers), title, description, date, as h-entry. Listings use
+`s.publishedExplainers()`/`s.publishedBriefs()`, so drafts never appear in
+production. Verticals come only from `site.yaml` (`slug`, `name`,
+`description`, `order`): a new entry gets a hub, a header nav link and a
+home entry.
 
 **Briefs.** `content/briefs/<slug>.md` -> `/briefs/<slug>/` (NewsArticle via
 `s.articlePage`). Skeleton (`step_validate_briefs.go`): ≤ 250 words incl.
@@ -212,7 +242,7 @@ and the Subscribe HTTP seam. Build-seam tests live in `builder/` as package
 `builder_test`, import only `builder` and `internal/buildtest`, and assert on
 parsed output. Helpers in `internal/buildtest`:
 
-- Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
+- Fixtures: `ValidTree()`, `NewTree()` (default Author + `TransparencyPages()`, which the footer links), `Tree.WithExplainer(e)`, `Tree.Without(path)`, `Tree.WithPage(p)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
   `ValidComparison()` (adds a `## Trade-offs` table), `ValidBrief()` +

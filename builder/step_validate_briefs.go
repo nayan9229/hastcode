@@ -32,8 +32,6 @@ const (
 	ruleBriefSections      = "brief-sections"
 	ruleBriefSource        = "brief-source"
 	ruleBriefExplainerLink = "brief-explainer-link"
-	// ruleBrokenLink is an internal link to a page that does not exist.
-	ruleBrokenLink = "broken-link"
 )
 
 // Brief skeleton: the H2 sections a Brief has, exactly these and in this

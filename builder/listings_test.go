@@ -200,7 +200,7 @@ func assertThumbnail480(t *testing.T, out string, item *goquery.Selection) {
 		t.Errorf("thumbnail size = %sx%s, want 480x270", w, h)
 	}
 	for _, typ := range []string{"image/avif", "image/webp"} {
-		srcset := item.Find(`picture source[type="` + typ + `"]`).AttrOr("srcset", "")
+		srcset := item.Find(`picture source[type="`+typ+`"]`).AttrOr("srcset", "")
 		if !strings.Contains(srcset, "-480x270.") {
 			t.Errorf("%s thumbnail = %q, want the 480 px variant", typ, srcset)
 		}
