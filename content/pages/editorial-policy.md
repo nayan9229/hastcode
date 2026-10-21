@@ -9,10 +9,13 @@ accountable for it meeting this policy.
 
 ## Who is accountable
 
-Every piece is published under the [HastCode](/authors/hastcode/) byline,
-linked to an Author page that describes the team. The HastCode editorial
-team is accountable for every piece. We never publish under invented
-personal names or personas, and an AI tool is never credited as an author.
+Every piece is published under our house byline,
+[Mira Vance](/authors/mira-vance/): one consistent editorial voice the
+HastCode editorial team writes in. Mira Vance is a disclosed house name, not
+a real individual, and its Author page says so. The HastCode editorial team
+is accountable for every piece. We never present an invented person as real,
+never give the byline invented credentials or photos, and an AI tool is never
+credited as an author.
 
 ## Sources
 
@@ -37,9 +40,7 @@ every number, diagram and code sample, rewrites what is wrong or unclear, and
 decides whether the piece is published. Pieces drafted with AI assistance
 carry this note:
 
-> Drafted with AI assistance, researched, verified and edited by [Author].
-
-where [Author] is the name of the Author on the byline. We publish only as
+> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as
 many pieces as the Author can verify this way.
 
 ## Dates and Review

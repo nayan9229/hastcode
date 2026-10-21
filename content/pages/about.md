@@ -27,8 +27,9 @@ Languages & Runtimes.
 ## Who is behind it
 
 HastCode is written and edited by the HastCode editorial team, which is
-accountable for every piece published here. Every piece carries the
-[HastCode](/authors/hastcode/) byline.
+accountable for every piece published here. Every piece carries our house
+byline, [Mira Vance](/authors/mira-vance/): one consistent editorial voice,
+openly disclosed as a house name rather than a real individual.
 
 TODO(author): who publishes HastCode. Either "HastCode is an independent
 publication run by [name], based in [country]" or the name and country of the

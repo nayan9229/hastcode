@@ -49,5 +49,9 @@ The person the site is written for: a mid-to-senior backend engineer. Juniors ar
 _Avoid_: User, visitor, audience
 
 **Author**:
-The named person, or the team publishing under one byline, who has an author page and is accountable for an Explainer or Brief. At launch the only Author is HastCode, a team byline.
+The named person, or the team publishing under one byline, who has an author page and is accountable for an Explainer or Brief. At launch the only Author is the House Byline.
 _Avoid_: Writer, contributor, editor
+
+**House Byline**:
+A disclosed editorial voice the team publishes under, with its own name and author page, never presented as a real individual. HastCode's is Mira Vance.
+_Avoid_: Persona, pen name, ghostwriter, fake author
