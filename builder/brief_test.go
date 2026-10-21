@@ -56,8 +56,8 @@ func TestBriefJSONLD_NewsArticleCarriesHeadlineDatesAuthorPublisherAndHeroCrops(
 		t.Errorf("author = %#v, want Person Ada Lovelace with url https://hastcode.test/authors/ada/", author)
 	}
 	publisher, _ := news["publisher"].(map[string]any)
-	if publisher["@type"] != "Organization" || publisher["name"] != "Hast Code" {
-		t.Errorf("publisher = %#v, want Organization Hast Code", publisher)
+	if publisher["@type"] != "Organization" || publisher["name"] != "HastCode" {
+		t.Errorf("publisher = %#v, want Organization HastCode", publisher)
 	}
 	page, _ := news["mainEntityOfPage"].(map[string]any)
 	if page["@id"] != "https://hastcode.test"+briefURL {

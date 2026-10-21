@@ -32,7 +32,7 @@ type Article struct {
 	Image            []string     `json:"image,omitempty"`
 	DatePublished    string       `json:"datePublished"`
 	DateModified     string       `json:"dateModified"`
-	Author           Person       `json:"author"`
+	Author           Author       `json:"author"`
 	Publisher        Organization `json:"publisher"`
 	MainEntityOfPage WebPageRef   `json:"mainEntityOfPage"`
 	ArticleSection   string       `json:"articleSection,omitempty"`
@@ -48,21 +48,22 @@ type WebPageRef struct {
 // Page returns the mainEntityOfPage reference for a canonical URL.
 func Page(canonical string) WebPageRef { return WebPageRef{Type: "WebPage", ID: canonical} }
 
-// Person is an Author. URL is the Author page (it uniquely identifies the
-// author); SameAs are the Author's profiles elsewhere. Use it nested (as
-// an article's author) or top-level on the Author page with Context set.
-type Person struct {
+// Author is an article's author: a Person, or an Organization for a team
+// byline. URL is the Author page (it uniquely identifies the author);
+// SameAs are the Author's profiles elsewhere. Use it nested (as an
+// article's author) or top-level on the Author page with Context set.
+type Author struct {
 	Context string `json:"@context,omitempty"`
-	Type    string `json:"@type"` // "Person"
+	Type    string `json:"@type"` // "Person" or "Organization"
 	Name    string `json:"name"`
 	URL     string `json:"url,omitempty"`
-	// Image is the Author's photo (absolute URL); set on the Author
-	// page's top-level Person only.
+	// Image is the Author's photo or logo (absolute URL); set on the
+	// Author page's top-level block only.
 	Image  string   `json:"image,omitempty"`
 	SameAs []string `json:"sameAs,omitempty"`
 }
 
-// Organization is the publisher, Hast Code. Top-level on the home page
+// Organization is the publisher, HastCode. Top-level on the home page
 // (with Context set), nested as an article's publisher.
 type Organization struct {
 	Context     string       `json:"@context,omitempty"`

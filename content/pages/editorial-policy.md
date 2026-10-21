@@ -1,19 +1,18 @@
 ---
 title: "Editorial Policy"
-description: "How Hast Code sources, writes, discloses AI assistance, reviews and corrects its Explainers and Briefs."
+description: "How HastCode sources, writes, discloses AI assistance, reviews and corrects its Explainers and Briefs."
 ---
 
-This policy describes how every Explainer and Brief on Hast Code is made. It
+This policy describes how every Explainer and Brief on HastCode is made. It
 applies to everything we publish, and the Author named on each piece is
 accountable for it meeting this policy.
 
 ## Who is accountable
 
-Every piece carries the byline of a real, named Author, linked to an Author
-page with their bio and public profiles. We never publish under invented
-names or personas, and an AI tool is never credited as an author. Hast Code
-is currently written and edited by
-[TODO(author): your full name](/authors/nayan/).
+Every piece is published under the [HastCode](/authors/hastcode/) byline,
+linked to an Author page that describes the team. The HastCode editorial
+team is accountable for every piece. We never publish under invented
+personal names or personas, and an AI tool is never credited as an author.
 
 ## Sources
 

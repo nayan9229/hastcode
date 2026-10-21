@@ -244,7 +244,10 @@ func (e Explainer) Markdown() string {
 // Author is a fixture Author. DefaultAuthor has no photo; set Photo,
 // PhotoAlt and PhotoImage (e.g. HeroPNG(800, 800)) to add one.
 type Author struct {
-	Slug       string
+	Slug string
+	// Kind is the Author file's `kind` ("person", "organization", or ""
+	// for the default, person).
+	Kind       string
 	Name       string
 	SameAs     []string
 	Photo      string
@@ -267,6 +270,7 @@ func DefaultAuthor() Author {
 func (a Author) Markdown() string {
 	var b strings.Builder
 	b.WriteString("---\n")
+	field(&b, "kind", a.Kind)
 	field(&b, "name", a.Name)
 	list(&b, "same_as", a.SameAs)
 	field(&b, "photo", a.Photo)

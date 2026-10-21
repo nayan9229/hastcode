@@ -24,7 +24,7 @@ func TestExplainerHead_CanonicalOpenGraphAndTwitterCardUseTheHero(t *testing.T) 
 		"og:url":         "https://hastcode.test" + raftURL,
 		"og:title":       "How Raft elects a leader",
 		"og:description": "Raft keeps a replicated log consistent by electing one leader per term with randomised timeouts.",
-		"og:site_name":   "Hast Code",
+		"og:site_name":   "HastCode",
 		"og:image:alt":   "Five Raft servers voting for a leader",
 	} {
 		if got := meta("property", name); got != want {

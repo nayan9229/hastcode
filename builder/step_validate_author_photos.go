@@ -39,6 +39,9 @@ func validateAuthorPhotos(s *site) error {
 	s.authorPhotos = map[string]*authorPhoto{}
 	for _, a := range s.sortedAuthors() {
 		if a.Photo == "" {
+			if a.IsOrganization() {
+				continue // a team byline has no headshot
+			}
 			s.warn(a.File, ruleAuthorPhoto, "no photo: set `photo` to a square-ish raster beside the Markdown (at least %d px)", authorPhotoSize)
 			continue
 		}

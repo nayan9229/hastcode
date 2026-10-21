@@ -28,7 +28,7 @@ func TestAuthorPage_ShowsNameBioAndProfileLinks(t *testing.T) {
 	if got, want := strings.Join(links, " "), "https://github.com/ada-example https://www.linkedin.com/in/ada-example"; got != want {
 		t.Errorf("profile links = %q, want %q", got, want)
 	}
-	if got := doc.Find("head title").Text(); got != "Ada Lovelace | Hast Code" {
+	if got := doc.Find("head title").Text(); got != "Ada Lovelace | HastCode" {
 		t.Errorf("<title> = %q", got)
 	}
 }

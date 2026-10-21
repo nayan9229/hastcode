@@ -5,7 +5,7 @@ import "fmt"
 // Brand constants (spec "Brand"). Use these for OG defaults, feed and
 // Organization descriptions rather than retyping the strings.
 const (
-	PublicationName = "Hast Code"
+	PublicationName = "HastCode"
 	Tagline         = "How real systems are built."
 )
 

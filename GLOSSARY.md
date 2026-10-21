@@ -1,4 +1,4 @@
-# Hast Code
+# HastCode
 
 Ad-monetised publication at hastcode.com: evergreen software-architecture explainers, fed by short commentary on tech events. English only. Written for mid-to-senior backend engineers.
 
@@ -49,5 +49,5 @@ The person the site is written for: a mid-to-senior backend engineer. Juniors ar
 _Avoid_: User, visitor, audience
 
 **Author**:
-A real, named person with a byline and an author page who is accountable for an Explainer or Brief.
+The named person, or the team publishing under one byline, who has an author page and is accountable for an Explainer or Brief. At launch the only Author is HastCode, a team byline.
 _Avoid_: Writer, contributor, editor

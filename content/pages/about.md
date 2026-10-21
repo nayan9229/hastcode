@@ -1,9 +1,9 @@
 ---
-title: "About Hast Code"
-description: "Hast Code explains how real systems are built: architecture Explainers and short Briefs for backend engineers, written and checked by a named Author."
+title: "About HastCode"
+description: "HastCode explains how real systems are built: architecture Explainers and short Briefs for backend engineers, written and checked by the HastCode editorial team."
 ---
 
-Hast Code explains how real systems are built. It is written for mid-to-senior
+HastCode explains how real systems are built. It is written for mid-to-senior
 backend engineers who want to understand the architecture behind the software
 they use and run: how it is put together, why it was built that way, and what
 it costs.
@@ -26,11 +26,11 @@ Languages & Runtimes.
 
 ## Who is behind it
 
-Hast Code is written and edited by
-[TODO(author): your full name](/authors/nayan/), who is accountable for every
-piece published here.
+HastCode is written and edited by the HastCode editorial team, which is
+accountable for every piece published here. Every piece carries the
+[HastCode](/authors/hastcode/) byline.
 
-TODO(author): who publishes Hast Code. Either "Hast Code is an independent
+TODO(author): who publishes HastCode. Either "HastCode is an independent
 publication run by [name], based in [country]" or the name and country of the
 company that owns it. Google News asks for the person or company behind the
 content.
@@ -42,9 +42,9 @@ assistance but are always researched, verified and edited by the Author, and
 every Explainer is reviewed at least every 90 days. The details are in our
 [Editorial Policy](/editorial-policy/).
 
-## How Hast Code is funded
+## How HastCode is funded
 
-Hast Code is free to read. It will be funded by display advertising and by
+HastCode is free to read. It will be funded by display advertising and by
 sponsorship of its newsletter. Advertisers and sponsors have no say over what
 we write, and sponsored material is always labelled as such.
 

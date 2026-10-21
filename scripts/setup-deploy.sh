@@ -288,7 +288,7 @@ pause
 # ── 2 ─────────────────────────────────────────────────────────────────────
 stage "GitHub repository"
 say "The site's source lives in a private GitHub repo; Actions deploys it."
-ask GITHUB_REPO "Repository as owner/name (e.g. nayan/hastcode):"
+ask GITHUB_REPO "Repository as owner/name (e.g. hastcode/hastcode):"
 write_env GITHUB_REPO "$GITHUB_REPO"
 if gh repo view "$GITHUB_REPO" >/dev/null 2>&1; then
   note "$GITHUB_REPO already exists."

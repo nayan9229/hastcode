@@ -21,7 +21,7 @@ func TestStaticPages_PublishAtSlugPathWithTitleBodyAndBreadcrumb(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), treeWithTransparencyPages())
 
 	for _, tc := range []struct{ url, title, body string }{
-		{"/about/", "About Hast Code", "Hast Code explains how real systems are built."},
+		{"/about/", "About HastCode", "HastCode explains how real systems are built."},
 		{"/contact/", "Contact", "Email the Author."},
 		{"/editorial-policy/", "Editorial Policy", "Every claim links a first-party source."},
 	} {
@@ -29,8 +29,8 @@ func TestStaticPages_PublishAtSlugPathWithTitleBodyAndBreadcrumb(t *testing.T) {
 		if got := strings.TrimSpace(doc.Find("main h1").Text()); got != tc.title {
 			t.Errorf("%s h1 = %q, want %q", tc.url, got, tc.title)
 		}
-		if got := doc.Find("head title").Text(); got != tc.title+" | Hast Code" {
-			t.Errorf("%s <title> = %q, want %q", tc.url, got, tc.title+" | Hast Code")
+		if got := doc.Find("head title").Text(); got != tc.title+" | HastCode" {
+			t.Errorf("%s <title> = %q, want %q", tc.url, got, tc.title+" | HastCode")
 		}
 		if got := strings.TrimSpace(doc.Find("main article p").First().Text()); got != tc.body {
 			t.Errorf("%s body = %q, want %q", tc.url, got, tc.body)

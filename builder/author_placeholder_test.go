@@ -13,7 +13,7 @@ import (
 func treeWithPlaceholderAbout() buildtest.Tree {
 	tree := buildtest.ValidTree()
 	about := buildtest.TransparencyPages()[0]
-	about.Body = "TODO(author): who publishes Hast Code.\n"
+	about.Body = "TODO(author): who publishes HastCode.\n"
 	return tree.WithPage(about)
 }
 

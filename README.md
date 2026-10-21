@@ -1,6 +1,6 @@
 # hastcode
 
-Static-first Go publication for hastcode.com ("Hast Code"). The Go program is a
+Static-first Go publication for hastcode.com ("HastCode"). The Go program is a
 **build tool**, not a server (ADR-0002): it reads Markdown from `content/`,
 renders templ components, and writes a Vercel Build Output API v3 tree to
 `.vercel/output/`. Domain terms (Explainer, Brief, Vertical, Author, Review,
@@ -95,8 +95,9 @@ production build with it fails). It prints every
 error and warning and exits non-zero if the build failed.
 
 Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`,
-`content/authors/<slug>.md` (frontmatter `name`, `same_as` list, optional
-`photo` raster beside it + `photo_alt`; body = bio), `content/pages/<slug>.md`
+`content/authors/<slug>.md` (frontmatter `kind` = `person` (default) or
+`organization` for a team byline, `name`, `same_as` list, optional `photo`
+raster beside it + `photo_alt`; body = bio), `content/pages/<slug>.md`
 (static pages at `/<slug>/`: `title`, `description`, Markdown body). Briefs come
 in `content/briefs/<slug>.md`. Optional frontmatter `sources` (list of
 `title` + `url`) adds to the inline links: an Explainer's are appended to
@@ -141,7 +142,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
-| `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo (validate, encode, write). |
+| `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
 | `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestFirst` (via `newestExplainers`/`newestBriefs`), `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
@@ -285,7 +286,9 @@ are absolute (`s.absURL`), dates are RFC 3339 with the frontmatter's
 offset (the same instants as the visible `<time datetime>`), and an
 Explainer's `dateModified` is its `reviewed` date, never the build time.
 Author `url` is `/authors/<slug>/`; `sameAs` comes from the Author file's
-`same_as` list. Article bylines use `@Byline(views.Link{Name, URL: authorURL(slug)})`
+`same_as` list. `s.author` emits `@type` `Person`, or `Organization` when the
+Author's `kind` is `organization` (unknown kinds fail with `author-kind`;
+organizations get no `author-photo` warning). Article bylines use `@Byline(views.Link{Name, URL: authorURL(slug)})`
 (`partial_byline.templ`), which links the Author page. No `FAQPage`, `HowTo`, `Speakable` or `TechArticle`.
 `writePage` fails an indexable page with no `application/ld+json` block
 (rule `jsonld-missing`; the page is not written), so a new page type needs
@@ -445,7 +448,7 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   between builds (static pages).
 - **`/news-sitemap.xml`**: Briefs published in the 48 h up to the build
   clock (`Config.Now`), newest first, at most 1,000, with `news:name`
-  "Hast Code", `news:language` `en`, `news:publication_date` (RFC 3339) and
+  "HastCode", `news:language` `en`, `news:publication_date` (RFC 3339) and
   `news:title` (Google's news sitemap doc, last updated 2025-12-10).
   Explainers never appear. Vercel only rebuilds on deploy, so a Brief drops
   out of the file at the first build after it is 48 h old, not on the dot.

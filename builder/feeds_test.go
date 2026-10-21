@@ -107,7 +107,7 @@ func TestSiteFeed_ChannelIsHastCodeWithTheTaglineAsDescription(t *testing.T) {
 	ch := f.Channel
 	link, self := f.link()
 
-	if ch.Title != "Hast Code" || link != siteURL+"/" || ch.Description != "How real systems are built." || ch.Language != "en" {
+	if ch.Title != "HastCode" || link != siteURL+"/" || ch.Description != "How real systems are built." || ch.Language != "en" {
 		t.Errorf("channel title/link/description/language = %q / %q / %q / %q", ch.Title, link, ch.Description, ch.Language)
 	}
 	if self != siteURL+"/feed.xml" {

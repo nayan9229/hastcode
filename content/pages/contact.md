@@ -1,11 +1,10 @@
 ---
 title: "Contact"
-description: "How to reach Hast Code with corrections, tips, questions and sponsorship enquiries."
+description: "How to reach HastCode with corrections, tips, questions and sponsorship enquiries."
 ---
 
-Hast Code is written and edited by
-[TODO(author): your full name](/authors/nayan/). Every message is read by the
-Author.
+HastCode is written and edited by the [HastCode](/authors/hastcode/)
+editorial team. Every message is read by the team.
 
 ## Email
 
@@ -20,7 +19,7 @@ Please use the subject line to say what your message is about:
 - **Tip:** something that happened that you think deserves a Brief, with a
   link to the primary source.
 - **Sponsorship:** newsletter sponsorship enquiries.
-- **Other:** anything else about Hast Code.
+- **Other:** anything else about HastCode.
 
 TODO(author): say how quickly you aim to reply (for example "within three
 working days"), and only promise what you can keep.
@@ -32,6 +31,6 @@ TODO(author): links to the public profiles where Readers can also reach you
 
 ## Postal address
 
-TODO(author): if Hast Code is published by a company, its registered name and
+TODO(author): if HastCode is published by a company, its registered name and
 postal address. If it is published by you as an individual, say so and the
 country you are based in, or delete this section.

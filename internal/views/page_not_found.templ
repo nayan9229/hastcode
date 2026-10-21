@@ -10,7 +10,7 @@ templ NotFound(p Page) {
 			<p>There is nothing at this address. It may have moved, or the link may be mistyped.</p>
 			<ul class="inline-list">
 				<li><a href="/">Go to the home page</a></li>
-				<li><a href={ templ.SafeURL(p.Chrome.Search.URL) }>Search Hast Code</a></li>
+				<li><a href={ templ.SafeURL(p.Chrome.Search.URL) }>Search HastCode</a></li>
 			</ul>
 			if len(p.Chrome.Verticals) > 0 {
 				<h2>Browse a Vertical</h2>

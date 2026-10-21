@@ -11,4 +11,4 @@
 - [x] News sitemap contains only Briefs within 48 h of the builder's clock; an older Brief fixture is excluded; Explainers never included; at most 1,000 entries
 - [x] robots.txt content asserted exactly; `Google-Extended` and `GPTBot` not disallowed
 - [x] IndexNow key file present at root; changed-URL artefact lists new/modified pages between two builds of differing fixtures
-- [x] `WebSite` and `Organization` JSON-LD on home with name "Hast Code", tagline, logo URL and search action
+- [x] `WebSite` and `Organization` JSON-LD on home with name "HastCode", tagline, logo URL and search action

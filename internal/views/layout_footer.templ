@@ -5,7 +5,7 @@ package views
 templ SiteFooter(c Chrome) {
 	<footer class="site-footer">
 		<div class="wrap">
-			<nav aria-label="About Hast Code">
+			<nav aria-label="About HastCode">
 				<ul class="inline-list">
 					for _, l := range c.Pages {
 						<li><a href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>

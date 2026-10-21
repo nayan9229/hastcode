@@ -172,7 +172,7 @@ func fail(w http.ResponseWriter, r *http.Request, status int, message, source st
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	fmt.Fprintf(w, `<!DOCTYPE html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Subscribe | Hast Code</title></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex"><title>Subscribe | HastCode</title></head>
 <body><main><h1>Subscription not completed</h1><p>%s</p><p><a href="%s">Go back</a></p></main></body></html>
 `, html.EscapeString(message), html.EscapeString(source))
 }

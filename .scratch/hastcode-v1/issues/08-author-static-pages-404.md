@@ -17,4 +17,4 @@
 - Author page lists Explainers now via `s.authorPieces(slug)` in `builder/step_render_authors.go`; Briefs (06) add one loop there with `Type: "Brief"`.
 - Briefs use `@Byline(views.Link{...})` (`partial_byline.templ`) so the byline links the Author page.
 - 404 is written at `/404.html`; ticket 10 adds the Vercel fallback route to it.
-- Real content: `content/pages/{about,contact,editorial-policy}.md` and `content/authors/nayan.md` carry `TODO(author):` markers the Author must fill before cutover.
+- Real content: `content/pages/{about,contact,editorial-policy}.md` and `content/authors/hastcode.md` carry `TODO(author):` markers the Author must fill before cutover.

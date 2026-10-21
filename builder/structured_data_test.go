@@ -72,8 +72,8 @@ func TestExplainerJSONLD_ArticleNamesAuthorPublisherPageSectionAndKeywords(t *te
 	}
 
 	publisher, _ := article["publisher"].(map[string]any)
-	if publisher["@type"] != "Organization" || publisher["name"] != "Hast Code" || publisher["url"] != "https://hastcode.test/" {
-		t.Errorf("publisher = %#v, want Organization Hast Code at https://hastcode.test/", publisher)
+	if publisher["@type"] != "Organization" || publisher["name"] != "HastCode" || publisher["url"] != "https://hastcode.test/" {
+		t.Errorf("publisher = %#v, want Organization HastCode at https://hastcode.test/", publisher)
 	}
 	if logo, _ := publisher["logo"].(map[string]any); logo["url"] != "https://hastcode.test/mark.svg" {
 		t.Errorf("publisher.logo = %#v, want url https://hastcode.test/mark.svg", publisher["logo"])

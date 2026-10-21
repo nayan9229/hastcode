@@ -154,7 +154,7 @@ func TestNewsSitemap_ListsOnlyBriefsFromTheLast48Hours(t *testing.T) {
 	if n == nil {
 		t.Fatal("news sitemap entry has no news:news block")
 	}
-	if n.Name != "Hast Code" || n.Language != "en" || n.PublicationDate != "2026-10-20T08:15:00-04:00" || n.Title != "etcd ships a rewritten Raft library" {
+	if n.Name != "HastCode" || n.Language != "en" || n.PublicationDate != "2026-10-20T08:15:00-04:00" || n.Title != "etcd ships a rewritten Raft library" {
 		t.Errorf("news:news = %+v", *n)
 	}
 	if !buildtest.Exists(out, "/briefs/kafka-drops-zookeeper/") {

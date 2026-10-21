@@ -50,8 +50,8 @@ func renderAuthors(s *site) error {
 }
 
 // authorPage maps an Author to its view model: s.page plus the visible
-// breadcrumb, the BreadcrumbList and a top-level Person (the same url and
-// sameAs that articles name as their author).
+// breadcrumb, the BreadcrumbList and a top-level Person or Organization
+// (the same url and sameAs that articles name as their author).
 func authorPage(s *site, a *content.Author, bio string) views.AuthorPage {
 	page := s.page(authorURL(a.Slug), a.Name+" | "+views.PublicationName, "About "+a.Name+", "+views.PublicationName+" Author.")
 	page.Social.Type = "profile"
@@ -59,14 +59,14 @@ func authorPage(s *site, a *content.Author, bio string) views.AuthorPage {
 		{Name: "Home", URL: homeURL},
 		{Name: a.Name, URL: authorURL(a.Slug)},
 	}
-	person := s.person(a)
-	person.Context = schema.Context
+	entity := s.author(a)
+	entity.Context = schema.Context
 	var photo *views.Image
 	if ph := s.authorPhotos[a.Slug]; ph != nil && ph.view.URL != "" {
 		photo = &ph.view
-		person.Image = s.absURL(ph.view.URL)
+		entity.Image = s.absURL(ph.view.URL)
 	}
-	page.StructuredData = []any{person, s.breadcrumbs(page.Breadcrumbs)}
+	page.StructuredData = []any{entity, s.breadcrumbs(page.Breadcrumbs)}
 
 	profiles := make([]views.Link, len(a.SameAs))
 	for i, u := range a.SameAs {

@@ -19,9 +19,9 @@ type StaticPage struct {
 // every page: About, Contact and Editorial Policy.
 func TransparencyPages() []StaticPage {
 	return []StaticPage{
-		{Slug: "about", Title: "About Hast Code", Description: "Who makes Hast Code and why.", Body: "Hast Code explains how real systems are built.\n"},
-		{Slug: "contact", Title: "Contact", Description: "How to reach Hast Code.", Body: "Email [the Author](mailto:author@hastcode.test).\n"},
-		{Slug: "editorial-policy", Title: "Editorial Policy", Description: "How Hast Code researches, writes and corrects.", Body: "Every claim links a first-party source.\n"},
+		{Slug: "about", Title: "About HastCode", Description: "Who makes HastCode and why.", Body: "HastCode explains how real systems are built.\n"},
+		{Slug: "contact", Title: "Contact", Description: "How to reach HastCode.", Body: "Email [the Author](mailto:author@hastcode.test).\n"},
+		{Slug: "editorial-policy", Title: "Editorial Policy", Description: "How HastCode researches, writes and corrects.", Body: "Every claim links a first-party source.\n"},
 	}
 }
 

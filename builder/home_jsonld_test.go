@@ -15,7 +15,7 @@ func TestHomeJSONLD_WebSiteNamesHastCodeWithASearchAction(t *testing.T) {
 
 	for key, want := range map[string]string{
 		"@context":    "https://schema.org",
-		"name":        "Hast Code",
+		"name":        "HastCode",
 		"url":         siteURL + "/",
 		"description": "How real systems are built.",
 	} {
@@ -41,7 +41,7 @@ func TestHomeJSONLD_OrganizationHasNameTaglineLogoAndProfiles(t *testing.T) {
 
 	for key, want := range map[string]string{
 		"@context":    "https://schema.org",
-		"name":        "Hast Code",
+		"name":        "HastCode",
 		"url":         siteURL + "/",
 		"description": "How real systems are built.",
 	} {

@@ -1,6 +1,6 @@
 # 05: Explainer head and structured data
 
-**What to build:** Every Explainer page carries what Google, Discover and answer engines need to index and cite it: an `Article` JSON-LD block (headline, description, image in 16:9/4:3/1:1, datePublished and dateModified with timezone matching the visible dates, author as `Person` with url and sameAs, publisher as `Organization` named "Hast Code", mainEntityOfPage, articleSection = Vertical name, keywords = tags), a `BreadcrumbList` (Home → Vertical → Explainer), a canonical URL with trailing slash, Open Graph and Twitter card tags using the hero, `max-image-preview:large` robots meta, `theme-color` for both colour schemes, and `lang="en"`. No `FAQPage`, `HowTo`, `Speakable`, or `TechArticle`.
+**What to build:** Every Explainer page carries what Google, Discover and answer engines need to index and cite it: an `Article` JSON-LD block (headline, description, image in 16:9/4:3/1:1, datePublished and dateModified with timezone matching the visible dates, author as `Person` with url and sameAs, publisher as `Organization` named "HastCode", mainEntityOfPage, articleSection = Vertical name, keywords = tags), a `BreadcrumbList` (Home → Vertical → Explainer), a canonical URL with trailing slash, Open Graph and Twitter card tags using the hero, `max-image-preview:large` robots meta, `theme-color` for both colour schemes, and `lang="en"`. No `FAQPage`, `HowTo`, `Speakable`, or `TechArticle`.
 
 **Blocked by:** 04 (Hero image pipeline)
 

@@ -65,7 +65,7 @@ func (s *site) articlePage(a articleHead) views.Page {
 			Image:            []string{s.absURL(hero.Crop16x9.URL), s.absURL(hero.Crop4x3.URL), s.absURL(hero.Crop1x1.URL)},
 			DatePublished:    a.Published.Format(time.RFC3339),
 			DateModified:     a.Modified.Format(time.RFC3339),
-			Author:           s.person(a.Author),
+			Author:           s.author(a.Author),
 			Publisher:        s.organization(),
 			MainEntityOfPage: schema.Page(p.Canonical),
 			ArticleSection:   a.Section,
@@ -76,19 +76,24 @@ func (s *site) articlePage(a articleHead) views.Page {
 	return p
 }
 
-// person is an Author as a schema.org Person: url is the Author page,
-// sameAs the Author's profiles from content/authors/<slug>.md. Set
-// Context on the result to use it as a top-level block (Author page).
-func (s *site) person(a *content.Author) schema.Person {
-	return schema.Person{
-		Type:   "Person",
+// author is an Author as a schema.org Person, or an Organization for a
+// team byline: url is the Author page, sameAs the Author's profiles from
+// content/authors/<slug>.md. Set Context on the result to use it as a
+// top-level block (Author page).
+func (s *site) author(a *content.Author) schema.Author {
+	typ := "Person"
+	if a.IsOrganization() {
+		typ = "Organization"
+	}
+	return schema.Author{
+		Type:   typ,
 		Name:   a.Name,
 		URL:    s.absURL(authorURL(a.Slug)),
 		SameAs: a.SameAs,
 	}
 }
 
-// organization is the publisher, Hast Code. Set Context (and add
+// organization is the publisher, HastCode. Set Context (and add
 // Description/SameAs) to use it as the home page's top-level block.
 func (s *site) organization() schema.Organization {
 	return schema.Organization{

@@ -126,7 +126,7 @@ The site ships with zero client-side framework, dark mode, Pagefind search, rese
 
 ### Structured data and head
 
-- Explainer: `Article` JSON-LD (headline, description, image [3 ratios], datePublished, dateModified, author → Person with url and sameAs, publisher → Organization, mainEntityOfPage, articleSection = Vertical name, keywords = tags). Brief: `NewsArticle` with the same core plus `dateline`-free. All pages: `BreadcrumbList`. Home: `WebSite` (+ search action pointing at `/search/?q=`) and `Organization` (name "Hast Code", url, logo as data-URI-free SVG URL, sameAs).
+- Explainer: `Article` JSON-LD (headline, description, image [3 ratios], datePublished, dateModified, author → Person with url and sameAs, publisher → Organization, mainEntityOfPage, articleSection = Vertical name, keywords = tags). Brief: `NewsArticle` with the same core plus `dateline`-free. All pages: `BreadcrumbList`. Home: `WebSite` (+ search action pointing at `/search/?q=`) and `Organization` (name "HastCode", url, logo as data-URI-free SVG URL, sameAs).
 - No `FAQPage`, `HowTo`, `Speakable`, or `TechArticle` (research: removed, deprecated, no evidence, and unlisted by Google respectively).
 - Every page: `<meta name="robots" content="max-image-preview:large">`, canonical, Open Graph + Twitter card with the hero, `lang="en"`, theme-color for both schemes, preload for the hero on article pages.
 - `robots.txt`: `User-agent: *` allow all; explicit allow stanzas for `OAI-SearchBot`, `PerplexityBot`, `Bingbot`, `Googlebot`; `GPTBot` and `Google-Extended` left allowed (training opt-out is a separate later decision). Sitemap lines for both sitemaps.
@@ -150,7 +150,7 @@ The site ships with zero client-side framework, dark mode, Pagefind search, rese
 
 ### Brand
 
-- Wordmark `hastcode` in CSS (system monospace stack, lowercase, teal dot or bracket mark). SVG mark generated as a file at build and referenced as favicon and in Organization logo. Accent `#0D9488` light / `#2DD4BF` dark; text `#111827` / `#F3F4F6`; background `#FFFFFF` / `#0B0F19`. Tagline "How real systems are built." in header subtitle, OG default, feed description, Organization description. Prose and schema name "Hast Code".
+- Wordmark `hastcode` in CSS (system monospace stack, lowercase, teal dot or bracket mark). SVG mark generated as a file at build and referenced as favicon and in Organization logo. Accent `#0D9488` light / `#2DD4BF` dark; text `#111827` / `#F3F4F6`; background `#FFFFFF` / `#0B0F19`. Tagline "How real systems are built." in header subtitle, OG default, feed description, Organization description. Prose and schema name "HastCode".
 
 ### Deployment
 
