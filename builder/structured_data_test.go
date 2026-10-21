@@ -10,6 +10,32 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
+// Spec: the build fails on a page lacking JSON-LD. writePage gates every
+// indexable page (rule jsonld-missing); this proves every page type the
+// build writes passes it.
+func TestJSONLD_EveryIndexablePageCarriesAtLeastOneBlock(t *testing.T) {
+	tree := buildtest.ValidTree().WithExplainer(buildtest.ValidComparison()).WithBrief(buildtest.ValidBrief())
+	out := buildtest.MustBuild(t, buildtest.Config(), tree)
+
+	checked := 0
+	for _, u := range buildtest.URLPaths(t, out) {
+		if !strings.HasSuffix(u, "/") {
+			continue
+		}
+		doc := buildtest.Page(t, out, u)
+		if strings.Contains(doc.Find(`meta[name="robots"]`).AttrOr("content", ""), "noindex") {
+			continue
+		}
+		checked++
+		if doc.Find(`script[type="application/ld+json"]`).Length() == 0 {
+			t.Errorf("indexable page %s has no JSON-LD", u)
+		}
+	}
+	if checked < 10 {
+		t.Fatalf("checked only %d indexable pages; the fixture should produce home, hubs, kind pages, articles, Author and static pages", checked)
+	}
+}
+
 func TestExplainerJSONLD_ArticleCarriesHeadlineDescriptionAndFrontmatterDates(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
 	article := buildtest.JSONLDOfType(t, buildtest.Page(t, out, raftURL), "Article")

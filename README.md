@@ -273,6 +273,9 @@ Explainer's `dateModified` is its `reviewed` date, never the build time.
 Author `url` is `/authors/<slug>/`; `sameAs` comes from the Author file's
 `same_as` list. Article bylines use `@Byline(views.Link{Name, URL: authorURL(slug)})`
 (`partial_byline.templ`), which links the Author page. No `FAQPage`, `HowTo`, `Speakable` or `TechArticle`.
+`writePage` fails an indexable page with no `application/ld+json` block
+(rule `jsonld-missing`; the page is not written), so a new page type needs
+at least its BreadcrumbList.
 
 **Design system.** One stylesheet, `internal/views/site.css`, served as
 `/assets/site.<hash>.css` (ADR-0003); no inline `<style>`, no webfonts, no
