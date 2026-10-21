@@ -1,4 +1,11 @@
-# Preview deployment per pull request, then Lighthouse CI against it.
+# Preview deployment for every branch (spec user story 25), then Lighthouse
+# CI against it.
+#
+# Triggers: a push to any branch but main (main is production.yml) runs the
+# whole workflow, so a branch gets its preview whether or not it has a pull
+# request, and a same-repo pull request is not built twice (its pushes
+# already run here). pull_request runs only `make test`, and only for pull
+# requests from forks, which get no secrets to deploy with.
 #
 # Deploys go through the Vercel CLI from this runner (`vercel build` +
 # `vercel deploy --prebuilt`), not Vercel's Git integration, which
@@ -13,18 +20,23 @@
 name: Preview
 
 on:
+  push:
+    branches-ignore: [main]
   pull_request:
 
 permissions:
   contents: read
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number }}
+  group: preview-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
     name: make test
+    # Pushes (any branch but main), and pull requests from forks only: a
+    # same-repo pull request's commits are already tested by their push.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -33,8 +45,9 @@ jobs:
 
   deploy:
     name: Deploy preview
-    # Pull requests from forks get no secrets: nothing to deploy with.
-    if: github.event.pull_request.head.repo.full_name == github.repository
+    # Branch pushes only: pull requests from forks get no secrets (nothing
+    # to deploy with), and same-repo pull requests deploy on push.
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       url: ${{ steps.deploy.outputs.url }}
@@ -50,7 +63,7 @@ jobs:
         with:
           vercel-cli: "true"
       # After npm ci (which wipes node_modules/). Hero image variants,
-      # rendered diagrams and the per-mode page manifests. A PR restores its
+      # rendered diagrams and the per-mode page manifests. A branch restores its
       # own latest cache, else main's.
       - uses: actions/cache/restore@v6
         with:

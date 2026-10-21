@@ -29,7 +29,8 @@ test ./...`, about a minute; `go test -short ./...` skips the slow
 1,000-entry news-sitemap case). Build-seam tests skip, with the reason,
 when Node or the npm packages are missing, so run `npm ci` first or most
 of them will not run. `make vet` before committing. CI runs `make test`
-on every pull request and before every production deploy.
+on every push to a branch other than `main` (and on pull requests from
+forks) and before every production deploy.
 
 **Check pages locally.** `make dev` builds in **preview mode** (drafts
 included) and serves `.vercel/output` plus the subscribe function on
@@ -44,8 +45,8 @@ To try the form without Buttondown, point it at any fake that answers
 `BUTTONDOWN_API_KEY=x BUTTONDOWN_BASE_URL=http://127.0.0.1:8089 make dev`.
 
 **Draft and preview flow.** Write the piece with `draft: true` in its
-frontmatter on a branch. `make dev` shows it locally; push the branch and
-open a pull request, and the Preview workflow deploys a preview build
+frontmatter on a branch. `make dev` shows it locally; push the branch
+(a pull request is optional), and the Preview workflow deploys a preview build
 (drafts included, behind Vercel Authentication) and posts its URL in the
 run summary, then runs Lighthouse CI against it. Production builds never
 contain drafts.
@@ -602,8 +603,8 @@ with inline SVG and a `<figcaption>` from the fence's first line
 
 ## Deploying
 
-Production is `git push` to `main` (ADR-0002); every pull request gets a
-preview. Both run in GitHub Actions with the Vercel CLI, not in Vercel's
+Production is `git push` to `main` (ADR-0002); every other branch gets a
+preview on each push. Both run in GitHub Actions with the Vercel CLI, not in Vercel's
 Git integration, which `vercel.json` turns off (`git.deploymentEnabled:
 false`):
 
@@ -623,8 +624,9 @@ false`):
   `make test`, then `vercel pull` -> `vercel build --prod` -> `vercel deploy
   --prebuilt --prod` -> IndexNow ping (when `INDEXNOW_ENABLED`) -> save the
   build cache. One run at a time, in order.
-- `.github/workflows/preview.yml` (pull requests from this repo): `make
-  test`; `vercel build` with `MODE=preview` -> `vercel deploy --prebuilt`
+- `.github/workflows/preview.yml` (push to any branch but `main`; a
+  same-repo pull request is covered by its pushes, so it is not built
+  twice; a fork's pull request only runs `make test`): `make test`; `vercel build` with `MODE=preview` -> `vercel deploy --prebuilt`
   (URL in the run summary); then **Lighthouse CI** (`lighthouserc.json`)
   against home, `/search/`, `/briefs/`, a Vertical hub, an Explainer and a
   Brief (`scripts/lighthouse-urls.sh` picks them from the build's sitemap).
