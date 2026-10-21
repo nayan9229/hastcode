@@ -299,13 +299,17 @@ script a size there).
 checked against the 50 KB uncompressed HTML gate (the stylesheet is external
 and not counted, ADR-0003); an oversized page is a site-wide `html-size`
 error naming the URL and is not written. Ads come from one component,
-`@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterBody)`
-(`partial_ad_slot.templ`): an empty `aria-hidden` placeholder with ads off,
-an AdSense unit with ads on, in a box whose height is fixed by
-`--ad-slot-height` so enabling ads causes no layout shift; it carries
-`data-pagefind-ignore="all"`. Article layouts render the body in two halves
-(`Document.SplitAfterSection("TL;DR")` + `markdown.RenderBlocks`) with the
-first slot between them and the second after `.e-content`. Plausible comes
+`@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterWhatHappened|views.AdAfterBody)`
+(`partial_ad_slot.templ`), controlled by `ads_enabled`. With ads off it
+renders **nothing and reserves no space** (v1 pages carry no blank boxes;
+turning ads on later is a deliberate layout change, reviewed on a
+preview). With ads on it is an AdSense unit in an `aside.ad-slot` whose
+height is fixed by `--ad-slot-height`, so the unit filling in causes no
+layout shift; it carries `data-pagefind-ignore="all"`. Article layouts
+render the body in two halves (`Document.SplitAfterSection` +
+`markdown.RenderBlocks`: after "TL;DR" for an Explainer, after "What
+happened" for a Brief) with the first slot between them and the second
+after `.e-content`. Plausible comes
 from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set.
 Everything must work without JS.
 

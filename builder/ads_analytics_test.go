@@ -62,41 +62,58 @@ func TestAdSlots_EnabledWithoutAdSenseClientFailsTheBuild(t *testing.T) {
 	buildtest.RequireErrorRule(t, res, "", "ads-config", "adsense_client")
 }
 
-func TestAdSlots_DisabledRenderTwoEmptyFixedHeightPlaceholders(t *testing.T) {
-	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+func TestAdSlots_EnabledSitInFixedHeightBoxesAfterTLDRAndAfterBody(t *testing.T) {
+	out := buildtest.MustBuild(t, adsOnConfig(), buildtest.ValidTree())
 	doc := buildtest.Page(t, out, explainerPath)
 
-	slots := doc.Find("aside.ad-slot")
-	if slots.Length() != 2 {
-		t.Fatalf("found %d ad slots, want 2 (after the TL;DR, after the body)", slots.Length())
-	}
-	slots.Each(func(i int, slot *goquery.Selection) {
-		if got := slot.AttrOr("aria-hidden", ""); got != "true" {
-			t.Errorf("slot %d aria-hidden = %q, want true", i, got)
-		}
-		if got := slot.AttrOr("data-pagefind-ignore", ""); got != "all" {
-			t.Errorf("slot %d data-pagefind-ignore = %q, want all", i, got)
-		}
-		if html, _ := slot.Html(); strings.TrimSpace(html) != "" {
-			t.Errorf("slot %d is not empty: %q", i, html)
-		}
-	})
-
-	// Positions: the first follows the TL;DR list, the second follows the body.
 	tldr := doc.Find(".e-content h2").FilterFunction(func(_ int, h *goquery.Selection) bool { return h.Text() == "TL;DR" })
-	if !tldr.Next().Next().Is("aside.ad-slot") {
-		t.Errorf("first ad slot does not directly follow the TL;DR list")
+	first := tldr.Next().Next()
+	if !first.Is("aside.ad-slot") || first.AttrOr("data-ad-position", "") != "after-tldr" {
+		t.Errorf("first ad slot does not directly follow the TL;DR list with data-ad-position=after-tldr")
 	}
-	if !doc.Find(".e-content").Next().Is("aside.ad-slot") {
-		t.Errorf("second ad slot does not directly follow the article body (.e-content)")
+	second := doc.Find(".e-content").Next()
+	if !second.Is("aside.ad-slot") || second.AttrOr("data-ad-position", "") != "after-body" {
+		t.Errorf("second ad slot does not directly follow the article body (.e-content) with data-ad-position=after-body")
 	}
 
 	if h := adSlotHeight(t, stylesheet(t, out, doc)); !regexp.MustCompile(`^\d+px$`).MatchString(h) {
-		t.Errorf(".ad-slot height = %q, want a fixed pixel height so enabling ads cannot shift layout", h)
+		t.Errorf(".ad-slot height = %q, want a fixed pixel height so an AdSense unit filling in cannot shift layout", h)
 	}
+}
 
-	if n := doc.Find("ins.adsbygoogle").Length(); n != 0 {
-		t.Errorf("found %d AdSense units with ads off, want 0", n)
+func TestAdSlots_EnabledOnABriefTheFirstFollowsWhatHappened(t *testing.T) {
+	tree := buildtest.ValidTree().WithBrief(buildtest.ValidBrief())
+	out := buildtest.MustBuild(t, adsOnConfig(), tree)
+	doc := buildtest.Page(t, out, "/briefs/etcd-raft-rewrite/")
+
+	slots := doc.Find("aside.ad-slot")
+	if slots.Length() != 2 {
+		t.Fatalf("found %d ad slots on the Brief, want 2", slots.Length())
+	}
+	first := slots.First()
+	if got := first.AttrOr("data-ad-position", ""); got != "after-what-happened" {
+		t.Errorf("first Brief ad slot data-ad-position = %q, want after-what-happened (a Brief has no TL;DR)", got)
+	}
+	if !first.PrevAllFiltered("h2").First().Is("h2") || first.PrevAllFiltered("h2").First().Text() != "What happened" {
+		t.Errorf("first Brief ad slot does not follow the What happened section")
+	}
+	if !first.NextAllFiltered("h2").First().Is("h2") || first.NextAllFiltered("h2").First().Text() != "Why it matters" {
+		t.Errorf("first Brief ad slot is not before the Why it matters section")
+	}
+}
+
+func TestAdSlots_DisabledRenderNoSlotAndReserveNoSpace(t *testing.T) {
+	tree := buildtest.ValidTree().WithBrief(buildtest.ValidBrief())
+	out := buildtest.MustBuild(t, buildtest.Config(), tree)
+
+	for _, page := range []string{explainerPath, "/briefs/etcd-raft-rewrite/"} {
+		doc := buildtest.Page(t, out, page)
+		if n := doc.Find(".ad-slot, [data-ad-position]").Length(); n != 0 {
+			t.Errorf("%s: found %d ad-slot elements with ads off, want none (no reserved blank boxes)", page, n)
+		}
+		if n := doc.Find("ins.adsbygoogle").Length(); n != 0 {
+			t.Errorf("%s: found %d AdSense units with ads off, want 0", page, n)
+		}
 	}
 	for _, third := range []string{"googlesyndication.com", "plausible.io"} {
 		if hits := buildtest.FilesContaining(t, out, third); len(hits) != 0 {

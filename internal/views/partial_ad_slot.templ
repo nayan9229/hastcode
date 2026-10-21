@@ -1,20 +1,21 @@
 package views
 
-// Ad slot positions in the Explainer and Brief layouts.
+// Ad slot positions (data-ad-position) in the Explainer and Brief layouts.
 const (
-	AdAfterTLDR = "after-tldr"
-	AdAfterBody = "after-body"
+	AdAfterTLDR         = "after-tldr"          // Explainer: after the TL;DR
+	AdAfterWhatHappened = "after-what-happened" // Brief: after "What happened"
+	AdAfterBody         = "after-body"          // both: after the article body
 )
 
 // adsenseLoader emits the AdSense library once per page, at the first slot,
 // so pages without slots never load it.
 var adsenseLoader = templ.NewOnceHandle()
 
-// AdSlot is the single ad component (spec "Analytics, ads, consent"). Its
-// box has a fixed height (.ad-slot in site.css) in both states, so turning
-// ads on causes no layout shift. With ads off it is an empty, aria-hidden
-// placeholder; with ads on it holds one AdSense unit. Pagefind never
-// indexes it.
+// AdSlot is the single ad component (spec "Analytics, ads, consent"),
+// controlled by one flag. With ads off it renders nothing and reserves no
+// space: v1 pages carry no blank boxes. With ads on it is one AdSense unit
+// in a box whose height is fixed (.ad-slot in site.css), so the unit
+// filling in causes no layout shift. Pagefind never indexes it.
 templ AdSlot(ads Ads, position string) {
 	if ads.Enabled {
 		<aside class="ad-slot" aria-label="Advertisement" data-ad-position={ position } data-pagefind-ignore="all">
@@ -24,7 +25,5 @@ templ AdSlot(ads Ads, position string) {
 			<ins class="adsbygoogle" data-ad-client={ ads.Client }></ins>
 			@templ.Raw("<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>")
 		</aside>
-	} else {
-		<aside class="ad-slot" aria-hidden="true" data-ad-position={ position } data-pagefind-ignore="all"></aside>
 	}
 }

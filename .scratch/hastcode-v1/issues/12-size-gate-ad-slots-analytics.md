@@ -8,5 +8,6 @@
 
 - [x] Build-seam test: a fixture page padded past 50 KB fails the build naming the page; a normal page passes
 - [x] With `ads_enabled=false`: two placeholder elements with fixed height present, no third-party script; with `ads_enabled=true`: AdSense script and two ad units present
+  - Revised after code review (spec c3): with `ads_enabled=false` no ad-slot element is rendered and no space is reserved; with `ads_enabled=true` the two units sit in fixed-height boxes (Explainer: after the TL;DR and the body; Brief: after "What happened", `data-ad-position="after-what-happened"`, and the body).
 - [x] Plausible script present only when a domain is configured; `defer`, no cookies
 - [x] Total client JS per page stays within the 60 KB budget from the spec (asserted by summing script sizes in output)

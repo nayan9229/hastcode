@@ -20,7 +20,7 @@ templ BriefArticle(b BriefPage) {
 			@HeroPicture(b.Hero)
 			<div class="e-content">
 				@templ.Raw(b.LeadHTML)
-				@AdSlot(b.Page.Ads, AdAfterTLDR)
+				@AdSlot(b.Page.Ads, AdAfterWhatHappened)
 				@templ.Raw(b.BodyHTML)
 				<p class="brief-source" data-pagefind-ignore>Source: <a href={ templ.SafeURL(b.Source) }>{ b.SourceName }</a></p>
 			</div>
