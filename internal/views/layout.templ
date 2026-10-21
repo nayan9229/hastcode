@@ -8,11 +8,12 @@ templ Layout(p Page) {
 			@Head(p)
 		</head>
 		<body>
-			@SiteHeader()
-			<main id="main">
+			<a class="skip-link" href="#main">Skip to content</a>
+			@SiteHeader(p.Chrome)
+			<main id="main" class="wrap">
 				{ children... }
 			</main>
-			@SiteFooter()
+			@SiteFooter(p.Chrome)
 		</body>
 	</html>
 }

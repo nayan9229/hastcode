@@ -41,6 +41,9 @@ Add a Vertical by adding one entry to `site.yaml`.
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Author` (later `Brief`, `Page`). No config or output knowledge. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
+| `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
+| `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
+| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
@@ -61,9 +64,14 @@ like `article_explainer.templ` does.
 `init()` that calls `registerStep(phase, order, name, fn)`. Do not edit a
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
-(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20;
-validate references 10; render reset 0, render explainers 20, render subscribed
+(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
+exclude drafts (production only) 30; validate references 10, unique slugs 20,
+Explainer skeleton 30, section-length warning 40, Review-overdue warning 50;
+render reset 0, write site assets 10, render explainers 20, render subscribed
 page 60; write config.json 100.
+Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
+never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
+(intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
 `fn(s *site) error` returns an error only for fatal I/O (aborts the build).
 Content problems go through `s.fail(file, rule, fmt, args…)` (error; marks that
 file failed so its page is not written) or `s.warn(...)` (never fails). `file`
@@ -83,7 +91,31 @@ keep them. Run `make generate` after editing `.templ` files.
 
 **Adding a page type.** Add a URL func in `builder/urls.go`, a view model in
 `models.go`, a templ file, and a `step_render_<type>.go` that calls
-`s.writePage(url, component)`.
+`s.writePage(url, component)`. Build the page's `views.Page` with
+`s.page(title, description)` (never a bare `views.Page{}`) so the header and
+footer nav are filled, and wrap the component in `@Layout(page)`.
+
+**Design system.** One stylesheet, `internal/views/site.css`, served as
+`/assets/site.<hash>.css` (ADR-0003); no inline `<style>`, no webfonts, no
+framework, no `url()`. Colours exist only as tokens generated from
+`brand.go`: `--bg`, `--fg`, `--accent` (spec values), `--link` (AA-safe link
+ink), `--muted`, `--border`, `--surface`; dark values apply under
+`prefers-color-scheme: dark` and under `<html data-theme="dark">` (the
+toggle's override; `data-theme="light"` forces light). Use the tokens, never
+hex values, in CSS and in generated SVG (Mermaid: `currentColor` resolves to
+`--fg` inside `figure`). Layout: `.wrap` is the page column (16 px gutter on
+phones, 72rem max); `main > article` gets the reading measure (68ch). Element
+styles already cover `figure`/`figcaption`, `img`/`svg` (never wider than the
+column), `table` (scrolls inside itself), `pre`/`code`, `blockquote`, forms
+and `button`. Generic hooks for partials: `.box` (bordered surface panel,
+e.g. TL;DR, newsletter), `.muted`, `.inline-list` (breadcrumbs, tags,
+links), `.visually-hidden`. Add component-specific rules to `site.css` under
+a comment naming the partial, one declaration block per line. The inline
+scripts are the theme toggle (≤ 1 KB, in `<head>`) and the newsletter form's
+enhancement (≤ 1 KB, inside `.newsletter`); analytics and Pagefind are the
+only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
+`TestNewsletter_EnhancementScriptIsSmall`).
+Everything must work without JS.
 
 **Tests.** Only two seams are tested (spec "Testing Decisions"): the Build seam
 and the Subscribe HTTP seam. Build-seam tests live in `builder/` as package
@@ -93,13 +125,18 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `DefaultAuthor()`, `HeroPNG(w, h)`, `Config()` (launch Verticals, production).
+  `ValidComparison()` (adds a `## Trade-offs` table), `DefaultAuthor()`,
+  `HeroPNG(w, h)`, `Config()` (launch Verticals, production; set `cfg.Now` to
+  pin the clock).
   Mutate a copy of `ValidExplainer()` to make an invalid fixture.
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
-  `RequireError(t, res, file, substring)`, `RequireWarning(...)`.
+  `RequireError(t, res, file, substring)`, `RequireWarning(...)`,
+  `RequireErrorRule(t, res, file, rule, substring)`, `RequireWarningRule(...)`,
+  `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`
+  (prove a piece appears in no output file).
 
 Subscribe-seam tests live in `internal/subscribe/subscribe_test.go` (package
 `subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,

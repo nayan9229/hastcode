@@ -9,9 +9,7 @@ func init() {
 // renderSubscribed writes the noindex landing page for no-JS newsletter
 // signups (the subscribe function redirects there).
 func renderSubscribed(s *site) error {
-	return s.writePage(subscribedURL(), views.SubscribedPage(views.Page{
-		Title:       "Check your inbox | Hast Code",
-		Description: "Confirm your Hast Code newsletter subscription.",
-		NoIndex:     true,
-	}))
+	p := s.page("Check your inbox | Hast Code", "Confirm your Hast Code newsletter subscription.")
+	p.NoIndex = true
+	return s.writePage(subscribedURL(), views.SubscribedPage(p))
 }

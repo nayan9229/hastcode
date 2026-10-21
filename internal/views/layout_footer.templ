@@ -1,8 +1,21 @@
 package views
 
-// SiteFooter is the footer on every page.
-templ SiteFooter() {
+// SiteFooter is the footer on every page: transparency pages (Google News
+// wants them reachable everywhere), RSS feeds, and the publication name.
+templ SiteFooter(c Chrome) {
 	<footer class="site-footer">
-		<p>Hast Code</p>
+		<div class="wrap">
+			<nav aria-label="About Hast Code">
+				<ul class="inline-list">
+					for _, l := range c.Pages {
+						<li><a href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>
+					}
+					for _, l := range c.Feeds {
+						<li><a href={ templ.SafeURL(l.URL) } type="application/rss+xml">{ l.Name }</a></li>
+					}
+				</ul>
+			</nav>
+			<p>{ PublicationName } · { Tagline }</p>
+		</div>
 	</footer>
 }

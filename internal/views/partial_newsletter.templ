@@ -8,14 +8,14 @@ import "hastcode.com/site/internal/subscribe"
 // Accept: application/json and shows the result in the status region.
 // Field names are the function's contract (internal/subscribe).
 templ NewsletterForm(n Newsletter) {
-	<section class="newsletter" aria-labelledby="newsletter-title">
+	<section class="newsletter box" aria-labelledby="newsletter-title">
 		<h2 id="newsletter-title">Get new Explainers by email</h2>
 		<p>How real systems are built, in your inbox. No spam; unsubscribe any time.</p>
 		<form class="newsletter-form" method="post" action={ templ.SafeURL(subscribe.Path) } data-newsletter>
 			<label for="newsletter-email">Email address</label>
 			<input id="newsletter-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="you@example.com"/>
 			<input type="hidden" name="source" value={ n.Source }/>
-			<div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden">
+			<div class="visually-hidden" aria-hidden="true">
 				<label>Leave this field empty <input type="text" name={ subscribe.HoneypotField } tabindex="-1" autocomplete="off"/></label>
 			</div>
 			<button type="submit">Subscribe</button>

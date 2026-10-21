@@ -18,12 +18,34 @@ package views
 import "time"
 
 // Page is what every page passes to Layout: the head and site chrome.
+// The builder makes it with s.page(title, description) so Chrome is
+// always filled.
 type Page struct {
 	// Title is the full <title> text.
 	Title       string
 	Description string
+	Chrome      Chrome
 	// NoIndex keeps the page out of search indexes (meta robots noindex).
 	NoIndex bool
+}
+
+// Link is a named site-relative URL.
+type Link struct {
+	Name string
+	URL  string
+}
+
+// Chrome is the site-wide navigation in every page's header and footer.
+// The builder fills it from config and its URL scheme (builder/urls.go).
+type Chrome struct {
+	// Verticals are the Vertical hubs, in configured order.
+	Verticals []Link
+	Briefs    Link
+	Search    Link
+	// Pages are the transparency pages (About, Contact, Editorial Policy).
+	Pages []Link
+	// Feeds are the RSS feeds linked from the footer.
+	Feeds []Link
 }
 
 // ExplainerPage is the view model for an Explainer article page.
