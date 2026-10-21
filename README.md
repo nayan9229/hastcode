@@ -77,11 +77,12 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
-| `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
+| `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
-| `cmd/subscribe/` | Local run of the subscribe function plus the built site. |
+| `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
+| `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
 | `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`). Not a JS app. |
 
@@ -259,6 +260,10 @@ parsed output. Helpers in `internal/buildtest`:
   the reason) when the tree has a Mermaid fence but `node` or
   `node_modules/beautiful-mermaid` is missing. `ValidExplainer()` has a fence,
   so most build tests need `npm ci` to run rather than skip.
+- Serve: `Serve(t, outDir)` runs the output through the local router (the
+  built `config.json` routes, `static/`, a stub subscribe function counting
+  `FunctionCalls`); `srv.Get(t, path)` / `srv.Do(t, method, path, body)`
+  never follow redirects. `URLPaths(t, outDir)` lists every output URL.
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
@@ -298,7 +303,8 @@ The Buttondown plan must include tags (otherwise Buttondown answers 403
 
 Local run (no Vercel CLI needed): `make build`, then
 `BUTTONDOWN_API_KEY=... go run ./cmd/subscribe` serves the built site and the
-function on http://localhost:3000 (`-static ""` for the function only).
+function on http://localhost:3000 behind the built `config.json` routes
+(`-out` picks the Build Output dir; `-out ""` for the function only).
 `vercel dev` should also serve `api/subscribe.go` through the Go runtime, but
 that has not been tried yet (ticket 15).
 
@@ -309,10 +315,47 @@ runs the frontend builder first, keeps that Build Output tree, then lets
 `@vercel/go` add `functions/api/subscribe.func` and merges its routes into
 `config.json` (vercel/vercel `internals/builder-orchestration`
 `sort-builders.ts`, `write-build-result.ts`). Not yet checked on a real
-deploy: ticket 15's first preview verifies a working POST. Route rules the
-builder adds to `config.json` (ticket 10) must not shadow `/api/subscribe`:
-keep catch-alls (404, trailing-slash redirect) after `{"handle":"filesystem"}`
-or exclude `/api/`, so a POST is never redirected to `/api/subscribe/`.
+deploy: ticket 15's first preview verifies a working POST. The builder's
+routes keep `/api/*` out of the trailing-slash redirects (a pass-through
+route before them) and put the 404 catch-all after `{"handle":"filesystem"}`,
+so a POST is never redirected to `/api/subscribe/` or answered by the 404.
+
+## Routes and caching
+
+`builder/step_write_vercel_config.go` writes every route into
+`.vercel/output/config.json` (Build Output API v3 `routes`; patterns stay
+RE2-compatible, no lookaround, so the local router can apply the same file).
+In order:
+
+1. Cache headers (`continue`): HTML (paths ending in `/` or `.html`) gets
+   `Cache-Control: public, max-age=0, must-revalidate` for browsers and
+   `Vercel-CDN-Cache-Control: s-maxage=31536000, stale-while-revalidate=86400`
+   for Vercel's CDN (stripped before the browser; the CDN cache is scoped to
+   the deployment, so a new deploy is never served stale). `/assets/*` is
+   `public, max-age=31536000, immutable`: put only content-hashed files
+   there. Everything else (feeds, `/mark.svg`, `/pagefind/*`, whose names are
+   stable) keeps Vercel's default `public, max-age=0, must-revalidate`.
+2. `/video/*`, `/community/*`, `/group/*` -> 410 with the 404 page as body
+   (ADR-0001); `/home` -> 301 `/`.
+3. `/api/*` and `/.well-known/*` pass through untouched.
+4. One URL per page: `/x` -> 308 `/x/`, `/x/index.html` -> 308 `/x/`,
+   `/file.ext/` -> 308 `/file.ext` (paths whose last segment has a dot are
+   files and keep no slash).
+5. `{"handle":"filesystem"}` (static files, the subscribe function), then
+   any miss -> `/404.html` with status 404.
+
+Check locally: `make build`, `go run ./cmd/subscribe`, then
+
+```sh
+for p in /video/abc /home /about /about/ /about/index.html /mark.svg/ /nope/; do
+  curl -s -o /dev/null -w "%{http_code} $p %{redirect_url}\n" "http://localhost:3000$p"
+done   # 410, 301 /, 308 /about/, 200, 308 /about/, 308 /mark.svg, 404
+```
+
+The local router (`vercel.NewRouter`) refuses a `config.json` using route
+features it does not implement (other `handle` phases, `has`/`missing`, a
+non-RE2 regex), so the check cannot silently diverge from the file. It is not
+Vercel itself: ticket 15 repeats the check against the first preview.
 
 ## Mermaid diagrams
 

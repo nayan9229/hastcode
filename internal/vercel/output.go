@@ -12,11 +12,29 @@ import (
 	"strings"
 )
 
-// Config is the Build Output API config.json. Later tickets add routes,
-// overrides and headers here.
+// Config is the Build Output API config.json.
 type Config struct {
-	Version int `json:"version"`
+	Version int     `json:"version"`
+	Routes  []Route `json:"routes,omitempty"`
 }
+
+// Route is one entry of config.json "routes": a Source route (Src set) or a
+// Handler route (Handle set) that starts a routing phase. See
+// https://vercel.com/docs/build-output-api/configuration#routes. Only the
+// fields the builder uses are modelled.
+type Route struct {
+	Src           string            `json:"src,omitempty"`
+	Dest          string            `json:"dest,omitempty"`
+	Headers       map[string]string `json:"headers,omitempty"`
+	Status        int               `json:"status,omitempty"`
+	Continue      bool              `json:"continue,omitempty"`
+	CaseSensitive bool              `json:"caseSensitive,omitempty"`
+	Handle        string            `json:"handle,omitempty"`
+}
+
+// HandleFilesystem starts the phase that runs after static files and
+// functions have been checked and none matched.
+const HandleFilesystem = "filesystem"
 
 // Output is a Build Output API directory being written.
 type Output struct {

@@ -4,9 +4,9 @@
 
 **Blocked by:** 08 (Author page, static pages and 404)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test reads `config.json` and asserts the 410 routes, the `/home` redirect, trailing-slash handling, the 404 fallback, and the header rules for HTML vs hashed assets
-- [ ] Route order is correct: 410s and redirects before the filesystem handler, 404 last
-- [ ] A local serving command (or the Vercel CLI in a documented check) demonstrates each status on a sample path; documented in the README
-- [ ] No page in output is reachable at two URLs (with and without slash) without a redirect between them
+- [x] Build-seam test reads `config.json` and asserts the 410 routes, the `/home` redirect, trailing-slash handling, the 404 fallback, and the header rules for HTML vs hashed assets
+- [x] Route order is correct: 410s and redirects before the filesystem handler, 404 last
+- [x] A local serving command (or the Vercel CLI in a documented check) demonstrates each status on a sample path; documented in the README
+- [x] No page in output is reachable at two URLs (with and without slash) without a redirect between them
