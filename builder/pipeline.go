@@ -51,6 +51,7 @@ type site struct {
 	verticals  map[string]Vertical // by slug
 	authors    map[string]*content.Author
 	explainers []*content.Explainer
+	heroes     map[string]*hero // by content file; see step_transform_heroes.go
 
 	failed map[string]bool // content-relative files that produced an error
 	result Result
@@ -64,6 +65,7 @@ func newSite(cfg Config, contentDir, outDir string) *site {
 		verticals:  map[string]Vertical{},
 		authors:    map[string]*content.Author{},
 		failed:     map[string]bool{},
+		heroes:     map[string]*hero{},
 	}
 	for _, v := range cfg.Verticals {
 		s.verticals[v.Slug] = v

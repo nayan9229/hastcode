@@ -18,4 +18,7 @@ templ Head(p Page) {
 	@templ.Raw("<script>" + themeScript + "</script>")
 	<link rel="stylesheet" href={ stylesheetPath }/>
 	<link rel="icon" type="image/svg+xml" href={ MarkPath }/>
+	if p.HeroPreload != nil {
+		@HeroPreloadLink(*p.HeroPreload)
+	}
 }

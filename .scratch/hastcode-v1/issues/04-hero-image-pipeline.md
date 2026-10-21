@@ -4,11 +4,11 @@
 
 **Blocked by:** 01 (Walking skeleton)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests: valid hero → expected variant files exist with correct dimensions (decode and measure); narrow hero → build error; missing hero → build error
-- [ ] `<picture>` markup present with AVIF, WebP and JPEG sources, width/height attributes, and alt text
-- [ ] Preload link for the hero in the head of Explainer pages
-- [ ] Second build with unchanged source does not re-encode (verified via cache directory or timing/marker)
-- [ ] Hashed filenames change when the source changes
-- [ ] Image cache directory location is configurable so deployment can persist it between builds
+- [x] Build-seam tests: valid hero → expected variant files exist with correct dimensions (decode and measure); narrow hero → build error; missing hero → build error
+- [x] `<picture>` markup present with AVIF, WebP and JPEG sources, width/height attributes, and alt text
+- [x] Preload link for the hero in the head of Explainer pages
+- [x] Second build with unchanged source does not re-encode (verified via cache directory or timing/marker)
+- [x] Hashed filenames change when the source changes
+- [x] Image cache directory location is configurable so deployment can persist it between builds

@@ -36,6 +36,8 @@ type Config struct {
 	// SiteURL is the absolute origin, e.g. "https://hastcode.com".
 	SiteURL   string     `yaml:"site_url"`
 	Verticals []Vertical `yaml:"verticals"`
+	// Images configures hero image encoding.
+	Images ImageConfig `yaml:"images"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
 	// Now is the build's clock for date rules (Review age, news windows).
@@ -53,6 +55,23 @@ type Config struct {
 	// <ToolsDir>/node_modules/.cache/hastcode: Vercel persists only
 	// node_modules/** between builds.
 	CacheDir string `yaml:"-"`
+}
+
+// DefaultImageCacheDir is where encoded hero variants are cached between
+// builds when ImageConfig.CacheDir is empty, relative to the working
+// directory. Vercel restores only node_modules/** between builds, so the
+// cache lives there.
+const DefaultImageCacheDir = "node_modules/.cache/hastcode/images"
+
+// ImageConfig configures the hero image pipeline.
+type ImageConfig struct {
+	// CacheDir holds encoded variants keyed on the source bytes and encoder
+	// settings, so unchanged heroes are not re-encoded. Deployment must
+	// persist it between builds. Default DefaultImageCacheDir.
+	CacheDir string `yaml:"cache_dir"`
+	// Fast uses low-effort encoder settings (bigger files, much quicker
+	// encodes) for tests and local previews. Never set it for production.
+	Fast bool `yaml:"fast"`
 }
 
 // Problem is one build error or warning, attributed to a content file
@@ -96,6 +115,9 @@ func (r Result) String() string {
 func Build(cfg Config, contentDir, outDir string) Result {
 	if cfg.Mode == "" {
 		cfg.Mode = Production
+	}
+	if cfg.Images.CacheDir == "" {
+		cfg.Images.CacheDir = DefaultImageCacheDir
 	}
 	if cfg.Now.IsZero() {
 		cfg.Now = time.Now()

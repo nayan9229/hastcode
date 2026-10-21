@@ -21,15 +21,31 @@ make vet        # generate + go vet ./...
 make build      # generate + go run ./cmd/builder (content/ -> .vercel/output/)
 ```
 
+The Makefile exports `CGO_ENABLED=0` and `GOFLAGS=-tags=nodynamic`: the AVIF
+and WebP encoders (gen2brain/avif, gen2brain/webp) then run as WASM in-process
+and never load a system libavif/libwebp, so image output is byte-identical
+everywhere. Use the same settings when calling `go` directly.
+
 Builder flags: `-content` (default `content`), `-config` (default `site.yaml`),
 `-out` (default `.vercel/output`), `-mode production|preview`, `-tools` (dir
 with `package.json`/`node_modules`, default `.`), `-cache` (build cache, default
-`<tools>/node_modules/.cache/hastcode`). It prints every
+`<tools>/node_modules/.cache/hastcode`), `-image-cache` (overrides
+`images.cache_dir`). It prints every
 error and warning and exits non-zero if the build failed.
 
 Content layout (spec "Content model"): `content/explainers/<vertical>/<slug>.md`,
 `content/authors/<slug>.md`; Briefs and static pages come in later tickets.
 Add a Vertical by adding one entry to `site.yaml`.
+
+Heroes: the Explainer names a raster beside its Markdown in `hero` (and
+`hero_alt`). The build fails if it is missing, does not decode, or is narrower
+than 1200 px. It writes AVIF, WebP and JPEG at 480/800/1200/1600 px wide (never
+upscaled) plus 1200 px JPEG crops at 16:9, 4:3 and 1:1, to
+`/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of the file bytes, so
+immutable). Encoded variants are cached in `images.cache_dir` (default
+`node_modules/.cache/hastcode/images`, which Vercel persists between builds),
+keyed on the source bytes and encoder settings; an unchanged hero is never
+re-encoded. `images.fast: true` trades file size for encode speed (tests).
 
 ## Codebase map
 
@@ -46,6 +62,7 @@ Add a Vertical by adding one entry to `site.yaml`.
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
+| `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
 | `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav. |
@@ -59,7 +76,8 @@ Add a Vertical by adding one entry to `site.yaml`.
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
 hero images -> `builder/step_transform_heroes.go` +
-`internal/images/`; design system -> `internal/views/layout_*.templ` + CSS.
+`internal/images/`; Mermaid -> `builder/step_transform_diagrams.go` +
+`internal/mermaid/`; design system -> `internal/views/layout_*.templ` + CSS.
 Briefs: end the Brief template with `@NewsletterForm(views.Newsletter{Source: briefURL(b)})`
 like `article_explainer.templ` does.
 
@@ -71,9 +89,10 @@ central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
 exclude drafts (production only) 30; validate references 10, unique slugs 20,
-Explainer skeleton 30, section-length warning 40, Review-overdue warning 50;
-transform render diagrams 10; render reset 0, write site assets 10, render
-explainers 20, render subscribed page 60; write config.json 100.
+Explainer skeleton 30, section-length warning 40, Review-overdue warning 50,
+validate heroes 50; transform render diagrams 10, encode heroes 50; render
+reset 0, write site assets 10, write hero assets 15, render explainers 20,
+render subscribed page 60; write config.json 100.
 Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
 never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
 (intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
@@ -131,8 +150,10 @@ parsed output. Helpers in `internal/buildtest`:
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
   `ValidComparison()` (adds a `## Trade-offs` table), `DefaultAuthor()`,
-  `HeroPNG(w, h)`, `Config()` (launch Verticals, production; set `cfg.Now` to
-  pin the clock).
+  `HeroPNG(w, h)`, `HeroPNGFilled(w, h, colour)`, `Config()` (launch Verticals,
+  production; set `cfg.Now` to pin the clock; fast hero encoding into the
+  shared `SharedImageCacheDir()` so each fixture hero is encoded once; set
+  `cfg.Images.CacheDir = t.TempDir()` to test caching itself).
   Mutate a copy of `ValidExplainer()` to make an invalid fixture.
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
   `Config()` points `ToolsDir` at the repo root; `Build` gives each build a
@@ -143,6 +164,8 @@ parsed output. Helpers in `internal/buildtest`:
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
+  `DecodeImage(t, outDir, urlPath)` / `Images(t, outDir)` (decode output images
+  and measure them), `Srcset(t, attr)`,
   `RequireError(t, res, file, substring)`, `RequireWarning(...)`,
   `RequireErrorRule(t, res, file, rule, substring)`, `RequireWarningRule(...)`,
   `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`

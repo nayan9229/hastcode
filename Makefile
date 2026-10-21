@@ -1,5 +1,11 @@
 # templ output (*_templ.go) is gitignored: every target that compiles Go
 # runs `generate` first.
+#
+# Image encoders (gen2brain/avif, gen2brain/webp) run as WASM in-process:
+# CGO_ENABLED=0 plus -tags nodynamic stops them loading a system libavif or
+# libwebp, so output is byte-identical on laptops, CI and Vercel.
+export CGO_ENABLED := 0
+export GOFLAGS := -tags=nodynamic
 
 CONTENT ?= content
 CONFIG  ?= site.yaml

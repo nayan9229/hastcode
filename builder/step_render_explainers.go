@@ -25,14 +25,21 @@ func renderExplainers(s *site) error {
 }
 
 func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPage {
+	var hero views.Hero // every published Explainer has one (validateHeroes)
+	if hr := s.heroes[e.File]; hr != nil {
+		hero = hr.view
+	}
+	page := s.page(e.Title+" | Hast Code", e.Description)
+	page.HeroPreload = &hero
 	return views.ExplainerPage{
-		Page:         s.page(e.Title+" | Hast Code", e.Description),
+		Page:         page,
 		Title:        e.Title,
 		Description:  e.Description,
 		VerticalName: s.verticals[e.Vertical].Name,
 		AuthorName:   s.authors[e.Author].Name,
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
+		Hero:         hero,
 		BodyHTML:     body,
 		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 	}

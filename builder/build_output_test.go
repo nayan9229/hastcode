@@ -17,6 +17,10 @@ func TestBuildOutput_ConfigJSONIsVersion3(t *testing.T) {
 }
 
 func TestBuildOutput_FixtureTreeBuildsWellUnderASecond(t *testing.T) {
+	// Hero encoding is paid once per source (image cache keyed on source
+	// bytes); warm it so this measures the per-build cost every test pays.
+	buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+
 	start := time.Now()
 	buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
 	elapsed := time.Since(start)
