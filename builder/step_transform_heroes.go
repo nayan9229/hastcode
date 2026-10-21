@@ -20,7 +20,7 @@ import (
 func init() {
 	registerStep(phaseValidate, 50, "validate heroes", validateHeroes)
 	registerStep(phaseTransform, 50, "encode heroes", encodeHeroes)
-	registerStep(phaseRender, 10, "write hero assets", writeHeroAssets)
+	registerStep(phaseRender, 15, "write hero assets", writeHeroAssets)
 }
 
 const (

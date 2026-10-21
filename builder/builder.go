@@ -10,6 +10,7 @@ package builder
 import (
 	"fmt"
 	"strings"
+	"time"
 )
 
 // Mode selects production or preview output (drafts differ between them).
@@ -38,6 +39,9 @@ type Config struct {
 	Images ImageConfig `yaml:"images"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
+	// Now is the build's clock for date rules (Review age, news windows).
+	// Zero means time.Now(); tests pin it.
+	Now time.Time `yaml:"-"`
 }
 
 // DefaultImageCacheDir is where encoded hero variants are cached between
@@ -101,6 +105,9 @@ func Build(cfg Config, contentDir, outDir string) Result {
 	}
 	if cfg.Images.CacheDir == "" {
 		cfg.Images.CacheDir = DefaultImageCacheDir
+	}
+	if cfg.Now.IsZero() {
+		cfg.Now = time.Now()
 	}
 	s := newSite(cfg, contentDir, outDir)
 	s.run()

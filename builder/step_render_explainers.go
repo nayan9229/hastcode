@@ -29,12 +29,10 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 	if hr := s.heroes[e.File]; hr != nil {
 		hero = hr.view
 	}
+	page := s.page(e.Title+" | Hast Code", e.Description)
+	page.HeroPreload = &hero
 	return views.ExplainerPage{
-		Page: views.Page{
-			Title:       e.Title + " | Hast Code",
-			Description: e.Description,
-			HeroPreload: &hero,
-		},
+		Page:         page,
 		Title:        e.Title,
 		Description:  e.Description,
 		VerticalName: s.verticals[e.Vertical].Name,
@@ -43,5 +41,6 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 		Reviewed:     e.Reviewed,
 		Hero:         hero,
 		BodyHTML:     body,
+		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 	}
 }

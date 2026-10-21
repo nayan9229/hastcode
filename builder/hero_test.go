@@ -96,8 +96,6 @@ func TestHero_IsPreloadedFromTheHead(t *testing.T) {
 	}
 }
 
-const raftFile = "explainers/distributed-systems/raft-leader-election.md"
-
 func TestHero_NarrowerThan1200PxIsABuildError(t *testing.T) {
 	e := buildtest.ValidExplainer()
 	e.HeroImage = buildtest.HeroPNG(1199, 800)

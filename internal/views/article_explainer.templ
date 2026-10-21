@@ -17,6 +17,7 @@ templ ExplainerArticle(e ExplainerPage) {
 			<div class="e-content">
 				@templ.Raw(e.BodyHTML)
 			</div>
+			@NewsletterForm(e.Newsletter)
 		</article>
 	}
 }

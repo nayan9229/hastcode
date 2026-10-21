@@ -4,10 +4,16 @@
 
 **Blocked by:** 01 (Walking skeleton)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] HTTP-seam tests with an `httptest` fake Buttondown: valid email → 303 (form) or 200 JSON (Accept json) and the fake received email + source tag; invalid email → 400 with message; honeypot filled → 200/303 with no upstream call; rate limit trips after N requests from one IP; upstream 5xx → 502-style error with a friendly message
-- [ ] Function laid out as a Vercel Go serverless function with its own entry; `vercel dev` or an equivalent local run documented
+- [x] HTTP-seam tests with an `httptest` fake Buttondown: valid email → 303 (form) or 200 JSON (Accept json) and the fake received email + source tag; invalid email → 400 with message; honeypot filled → 200/303 with no upstream call; rate limit trips after N requests from one IP; upstream 5xx → 502-style error with a friendly message
+- [x] Function laid out as a Vercel Go serverless function with its own entry; `vercel dev` or an equivalent local run documented
 - [ ] Form partial rendered at the end of Explainer and Brief pages (Build-seam test asserts the form, its action, hidden `source` value and honeypot field)
-- [ ] `/subscribed/` static page exists in output, noindex
-- [ ] Progressive-enhancement script small enough to keep the JS budget; page works with it disabled
+- [x] `/subscribed/` static page exists in output, noindex
+- [x] Progressive-enhancement script small enough to keep the JS budget; page works with it disabled
+
+## Notes
+
+- Explainer pages carry the form, and a Build-seam test checks it (`builder/newsletter_test.go`). Briefs don't exist yet (ticket 06). The Brief template only needs `@NewsletterForm(views.Newsletter{Source: briefURL(b)})` at its end, plus a matching assertion. Until that lands, the "Brief" half of the third box is open.
+- Buttondown API checked 2026-10-21: `POST /v1/subscribers`, `Authorization: Token <key>`, `{"email_address", "tags", "ip_address"}`, 201 on success, errors `{"code","detail","metadata"}`. A duplicate email (`subscriber_already_exists`) is treated as success so the form never reveals who is subscribed. `email_*` codes and 422 map to 400. Anything else maps to 502 and is logged.
+- Deploy notes for ticket 15 are in README "Subscribe function": env vars, how zero-config `api/subscribe.go` merges into the builder's `.vercel/output`, and the route-ordering constraint. None of this has been tested on a real Vercel deploy yet.
