@@ -1,8 +1,0 @@
-package views
-
-// DiagramStyles inlines diagram.css: the theme hooks and the shared rules
-// the renderer would otherwise repeat in every SVG. The site stylesheet
-// (ticket 11) may absorb diagram.css and drop this partial from Head.
-templ DiagramStyles() {
-	@templ.Raw("<style>" + diagramCSS + "</style>")
-}

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"strings"
+	"time"
 )
 
 // Mode selects production or preview output (drafts differ between them).
@@ -37,6 +38,9 @@ type Config struct {
 	Verticals []Vertical `yaml:"verticals"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
+	// Now is the build's clock for date rules (Review age, news windows).
+	// Zero means time.Now(); tests pin it.
+	Now time.Time `yaml:"-"`
 
 	// Build tooling, set by the caller (CLI flags, tests), not site.yaml.
 
@@ -92,6 +96,9 @@ func (r Result) String() string {
 func Build(cfg Config, contentDir, outDir string) Result {
 	if cfg.Mode == "" {
 		cfg.Mode = Production
+	}
+	if cfg.Now.IsZero() {
+		cfg.Now = time.Now()
 	}
 	if cfg.ToolsDir == "" {
 		cfg.ToolsDir = "."

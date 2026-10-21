@@ -46,16 +46,22 @@ Add a Vertical by adding one entry to `site.yaml`.
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
+| `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
+| `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
+| `builder/chrome.go` | `s.page(title, description)`: every page's `views.Page` incl. header/footer nav. |
 | `internal/vercel/` | Build Output API writer: `static/` files and `config.json`. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
+| `internal/subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
+| `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
+| `cmd/subscribe/` | Local run of the subscribe function plus the built site. |
 | `site.yaml` | Site config: `site_url`, `verticals`. |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
 hero images -> `builder/step_transform_heroes.go` +
-`internal/images/`; design system -> `internal/views/layout_*.templ` + CSS;
-newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
-`internal/views/partial_newsletter.templ`.
+`internal/images/`; design system -> `internal/views/layout_*.templ` + CSS.
+Briefs: end the Brief template with `@NewsletterForm(views.Newsletter{Source: briefURL(b)})`
+like `article_explainer.templ` does.
 
 ## Conventions
 
@@ -63,9 +69,14 @@ newsletter -> handler in `internal/subscribe/`, Vercel entry in `api/`, form in
 `init()` that calls `registerStep(phase, order, name, fn)`. Do not edit a
 central list. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
-(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20;
-validate references 10; transform render diagrams 10; render reset 0, render
-explainers 20; write config.json 100.
+(use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
+exclude drafts (production only) 30; validate references 10, unique slugs 20,
+Explainer skeleton 30, section-length warning 40, Review-overdue warning 50;
+transform render diagrams 10; render reset 0, write site assets 10, render
+explainers 20, render subscribed page 60; write config.json 100.
+Date rules use `s.cfg.Now` (the build clock; `Config.Now`, zero = wall clock),
+never `time.Now()`. Gates inspect the body via `markdown.Document.Sections()`
+(intro + H2 sections), `Words`, `Text`, and `markdown.Find` with `IsLink`/`IsTable`.
 `fn(s *site) error` returns an error only for fatal I/O (aborts the build).
 Content problems go through `s.fail(file, rule, fmt, args…)` (error; marks that
 file failed so its page is not written) or `s.warn(...)` (never fails). `file`
@@ -85,7 +96,31 @@ keep them. Run `make generate` after editing `.templ` files.
 
 **Adding a page type.** Add a URL func in `builder/urls.go`, a view model in
 `models.go`, a templ file, and a `step_render_<type>.go` that calls
-`s.writePage(url, component)`.
+`s.writePage(url, component)`. Build the page's `views.Page` with
+`s.page(title, description)` (never a bare `views.Page{}`) so the header and
+footer nav are filled, and wrap the component in `@Layout(page)`.
+
+**Design system.** One stylesheet, `internal/views/site.css`, served as
+`/assets/site.<hash>.css` (ADR-0003); no inline `<style>`, no webfonts, no
+framework, no `url()`. Colours exist only as tokens generated from
+`brand.go`: `--bg`, `--fg`, `--accent` (spec values), `--link` (AA-safe link
+ink), `--muted`, `--border`, `--surface`; dark values apply under
+`prefers-color-scheme: dark` and under `<html data-theme="dark">` (the
+toggle's override; `data-theme="light"` forces light). Use the tokens, never
+hex values, in CSS and in generated SVG (Mermaid: `currentColor` resolves to
+`--fg` inside `figure`). Layout: `.wrap` is the page column (16 px gutter on
+phones, 72rem max); `main > article` gets the reading measure (68ch). Element
+styles already cover `figure`/`figcaption`, `img`/`svg` (never wider than the
+column), `table` (scrolls inside itself), `pre`/`code`, `blockquote`, forms
+and `button`. Generic hooks for partials: `.box` (bordered surface panel,
+e.g. TL;DR, newsletter), `.muted`, `.inline-list` (breadcrumbs, tags,
+links), `.visually-hidden`. Add component-specific rules to `site.css` under
+a comment naming the partial, one declaration block per line. The inline
+scripts are the theme toggle (≤ 1 KB, in `<head>`) and the newsletter form's
+enhancement (≤ 1 KB, inside `.newsletter`); analytics and Pagefind are the
+only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
+`TestNewsletter_EnhancementScriptIsSmall`).
+Everything must work without JS.
 
 **Tests.** Only two seams are tested (spec "Testing Decisions"): the Build seam
 and the Subscribe HTTP seam. Build-seam tests live in `builder/` as package
@@ -95,7 +130,9 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author only), `Tree.WithExplainer(e)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `DefaultAuthor()`, `HeroPNG(w, h)`, `Config()` (launch Verticals, production).
+  `ValidComparison()` (adds a `## Trade-offs` table), `DefaultAuthor()`,
+  `HeroPNG(w, h)`, `Config()` (launch Verticals, production; set `cfg.Now` to
+  pin the clock).
   Mutate a copy of `ValidExplainer()` to make an invalid fixture.
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
   `Config()` points `ToolsDir` at the repo root; `Build` gives each build a
@@ -106,7 +143,55 @@ parsed output. Helpers in `internal/buildtest`:
 - Assert: `Page(t, outDir, "/vertical/slug/")` (goquery document),
   `Exists(outDir, urlPath)`, `StaticPath(outDir, urlPath)`, `JSONLD(t, doc)`,
   `JSONLDOfType(t, doc, "Article")`, `VercelConfig(t, outDir)`,
-  `RequireError(t, res, file, substring)`, `RequireWarning(...)`.
+  `RequireError(t, res, file, substring)`, `RequireWarning(...)`,
+  `RequireErrorRule(t, res, file, rule, substring)`, `RequireWarningRule(...)`,
+  `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`
+  (prove a piece appears in no output file).
+
+Subscribe-seam tests live in `internal/subscribe/subscribe_test.go` (package
+`subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,
+BaseURL: fake.URL})`, send form posts through `ServeHTTP`, and assert status,
+`Location`/JSON body and what the `httptest` fake Buttondown received.
+
+## Subscribe function
+
+The newsletter form (`internal/views/partial_newsletter.templ`, at the end of
+every Explainer) is a plain `POST /api/subscribe` with `email`, `source` (the
+page path, sent to Buttondown as a tag) and a honeypot `website`. Without JS
+the function answers `303 /subscribed/` (a static noindex page the builder
+writes); the form's inline script (< 1 KB) sends `Accept: application/json`
+and shows `{"ok", "message"}` in place. Errors: 400 invalid email, 429 per-IP
+rate limit (5 per 10 min per warm instance, best-effort), 502 when Buttondown
+fails or the key is missing. A honeypot hit or an already-subscribed email
+gets the normal success answer and (honeypot) no upstream call.
+
+Environment (Vercel project settings, Production and Preview):
+
+| Variable | Required | Notes |
+|----------|----------|-------|
+| `BUTTONDOWN_API_KEY` | yes, secret | Buttondown API key. Use a separate test newsletter's key for Preview. Never sent to the browser. |
+| `BUTTONDOWN_BASE_URL` | no | Default `https://api.buttondown.com`. Point at a fake for local runs. |
+
+The Buttondown plan must include tags (otherwise Buttondown answers 403
+`feature_disabled` and every signup is a 502).
+
+Local run (no Vercel CLI needed): `make build`, then
+`BUTTONDOWN_API_KEY=... go run ./cmd/subscribe` serves the built site and the
+function on http://localhost:3000 (`-static ""` for the function only).
+`vercel dev` should also serve `api/subscribe.go` through the Go runtime, but
+that has not been tried yet (ticket 15).
+
+Deploying: Vercel's zero-config detection turns `api/subscribe.go` into the
+function `api/subscribe` (Go runtime, built from the root `go.mod`). On a
+project whose build command writes `.vercel/output` (this one), `vc build`
+runs the frontend builder first, keeps that Build Output tree, then lets
+`@vercel/go` add `functions/api/subscribe.func` and merges its routes into
+`config.json` (vercel/vercel `internals/builder-orchestration`
+`sort-builders.ts`, `write-build-result.ts`). Not yet checked on a real
+deploy: ticket 15's first preview verifies a working POST. Route rules the
+builder adds to `config.json` (ticket 10) must not shadow `/api/subscribe`:
+keep catch-alls (404, trailing-slash redirect) after `{"handle":"filesystem"}`
+or exclude `/api/`, so a POST is never redirected to `/api/subscribe/`.
 
 ## Mermaid diagrams
 
@@ -125,15 +210,14 @@ with inline SVG and a `<figcaption>` from the fence's first line
   `stateDiagram(-v2)`, `classDiagram`, `erDiagram`. Anything else (`gantt`,
   `pie`, `xychart-beta`, …), an empty fence, a flowchart line with unbalanced
   brackets or an edge with no target, or SVG with no nodes is a build error
-  (`diagram` rule) attributed to the Explainer and naming its URL; that page
+  (`diagram-render` rule) attributed to the Explainer and naming its URL; that page
   is not written. The renderer itself is lenient, so these checks run in Go.
 - **Output:** colours are `currentColor` and CSS variables only; the renderer's
   `<style>` (Google Fonts `@import`, page-global rules) is stripped and its
-  rules live once in `internal/views/diagram.css` (inlined by the
-  `DiagramStyles` partial in `Head`; the site stylesheet may absorb it). Theme
-  hooks: `--diagram-bg`, `--diagram-accent` and `color` on `.diagram`, falling
-  back to `--color-bg` / `--color-accent` / `--color-text`, then the brand
-  palette. Element ids are prefixed per diagram (`d1-`, `d2-`…). Labels stay
+  rules live once in `internal/views/diagram.css`, appended to the hashed site
+  stylesheet (ADR-0003). Each SVG maps its `--bg`/`--fg`/`--accent` to
+  `--diagram-bg`/`currentColor`/`--diagram-accent`, which `.diagram` sets from
+  the palette tokens, so light, dark and the theme toggle all apply. Element ids are prefixed per diagram (`d1-`, `d2-`…). Labels stay
   `<text>`. `width`/`height`/`viewBox` are kept (no layout shift).
 - **Cache:** rendered SVG is stored at `<cache>/mermaid/<sha256>.svg`, keyed on
   the fence source, the installed renderer version and a post-processing

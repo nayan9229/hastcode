@@ -1,0 +1,14 @@
+package views
+
+// SubscribedPage is where a no-JS newsletter form post lands on success
+// (303 from the subscribe function). It is noindex.
+templ SubscribedPage(p Page) {
+	@Layout(p) {
+		<section class="subscribed">
+			<h1>Almost there: check your inbox</h1>
+			<p>We've sent you an email to confirm your subscription. Click the link in it and you'll get new Explainers and Briefs as they're published.</p>
+			<p>Nothing arrived? Check your spam folder, or try again from any article.</p>
+			<p><a href="/">Back to Hast Code</a></p>
+		</section>
+	}
+}

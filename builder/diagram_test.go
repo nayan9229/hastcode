@@ -17,11 +17,12 @@ func mermaid(lines ...string) string {
 	return "```mermaid\n" + strings.Join(lines, "\n") + "\n```\n"
 }
 
-// explainerWithDiagrams is ValidExplainer with extra Mermaid fences appended
-// to its body (after the one it already has).
+// explainerWithDiagrams is ValidExplainer with a section holding extra
+// Mermaid fences inserted before Sources (after the fence it already has).
 func explainerWithDiagrams(fences ...string) buildtest.Explainer {
 	e := buildtest.ValidExplainer()
-	e.Body += "\n## Log replication follows the election\n\nOnce elected, the leader appends entries.\n\n" + strings.Join(fences, "\n")
+	section := "## Log replication follows the election\n\nOnce elected, the leader appends entries.\n\n" + strings.Join(fences, "\n") + "\n"
+	e.Body = strings.Replace(e.Body, "## Sources", section+"## Sources", 1)
 	return e
 }
 

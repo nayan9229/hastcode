@@ -26,10 +26,7 @@ func renderExplainers(s *site) error {
 
 func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPage {
 	return views.ExplainerPage{
-		Page: views.Page{
-			Title:       e.Title + " | Hast Code",
-			Description: e.Description,
-		},
+		Page:         s.page(e.Title+" | Hast Code", e.Description),
 		Title:        e.Title,
 		Description:  e.Description,
 		VerticalName: s.verticals[e.Vertical].Name,
@@ -37,5 +34,6 @@ func explainerPage(s *site, e *content.Explainer, body string) views.ExplainerPa
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
 		BodyHTML:     body,
+		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 	}
 }

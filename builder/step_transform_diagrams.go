@@ -16,9 +16,9 @@ func init() {
 	registerStep(phaseTransform, 10, "render diagrams", renderDiagrams)
 }
 
-// ruleDiagram: a Mermaid fence the renderer cannot draw (malformed, empty,
+// ruleDiagramRender: a Mermaid fence the renderer cannot draw (malformed, empty,
 // or an unsupported type such as gantt or pie).
-const ruleDiagram = "diagram"
+const ruleDiagramRender = "diagram-render"
 
 // renderDiagrams replaces every ```mermaid fence in published Explainers
 // with an inline-SVG <figure>. All fences in the build go to the renderer
@@ -48,7 +48,7 @@ func renderDiagrams(s *site) error {
 	}
 	for i, f := range fences {
 		if err := results[i].Err; err != nil {
-			s.fail(f.e.File, ruleDiagram, "diagram %d %q on %s: %v", f.n, f.d.Title, explainerURL(f.e), err)
+			s.fail(f.e.File, ruleDiagramRender, "diagram %d %q on %s: %v", f.n, f.d.Title, explainerURL(f.e), err)
 			continue
 		}
 		fig := views.Diagram(views.DiagramFigure{

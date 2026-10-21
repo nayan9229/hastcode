@@ -4,11 +4,11 @@
 
 **Blocked by:** 01 (Walking skeleton)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Each gate has an invalid fixture and a Build-seam test asserting the specific error and that no output page is written for it
-- [ ] Errors name the content file and the rule broken; multiple failures are reported together, not one at a time
-- [ ] Warnings are reported separately from errors and do not fail the build
-- [ ] Duplicate slug across Verticals and across Explainer/Brief namespaces both detected
-- [ ] Draft fixture absent from production output, present in preview output, and absent from any listing in production
-- [ ] Review warning triggers at >90 days and not at 89 days (fixture dates relative to a clock the builder accepts)
+- [x] Each gate has an invalid fixture and a Build-seam test asserting the specific error and that no output page is written for it
+- [x] Errors name the content file and the rule broken; multiple failures are reported together, not one at a time
+- [x] Warnings are reported separately from errors and do not fail the build
+- [x] Duplicate slug across Verticals and across Explainer/Brief namespaces both detected
+- [x] Draft fixture absent from production output, present in preview output, and absent from any listing in production
+- [x] Review warning triggers at >90 days and not at 89 days (fixture dates relative to a clock the builder accepts)
