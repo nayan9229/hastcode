@@ -4,8 +4,8 @@ import "strconv"
 
 // SocialMeta is the Open Graph and Twitter card preview in <head>. Twitter
 // reads og:title/description/image, so only twitter:card is its own tag:
-// summary_large_image when there is an image (article heroes), summary
-// otherwise.
+// summary_large_image when there is an image (an article's hero, else the
+// OG badge s.page sets), summary otherwise.
 templ SocialMeta(p Page) {
 	<meta property="og:type" content={ p.Social.Type }/>
 	<meta property="og:site_name" content={ PublicationName }/>

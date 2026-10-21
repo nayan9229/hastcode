@@ -52,8 +52,10 @@ func markSVG() []byte {
 
 // StaticAssets are the non-page files every build writes, by site path.
 func StaticAssets() map[string][]byte {
+	badge := ogBadgeFile()
 	return map[string][]byte{
 		MarkPath:       markSVG(),
 		stylesheetPath: stylesheet,
+		badge.path:     badge.png,
 	}
 }

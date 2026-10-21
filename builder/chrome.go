@@ -13,11 +13,13 @@ import (
 // its views.Page through this (or s.articlePage, which calls it) so the
 // canonical and chrome are never missing.
 func (s *site) page(urlPath, title, description string) views.Page {
+	badge := views.OGBadge()
+	badge.URL = s.absURL(badge.URL)
 	return views.Page{
 		Title:           title,
 		Description:     description,
 		Canonical:       s.absURL(urlPath),
-		Social:          views.Social{Type: "website", Title: title},
+		Social:          views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
 		Chrome:          s.chrome(),
 		Ads:             views.Ads{Enabled: s.cfg.AdsEnabled, Client: s.cfg.AdSenseClient},
 		PlausibleDomain: s.cfg.PlausibleDomain,

@@ -138,7 +138,7 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
-| `internal/views/brand.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, `StaticAssets()`. |
+| `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
@@ -276,7 +276,10 @@ to `page.StructuredData`.
 robots `max-image-preview:large` (or `noindex` when `Page.NoIndex`; only
 `/subscribed/`, `/404.html` and `/search/` are noindex in production; the 404 has no
 canonical), an absolute trailing-slash
-canonical, Open Graph + Twitter card and both theme-colors. JSON-LD URLs
+canonical, Open Graph + Twitter card and both theme-colors. Every page has
+an `og:image` ≥ 1200 px and `twitter:card` `summary_large_image`: an
+article its 16:9 hero crop, every other page the OG badge (`s.page` sets
+it; drawn at build time from the wordmark, tagline and light palette). JSON-LD URLs
 are absolute (`s.absURL`), dates are RFC 3339 with the frontmatter's
 offset (the same instants as the visible `<time datetime>`), and an
 Explainer's `dateModified` is its `reviewed` date, never the build time.

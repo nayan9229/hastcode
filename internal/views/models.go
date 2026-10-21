@@ -58,7 +58,8 @@ type Social struct {
 	// <title> carries.
 	Title string
 	// Image is the preview image with an absolute URL; nil = none (a
-	// "summary" card). Article pages use the 1200 px 16:9 hero crop.
+	// "summary" card). Article pages use the 1200 px 16:9 hero crop,
+	// every other page the generated OG badge (OGBadge).
 	Image    *Image
 	ImageAlt string
 	// Published and Modified are RFC 3339 article:published_time and

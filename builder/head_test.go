@@ -49,6 +49,51 @@ func TestExplainerHead_CanonicalOpenGraphAndTwitterCardUseTheHero(t *testing.T) 
 	}
 }
 
+// Spec: og:image at least 1200 px wide on every page, and a generated OG
+// badge as the default. Pages without a hero share one 1200x630 PNG under
+// the immutable /assets/ path.
+func TestPagesWithoutAHero_UseTheGeneratedOGBadgeAsALargeImageCard(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree().WithBrief(buildtest.ValidBrief()))
+
+	var badge string
+	for _, page := range []string{"/", "/distributed-systems/", "/briefs/", "/about/", "/authors/ada/", "/search/", "/explainers/concept/"} {
+		doc := buildtest.Page(t, out, page)
+		meta := func(attr, name string) string {
+			return doc.Find(`head meta[`+attr+`="`+name+`"]`).AttrOr("content", "")
+		}
+		image := meta("property", "og:image")
+		if badge == "" {
+			badge = image
+		}
+		if image == "" || image != badge {
+			t.Errorf("%s og:image = %q, want the shared badge %q", page, image, badge)
+		}
+		if got := meta("name", "twitter:card"); got != "summary_large_image" {
+			t.Errorf("%s twitter:card = %q, want summary_large_image", page, got)
+		}
+		if meta("property", "og:image:width") != "1200" || meta("property", "og:image:height") != "630" {
+			t.Errorf("%s og:image:width/height = %q/%q, want 1200/630", page, meta("property", "og:image:width"), meta("property", "og:image:height"))
+		}
+		if meta("property", "og:image:alt") == "" {
+			t.Errorf("%s has no og:image:alt", page)
+		}
+	}
+
+	path, ok := strings.CutPrefix(badge, "https://hastcode.test/assets/")
+	if !ok || !strings.HasSuffix(path, ".png") {
+		t.Fatalf("badge URL = %q, want an absolute .png under /assets/ (content-hashed, cached immutably)", badge)
+	}
+	img := buildtest.DecodeImage(t, out, "/assets/"+path)
+	if img.Format != "png" || img.Width != 1200 || img.Height != 630 {
+		t.Errorf("badge is a %dx%d %s, want a 1200x630 png", img.Width, img.Height, img.Format)
+	}
+
+	// Article pages keep their hero.
+	if got := buildtest.Page(t, out, raftURL).Find(`head meta[property="og:image"]`).AttrOr("content", ""); got == badge {
+		t.Errorf("the Explainer uses the badge, want its hero crop")
+	}
+}
+
 func TestExplainerHead_RobotsAllowLargeImagePreviews(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
 	doc := buildtest.Page(t, out, raftURL)
