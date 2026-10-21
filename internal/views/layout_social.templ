@@ -10,7 +10,9 @@ templ SocialMeta(p Page) {
 	<meta property="og:type" content={ p.Social.Type }/>
 	<meta property="og:site_name" content={ PublicationName }/>
 	<meta property="og:locale" content="en_US"/>
-	<meta property="og:url" content={ p.Canonical }/>
+	if p.Canonical != "" {
+		<meta property="og:url" content={ p.Canonical }/>
+	}
 	<meta property="og:title" content={ p.Social.Title }/>
 	<meta property="og:description" content={ p.Description }/>
 	if img := p.Social.Image; img != nil {

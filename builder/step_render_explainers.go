@@ -62,7 +62,7 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 		Title:        e.Title,
 		Description:  e.Description,
 		VerticalName: vertical.Name,
-		AuthorName:   author.Name,
+		Author:       views.Link{Name: author.Name, URL: authorURL(author.Slug)},
 		Published:    e.Published,
 		Reviewed:     e.Reviewed,
 		Hero:         hero,

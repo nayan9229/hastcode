@@ -54,9 +54,13 @@ func (t Tree) WithExplainer(e Explainer) Tree {
 	return t
 }
 
-// WithAuthor adds an Author at authors/<slug>.md.
+// WithAuthor adds an Author at authors/<slug>.md and, when a.Photo is set
+// and PhotoImage is non-nil, the photo beside it.
 func (t Tree) WithAuthor(a Author) Tree {
 	t[filepath.Join("authors", a.Slug+".md")] = []byte(a.Markdown())
+	if a.Photo != "" && a.PhotoImage != nil {
+		t[filepath.Join("authors", a.Photo)] = a.PhotoImage
+	}
 	return t
 }
 
@@ -208,12 +212,16 @@ func (e Explainer) Markdown() string {
 	return b.String()
 }
 
-// Author is a fixture Author.
+// Author is a fixture Author. DefaultAuthor has no photo; set Photo,
+// PhotoAlt and PhotoImage (e.g. HeroPNG(800, 800)) to add one.
 type Author struct {
-	Slug   string
-	Name   string
-	SameAs []string
-	Body   string
+	Slug       string
+	Name       string
+	SameAs     []string
+	Photo      string
+	PhotoAlt   string
+	PhotoImage []byte
+	Body       string
 }
 
 // DefaultAuthor is the Author every default fixture references.
@@ -232,6 +240,8 @@ func (a Author) Markdown() string {
 	b.WriteString("---\n")
 	field(&b, "name", a.Name)
 	list(&b, "same_as", a.SameAs)
+	field(&b, "photo", a.Photo)
+	field(&b, "photo_alt", a.PhotoAlt)
 	b.WriteString("---\n\n")
 	b.WriteString(a.Body)
 	return b.String()

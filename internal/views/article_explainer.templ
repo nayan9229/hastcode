@@ -10,7 +10,7 @@ templ ExplainerArticle(e ExplainerPage) {
 				<p class="vertical"><span class="p-category">{ e.VerticalName }</span></p>
 				<h1 class="p-name">{ e.Title }</h1>
 				<p class="p-summary">{ e.Description }</p>
-				<p class="byline">By <span class="p-author">{ e.AuthorName }</span></p>
+				@Byline(e.Author)
 				@PieceDates(e.Published, e.Reviewed)
 			</header>
 			@HeroPicture(e.Hero)

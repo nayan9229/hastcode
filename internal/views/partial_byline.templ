@@ -1,0 +1,9 @@
+package views
+
+// Byline names the piece's Author and links their Author page (Google
+// News: "Do bylines lead to further information about the author?").
+// Every article type (Explainer, Brief) uses it; tests select on
+// .byline a.p-author.
+templ Byline(author Link) {
+	<p class="byline">By <a class="p-author h-card" href={ templ.SafeURL(author.URL) }>{ author.Name }</a></p>
+}

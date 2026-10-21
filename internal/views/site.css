@@ -134,3 +134,9 @@ article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1
 /* partial_ad_slot: fixed height in both states (placeholder, AdSense unit) so enabling ads never shifts layout */
 .ad-slot { display: block; height: var(--ad-slot-height); margin-block: 2rem; overflow: hidden; background: var(--surface); border-radius: var(--radius); }
 .ad-slot > .adsbygoogle { display: block; width: 100%; height: 100%; }
+
+/* Author page (page_author.templ): square photo at 10rem (file is 400 px, 2x) */
+.author .u-photo { width: 10rem; height: auto; border-radius: 50%; }
+.author .profiles { margin-block: 1rem; }
+.author .latest li { margin-bottom: .5rem; }
+.author .latest .muted { display: block; font-size: .875rem; }

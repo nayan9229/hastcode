@@ -1,0 +1,12 @@
+package views
+
+// StaticPage is an About / Contact / Editorial Policy page: a title and
+// the page's Markdown body.
+templ StaticPage(p StaticPageView) {
+	@Layout(p.Page) {
+		<article class="static-page">
+			<h1>{ p.Title }</h1>
+			@templ.Raw(p.BodyHTML)
+		</article>
+	}
+}

@@ -52,11 +52,14 @@ func Page(canonical string) WebPageRef { return WebPageRef{Type: "WebPage", ID: 
 // author); SameAs are the Author's profiles elsewhere. Use it nested (as
 // an article's author) or top-level on the Author page with Context set.
 type Person struct {
-	Context string   `json:"@context,omitempty"`
-	Type    string   `json:"@type"` // "Person"
-	Name    string   `json:"name"`
-	URL     string   `json:"url,omitempty"`
-	SameAs  []string `json:"sameAs,omitempty"`
+	Context string `json:"@context,omitempty"`
+	Type    string `json:"@type"` // "Person"
+	Name    string `json:"name"`
+	URL     string `json:"url,omitempty"`
+	// Image is the Author's photo (absolute URL); set on the Author
+	// page's top-level Person only.
+	Image  string   `json:"image,omitempty"`
+	SameAs []string `json:"sameAs,omitempty"`
 }
 
 // Organization is the publisher, Hast Code. Top-level on the home page

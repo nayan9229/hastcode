@@ -99,10 +99,11 @@ type ExplainerPage struct {
 	Title        string
 	Description  string
 	VerticalName string
-	AuthorName   string
-	Published    time.Time
-	Reviewed     time.Time
-	Hero         Hero
+	// Author is the Author's name and Author page (the byline link).
+	Author    Link
+	Published time.Time
+	Reviewed  time.Time
+	Hero      Hero
 	// LeadHTML is the rendered intro and TL;DR, before the first ad slot;
 	// BodyHTML is the rest of the Markdown body (both trusted: built from
 	// content).
@@ -117,9 +118,10 @@ type BriefPage struct {
 	Page        Page
 	Title       string
 	Description string
-	AuthorName  string
-	Published   time.Time
-	Hero        Hero
+	// Author is the byline: the Author's name and Author page.
+	Author    Link
+	Published time.Time
+	Hero      Hero
 	// LeadHTML is the rendered body through "What happened", before the
 	// first ad slot; BodyHTML is the rest (both trusted: built from content).
 	LeadHTML string

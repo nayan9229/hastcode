@@ -4,10 +4,10 @@
 
 **Blocked by:** 02 (Explainer editorial gates), 05 (Explainer head and structured data)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Brief frontmatter parsed per spec (`source_url`, `explainers`, plus shared fields); kind/vertical absent
-- [ ] Build-seam tests: valid Brief → page at expected path with `NewsArticle` JSON-LD (headline, dates with tz, author Person, publisher, image ratios); over-length body, missing section, missing Explainer link, link to unknown slug → specific build errors
-- [ ] Briefs index lists Briefs newest-first, 20 per page, with `/briefs/page/{n}/` for later pages and rel prev/next links
-- [ ] Breadcrumb Home → Briefs → Brief
-- [ ] Explainer links in the Brief body rendered as internal links with trailing-slash URLs
+- [x] Brief frontmatter parsed per spec (`source_url`, `explainers`, plus shared fields); kind/vertical absent
+- [x] Build-seam tests: valid Brief → page at expected path with `NewsArticle` JSON-LD (headline, dates with tz, author Person, publisher, image ratios); over-length body, missing section, missing Explainer link, link to unknown slug → specific build errors
+- [x] Briefs index lists Briefs newest-first, 20 per page, with `/briefs/page/{n}/` for later pages and rel prev/next links
+- [x] Breadcrumb Home → Briefs → Brief
+- [x] Explainer links in the Brief body rendered as internal links with trailing-slash URLs

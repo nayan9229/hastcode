@@ -4,10 +4,17 @@
 
 **Blocked by:** 05 (Explainer head and structured data)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests: Author fixture → page with name, bio, photo, links and `Person` JSON-LD whose `url`/`sameAs` match the Explainer JSON-LD author reference
-- [ ] Static page fixtures → pages at the expected paths with title, body and breadcrumb
-- [ ] 404 page exists in output, is noindex, and links home, Verticals and search
-- [ ] Byline on article pages links to the Author page
-- [ ] A piece referencing an unknown Author slug is a build error
+- [x] Build-seam tests: Author fixture → page with name, bio, photo, links and `Person` JSON-LD whose `url`/`sameAs` match the Explainer JSON-LD author reference
+- [x] Static page fixtures → pages at the expected paths with title, body and breadcrumb
+- [x] 404 page exists in output, is noindex, and links home, Verticals and search
+- [x] Byline on article pages links to the Author page
+- [x] A piece referencing an unknown Author slug is a build error (Explainers: `TestFrontmatter_UnknownAuthorIsABuildError`; Briefs must reuse the rule in ticket 06)
+
+## Notes (implementation)
+
+- Author page lists Explainers now via `s.authorPieces(slug)` in `builder/step_render_authors.go`; Briefs (06) add one loop there with `Type: "Brief"`.
+- Briefs use `@Byline(views.Link{...})` (`partial_byline.templ`) so the byline links the Author page.
+- 404 is written at `/404.html`; ticket 10 adds the Vercel fallback route to it.
+- Real content: `content/pages/{about,contact,editorial-policy}.md` and `content/authors/nayan.md` carry `TODO(author):` markers the Author must fill before cutover.

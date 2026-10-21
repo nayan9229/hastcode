@@ -12,7 +12,7 @@ templ BriefArticle(b BriefPage) {
 				<p class="vertical">Brief</p>
 				<h1 class="p-name">{ b.Title }</h1>
 				<p class="p-summary">{ b.Description }</p>
-				<p class="byline">By <span class="p-author">{ b.AuthorName }</span></p>
+				@Byline(b.Author)
 				<p class="dates">
 					Published <time class="dt-published" datetime={ b.Published.Format(time.RFC3339) }>{ humanDate(b.Published) }</time>
 				</p>

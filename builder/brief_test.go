@@ -135,6 +135,29 @@ func TestBrief_ExplainerLinksBecomeTrailingSlashInternalLinks(t *testing.T) {
 	}
 }
 
+func TestBriefByline_LinksTheAuthorPage(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), briefTree())
+	author := buildtest.Page(t, out, briefURL).Find("article.h-entry .byline a.p-author")
+
+	if author.Length() != 1 || author.AttrOr("href", "") != "/authors/ada/" || author.Text() != "Ada Lovelace" {
+		t.Fatalf("byline = %d links, href %q, text %q; want one link to /authors/ada/ named Ada Lovelace",
+			author.Length(), author.AttrOr("href", ""), author.Text())
+	}
+}
+
+func TestAuthorPage_ListsTheAuthorsBriefsAmongTheirPieces(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), briefTree())
+
+	var got []string
+	buildtest.Page(t, out, "/authors/ada/").Find("main .latest li a").Each(func(_ int, a *goquery.Selection) {
+		got = append(got, a.AttrOr("href", ""))
+	})
+	// The Brief (20 Oct) is newer than the Explainer (1 Oct).
+	if want := briefURL + "|/distributed-systems/raft-leader-election/"; strings.Join(got, "|") != want {
+		t.Errorf("Author page pieces = %q, want %q", got, want)
+	}
+}
+
 func TestBrief_NewsletterFormEndsTheBriefWithItsPathAsSource(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), briefTree())
 	doc := buildtest.Page(t, out, briefURL)

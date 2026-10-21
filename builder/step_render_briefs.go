@@ -62,7 +62,7 @@ func briefPage(s *site, b *content.Brief, lead, body string) views.BriefPage {
 		Page:        page,
 		Title:       b.Title,
 		Description: b.Description,
-		AuthorName:  author.Name,
+		Author:      views.Link{Name: author.Name, URL: authorURL(author.Slug)},
 		Published:   b.Published,
 		Hero:        hero,
 		LeadHTML:    lead,
