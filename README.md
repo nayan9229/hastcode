@@ -55,7 +55,11 @@ The Production workflow runs `make test`, builds in production mode,
 deploys with `vercel deploy --prebuilt --prod`, then pings IndexNow with
 the pages that changed (after the domain cutover). Feeds, sitemaps and the
 news sitemap update in the same build. A build error (failed editorial
-gate, broken link, oversized page) fails the workflow and nothing deploys.
+gate, broken link, oversized page, a page without JSON-LD, a leftover
+`TODO(author)`) fails the workflow and nothing deploys. The shipped
+`content/` still has `TODO(author)` placeholders, so production builds
+fail until the Author fills them (see "Content layout"); `make dev` and
+previews work meanwhile.
 
 **Add a Vertical.** Add one entry to `site.yaml` `verticals` (`slug`,
 `name`, `description`, `order`), then put its Explainers in
@@ -98,7 +102,13 @@ in `content/briefs/<slug>.md`. Optional frontmatter `sources` (list of
 its `## Sources` list (page and feed), a Brief's are listed after its
 `source_url`; a URL already linked there is not repeated
 (`step_transform_sources.go`). Lines marked `TODO(author):` in `content/` are facts only the
-Author can supply; fill them before cutover.
+Author can supply. A **production** build fails while any written page or
+feed still contains `TODO(author)` (rule `author-placeholder`, naming the
+page and the content file to fix; `step_write_author_placeholders.go`), so
+the Production workflow stays red until the Author page and the About,
+Contact and Editorial Policy pages are filled in. Preview builds (`make
+dev`, `make build MODE=preview`, the Preview workflow) only warn, so the
+drafts can be read in place.
 Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: the Explainer names a raster beside its Markdown in `hero` (and
@@ -181,7 +191,7 @@ render search page 62, render 404 page 65, check internal links 1000
 (keep it last: it reads every written page); validate IndexNow key 6; write
 phase: index written pages 5 (reads the output back; later write steps use
 `s.index`), feeds 20, sitemap 30, news sitemap 35, robots.txt 40, IndexNow
-key + changed URLs 50, config.json 100, index search 800 (Pagefind over the
+key + changed URLs 50, author placeholders 60, config.json 100, index search 800 (Pagefind over the
 final output), save page manifest 900 (keep it last).
 
 **Internal links.** After every page is written, `checkInternalLinks`
