@@ -10,7 +10,7 @@ import (
 func init() {
 	// After every page is written and the link gate has removed broken
 	// pages (render phase), so the index holds exactly what is deployed.
-	registerStep(phaseWrite, 900, "index search", indexSearch)
+	registerStep(phaseWrite, 800, "index search", indexSearch)
 }
 
 // ruleSearchIndex: the Pagefind index is missing or empty. Production

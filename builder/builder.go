@@ -47,6 +47,14 @@ type Config struct {
 	// PlausibleDomain is the Plausible analytics site; blank omits the
 	// analytics script.
 	PlausibleDomain string `yaml:"plausible_domain"`
+	// IndexNowKey is the site's IndexNow key (indexnow.org: 8 to 128
+	// characters of a-z, A-Z, 0-9 and "-"). It is public by design (the
+	// build serves it at /<key>.txt), so it lives in site.yaml, and it
+	// must stay the same from build to build. Blank turns IndexNow off.
+	IndexNowKey string `yaml:"indexnow_key"`
+	// SameAs are the publication's own profiles elsewhere (the home
+	// page's Organization sameAs).
+	SameAs []string `yaml:"same_as"`
 	// Mode is set by the caller (CLI flag), not the config file.
 	Mode Mode `yaml:"-"`
 	// Now is the build's clock for date rules (Review age, news windows).

@@ -1,6 +1,6 @@
 // Package schema holds the schema.org JSON-LD node types the site emits
 // (spec "Structured data and head"): Article/NewsArticle, Person,
-// Organization, BreadcrumbList (and later WebSite). They are plain data:
+// Organization, BreadcrumbList and WebSite. They are plain data:
 // the builder fills them with absolute URLs and formatted dates, and the
 // views marshal each top-level node into its own
 // <script type="application/ld+json"> block.
@@ -72,6 +72,45 @@ type Organization struct {
 	Logo        *ImageObject `json:"logo,omitempty"`
 	Description string       `json:"description,omitempty"`
 	SameAs      []string     `json:"sameAs,omitempty"`
+}
+
+// WebSite is the site itself, top-level on the home page: its name (the
+// site name Google shows, also for Google News) and a SearchAction on the
+// site search.
+type WebSite struct {
+	Context         string        `json:"@context"`
+	Type            string        `json:"@type"` // "WebSite"
+	Name            string        `json:"name"`
+	URL             string        `json:"url"`
+	Description     string        `json:"description,omitempty"`
+	PotentialAction *SearchAction `json:"potentialAction,omitempty"`
+}
+
+// SearchAction is a site search: Target's URL template carries the
+// {search_term_string} placeholder that QueryInput names.
+type SearchAction struct {
+	Type       string     `json:"@type"` // "SearchAction"
+	Target     EntryPoint `json:"target"`
+	QueryInput string     `json:"query-input"`
+}
+
+// EntryPoint is a SearchAction target.
+type EntryPoint struct {
+	Type        string `json:"@type"` // "EntryPoint"
+	URLTemplate string `json:"urlTemplate"`
+}
+
+// SearchTerm is the placeholder a SearchAction's URL template carries.
+const SearchTerm = "search_term_string"
+
+// NewSearchAction is a SearchAction whose target is urlPrefix followed by
+// the search term, e.g. NewSearchAction("https://example.com/search/?q=").
+func NewSearchAction(urlPrefix string) *SearchAction {
+	return &SearchAction{
+		Type:       "SearchAction",
+		Target:     EntryPoint{Type: "EntryPoint", URLTemplate: urlPrefix + "{" + SearchTerm + "}"},
+		QueryInput: "required name=" + SearchTerm,
+	}
 }
 
 // ImageObject is an image by absolute URL.

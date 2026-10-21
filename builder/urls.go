@@ -19,6 +19,9 @@ func subscribedURL() string { return subscribe.SubscribedPath }
 
 func verticalURL(slug string) string { return "/" + slug + "/" }
 
+// verticalFeedURL is a Vertical's full-text RSS feed.
+func verticalFeedURL(slug string) string { return verticalURL(slug) + "feed.xml" }
+
 // kindURL is the kind page listing every Explainer of kind k.
 func kindURL(k content.Kind) string { return kindPagesURL + string(k) + "/" }
 

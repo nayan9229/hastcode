@@ -99,6 +99,30 @@ func (s *site) organization() schema.Organization {
 	}
 }
 
+// homeOrganization is the home page's top-level Organization: the
+// publisher plus the tagline and the publication's profiles (site.yaml
+// same_as).
+func (s *site) homeOrganization() schema.Organization {
+	org := s.organization()
+	org.Context = schema.Context
+	org.Description = views.Tagline
+	org.SameAs = s.cfg.SameAs
+	return org
+}
+
+// webSite is the home page's WebSite: the site name and a SearchAction on
+// /search/?q= (the Pagefind page reads q).
+func (s *site) webSite() schema.WebSite {
+	return schema.WebSite{
+		Context:         schema.Context,
+		Type:            "WebSite",
+		Name:            views.PublicationName,
+		URL:             s.absURL(homeURL),
+		Description:     views.Tagline,
+		PotentialAction: schema.NewSearchAction(s.absURL(searchURL) + "?q="),
+	}
+}
+
 // breadcrumbs is the BreadcrumbList for a trail of site-relative links.
 func (s *site) breadcrumbs(trail []views.Link) schema.BreadcrumbList {
 	crumbs := make([]schema.Crumb, len(trail))

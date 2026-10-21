@@ -14,12 +14,14 @@ const (
 
 // renderHome writes / : the latest Explainers and Briefs, newest first,
 // every Vertical (configured order) with its description, and the kind
-// pages. Ticket 09 adds WebSite and Organization JSON-LD.
+// pages, with WebSite and Organization JSON-LD.
 func renderHome(s *site) error {
 	explainers := newestExplainers(s.publishedExplainers())
 	briefs := newestBriefs(s.publishedBriefs())
+	page := s.page(homeURL, views.PublicationName+": "+views.Tagline, homeDescription)
+	page.StructuredData = append(page.StructuredData, s.webSite(), s.homeOrganization())
 	home := views.HomePage{
-		Page:       s.page(homeURL, views.PublicationName+": "+views.Tagline, homeDescription),
+		Page:       page,
 		Explainers: s.explainerItems(explainers[:min(len(explainers), homeExplainers)]),
 		Briefs:     s.briefItems(briefs[:min(len(briefs), homeBriefs)]),
 	}

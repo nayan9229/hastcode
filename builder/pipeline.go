@@ -57,6 +57,9 @@ type site struct {
 	// authorPhotos are encoded Author photos by Author slug; see
 	// step_author_photos.go.
 	authorPhotos map[string]*authorPhoto
+	// index is every indexable page written, read back at the start of
+	// the write phase; see step_write_page_index.go.
+	index *pageIndex
 
 	failed map[string]bool // content-relative files that produced an error
 	result Result
