@@ -49,7 +49,7 @@ The description is one sentence of 150 characters or fewer that names the reposi
 
 ## What the build checks
 
-`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (fetched over 30 days ago), `section-length` (an H2 over 250 words).
+`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (Fact Pack unchanged upstream for over 30 days: the repository may be dormant; check it at the next Review), `section-length` (an H2 over 250 words).
 
 ## The Friday roundup
 

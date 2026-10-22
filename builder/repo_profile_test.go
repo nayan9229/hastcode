@@ -121,14 +121,23 @@ func TestRepoProfile_FactPackMissingUnparsableOrForAnotherRepositoryIsABuildErro
 	}
 }
 
-func TestRepoProfile_FactPackFetchedOver30DaysAgoIsAWarningNotAnError(t *testing.T) {
-	// ValidFactPack was fetched 2026-10-19.
+func TestRepoProfile_FactPackUnchangedUpstreamOver30DaysIsAWarningNotAnError(t *testing.T) {
+	// ValidFactPack was fetched 2026-10-19. A Refresh keeps an unchanged
+	// Fact Pack's fetched_at, so its age is how long the repository's facts
+	// have not changed: the warning points at the repository, not at the
+	// Refresh.
 	cfg := buildtest.Config()
 	cfg.Now = time.Date(2026, 11, 20, 12, 0, 0, 0, time.UTC) // 32 days later
 
 	out, res := buildtest.Build(t, cfg, repoProfileTree())
 
-	buildtest.RequireWarningRule(t, res, repoProfileFile, "fact-pack-stale", "Fact Pack "+factPackFile+" was fetched 2026-10-19, 32 days ago")
+	buildtest.RequireWarningRule(t, res, repoProfileFile, "fact-pack-stale", "Fact Pack "+factPackFile+" unchanged upstream for 32 days (since 2026-10-19)")
+	buildtest.RequireWarningRule(t, res, repoProfileFile, "fact-pack-stale", "the repository may be dormant; check it at the next Review")
+	for _, w := range res.Warnings {
+		if w.Rule == "fact-pack-stale" && strings.Contains(w.Message, "Refresh") {
+			t.Errorf("the warning must not advise a Refresh (the weekly Refresh already ran): %q", w.Message)
+		}
+	}
 	if len(res.Errors) != 0 || !buildtest.Exists(out, repoProfilePath) {
 		t.Errorf("a stale Fact Pack must not fail the build; errors:\n%s", res)
 	}

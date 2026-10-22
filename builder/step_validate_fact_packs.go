@@ -15,13 +15,17 @@ const (
 	// than the Profile's `repo` frontmatter: the page would render another
 	// repository's facts.
 	ruleFactPackRepo = "fact-pack-repo"
-	// ruleFactPackStale warns (never fails) when a Fact Pack was fetched
-	// more than factPackMaxAge before the build clock: the weekly Refresh
-	// has not landed, so the facts may be behind.
+	// ruleFactPackStale warns (never fails) when a Fact Pack's fetched_at
+	// is more than factPackMaxAge before the build clock. A Refresh keeps
+	// an unchanged Fact Pack's bytes, fetched_at included, so the age is
+	// how long the repository's facts have not changed upstream: the
+	// repository may be dormant, which the Author checks at the next
+	// Review.
 	ruleFactPackStale = "fact-pack-stale"
 )
 
-// factPackMaxAge is how old a Fact Pack may be before the build warns.
+// factPackMaxAge is how long a Fact Pack may stay unchanged upstream before
+// the build warns.
 const factPackMaxAge = 30 * 24 * time.Hour
 
 // validateFactPacks checks every loaded Fact Pack against its Repo Profile
@@ -37,8 +41,8 @@ func validateFactPacks(s *site) error {
 			s.fail(e.File, ruleFactPackRepo, "Fact Pack %s names repository %q, but repo is %q: fetch the Fact Pack for %s", file, fp.Slug, e.Repo, e.Repo)
 		}
 		if age := s.cfg.Now.Sub(fp.FetchedAt); age > factPackMaxAge {
-			s.warn(e.File, ruleFactPackStale, "Fact Pack %s was fetched %s, %d days ago; Refresh it (every week)",
-				file, fp.FetchedAt.Format("2006-01-02"), int(age/(24*time.Hour)))
+			s.warn(e.File, ruleFactPackStale, "Fact Pack %s unchanged upstream for %d days (since %s): the repository may be dormant; check it at the next Review",
+				file, int(age/(24*time.Hour)), fp.FetchedAt.Format("2006-01-02"))
 		}
 	}
 	return nil
