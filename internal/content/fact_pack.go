@@ -54,7 +54,8 @@ type FactPack struct {
 	// Stargazers is the stargazers/count endpoint's answer; it reserves the
 	// place for star history, which v1 does not store.
 	Stargazers Stargazers `json:"stargazers"`
-	// Sources are the URLs fetched, merged into the Profile's Sources.
+	// Sources are the github.com pages behind the calls the fetch made (never
+	// API URLs), each once, merged into the Profile's Sources.
 	Sources []string `json:"sources"`
 }
 

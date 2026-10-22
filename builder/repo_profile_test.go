@@ -300,7 +300,7 @@ func TestRepoProfile_FactPackKeysFollowTheSpecAndAbsentFactsAreNeverInvented(t *
   "files": {"readme": "README.md", "license": "", "security": "", "contributing": "", "code_of_conduct": "", "ci": [], "manifests": ["Cargo.toml"], "dockerfile": "", "docs": "", "examples": ""},
   "readme": {"url": "https://github.com/apache/iggy/blob/main/README.md", "sha": "abc"},
   "stargazers": {"count": 1234567},
-  "sources": ["https://api.github.com/repos/apache/iggy"]
+  "sources": ["https://github.com/apache/iggy"]
 }`
 	out := buildtest.MustBuild(t, buildtest.Config(), repoProfileTree().With(factPackFile, []byte(spelled)))
 	card := buildtest.Page(t, out, repoProfilePath).Find(".repo-profile-card")

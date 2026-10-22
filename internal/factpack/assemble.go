@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -97,16 +98,29 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	out := &fetched{pack: &content.FactPack{FetchedAt: f.now().UTC().Truncate(time.Second)}}
 	fp := out.pack
 	base := "/repos/" + repo
-	get := func(path string, v any) error {
+	var r repository
+	// cite records a source: the github.com page a Reader opens to check
+	// what a call answered, once (several calls read the repository page).
+	cite := func(page string) {
+		if page != "" && !slices.Contains(fp.Sources, page) {
+			fp.Sources = append(fp.Sources, page)
+		}
+	}
+	// get makes one call and, when it answers, cites its page; page is
+	// read after the answer is decoded, so it may use the answer.
+	get := func(path string, v any, page func() string) error {
 		if _, err := f.GitHub.Get(ctx, path, v); err != nil {
 			return err
 		}
-		fp.Sources = append(fp.Sources, github.APIURL+path)
+		cite(page())
 		return nil
 	}
+	// onGitHub is the repository's page plus suffix, e.g. "/releases".
+	onGitHub := func(suffix string) func() string {
+		return func() string { return r.HTMLURL + suffix }
+	}
 
-	var r repository
-	if err := get(base, &r); err != nil {
+	if err := get(base, &r, onGitHub("")); err != nil {
 		if errors.Is(err, github.ErrNotFound) {
 			return nil, fmt.Errorf("repository %s is not on GitHub (or the token cannot see it): %w", repo, err)
 		}
@@ -130,12 +144,12 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	}
 
 	fp.Languages = map[string]int64{}
-	if err := get(base+"/languages", &fp.Languages); err != nil {
+	if err := get(base+"/languages", &fp.Languages, onGitHub("")); err != nil {
 		return nil, err
 	}
 
 	var releases []release
-	if err := get(base+"/releases?per_page=10", &releases); err != nil {
+	if err := get(base+"/releases?per_page=10", &releases, onGitHub("/releases")); err != nil {
 		return nil, err
 	}
 	fp.Releases = []content.Release{}
@@ -156,7 +170,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	}
 
 	var top []contributor
-	if err := get(base+"/contributors?per_page=10", &top); err != nil {
+	if err := get(base+"/contributors?per_page=10", &top, onGitHub("/graphs/contributors")); err != nil {
 		return nil, err
 	}
 	fp.Contributors.Top = []content.Contributor{}
@@ -169,7 +183,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	if err != nil {
 		return nil, err
 	}
-	fp.Sources = append(fp.Sources, github.APIURL+countPath)
+	cite(onGitHub("/graphs/contributors")())
 	fp.Contributors.Total = len(one)
 	if last, ok := github.LastPage(header); ok {
 		fp.Contributors.Total = last
@@ -177,7 +191,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 
 	var tree gitTree
 	entries := []entry{}
-	err = get(base+"/git/trees/"+r.DefaultBranch, &tree)
+	err = get(base+"/git/trees/"+r.DefaultBranch, &tree, onGitHub(""))
 	switch {
 	case errors.Is(err, github.ErrNotFound): // an empty repository has no tree
 		out.notes = append(out.notes, fmt.Sprintf("%s has no files on %s yet", repo, r.DefaultBranch))
@@ -191,7 +205,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	}
 	if hasGithubDir {
 		var dir []contentEntry
-		if err := get(base+"/contents/.github?ref="+r.DefaultBranch, &dir); err != nil {
+		if err := get(base+"/contents/.github?ref="+r.DefaultBranch, &dir, onGitHub("/tree/"+r.DefaultBranch+"/.github")); err != nil {
 			return nil, err
 		}
 		for _, d := range dir {
@@ -201,7 +215,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	fp.Files = detectFiles(entries)
 
 	var readme readmeAnswer
-	err = get(base+"/readme", &readme)
+	err = get(base+"/readme", &readme, func() string { return readme.HTMLURL })
 	switch {
 	case errors.Is(err, github.ErrNotFound):
 		out.notes = append(out.notes, repo+" has no README")
@@ -237,7 +251,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 		out.notes = append(out.notes, "stargazers/count answered without a count for "+repo+"; stargazers.count is the repository's stargazers_count")
 	default:
 		fp.Stargazers.Count = count.Count
-		fp.Sources = append(fp.Sources, github.APIURL+countPath)
+		cite(onGitHub("")())
 	}
 
 	if fp.License != nil && fp.License.NeedsReview {

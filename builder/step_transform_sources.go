@@ -14,8 +14,9 @@ import (
 // section, so the end of the body), which the page and the full-text feed
 // both render; a Brief's are listed with its source_url (briefPage). Each
 // URL appears once: a source already linked there is not repeated. A Repo
-// Profile's Fact Pack `sources` (the URLs the fetch command read) follow
-// the frontmatter ones under the same rule, titled by their URL.
+// Profile's Fact Pack `sources` (the github.com pages behind the calls the
+// fetch command made) follow the frontmatter ones under the same rule,
+// titled by their URL, so an Author's citation of the same page merges.
 func init() {
 	registerStep(phaseTransform, 30, "merge explainer frontmatter sources", mergeExplainerSources)
 }

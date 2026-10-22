@@ -107,14 +107,10 @@
     "count": 2471
   },
   "sources": [
-    "https://api.github.com/repos/apache/iggy",
-    "https://api.github.com/repos/apache/iggy/languages",
-    "https://api.github.com/repos/apache/iggy/releases?per_page=10",
-    "https://api.github.com/repos/apache/iggy/contributors?per_page=10",
-    "https://api.github.com/repos/apache/iggy/contributors?per_page=1",
-    "https://api.github.com/repos/apache/iggy/git/trees/main",
-    "https://api.github.com/repos/apache/iggy/contents/.github?ref=main",
-    "https://api.github.com/repos/apache/iggy/readme",
-    "https://api.github.com/repos/apache/iggy/stargazers/count"
+    "https://github.com/apache/iggy",
+    "https://github.com/apache/iggy/releases",
+    "https://github.com/apache/iggy/graphs/contributors",
+    "https://github.com/apache/iggy/tree/main/.github",
+    "https://github.com/apache/iggy/blob/main/README.md"
   ]
 }

@@ -5,18 +5,19 @@
 // interface so tests serve recorded JSON from an in-process server.
 //
 // One fetch is at most ten REST calls (spec "Content model"), in this
-// order; each that answers is recorded in the Fact Pack's sources on
-// github.APIURL:
+// order. Each that answers cites, in the Fact Pack's sources, the
+// github.com page a Reader opens to check it (the third column; {repo} is
+// the repository's page), each page once:
 //
-//	GET /repos/{owner}/{name}                            repository facts
-//	GET /repos/{owner}/{name}/languages                  bytes by language
-//	GET /repos/{owner}/{name}/releases?per_page=10       latest ten releases
-//	GET /repos/{owner}/{name}/contributors?per_page=10   top ten contributors
-//	GET /repos/{owner}/{name}/contributors?per_page=1    total: the Link header's last page
-//	GET /repos/{owner}/{name}/git/trees/{branch}         root files and directories
-//	GET /repos/{owner}/{name}/contents/.github?ref=…     .github files (only when the root has .github)
-//	GET /repos/{owner}/{name}/readme                     README page, blob SHA and text
-//	GET /repos/{owner}/{name}/stargazers/count           stargazer count
+//	GET /repos/{owner}/{name}                            repository facts          {repo}
+//	GET /repos/{owner}/{name}/languages                  bytes by language         {repo}
+//	GET /repos/{owner}/{name}/releases?per_page=10       latest ten releases       {repo}/releases
+//	GET /repos/{owner}/{name}/contributors?per_page=10   top ten contributors      {repo}/graphs/contributors
+//	GET /repos/{owner}/{name}/contributors?per_page=1    total: Link's last page   {repo}/graphs/contributors
+//	GET /repos/{owner}/{name}/git/trees/{branch}         root files and dirs       {repo}
+//	GET /repos/{owner}/{name}/contents/.github?ref=…     .github files (if any)    {repo}/tree/{branch}/.github
+//	GET /repos/{owner}/{name}/readme                     README blob SHA and text  the README's blob page
+//	GET /repos/{owner}/{name}/stargazers/count           stargazer count           {repo}
 package factpack
 
 import (

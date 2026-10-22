@@ -30,8 +30,7 @@ const (
 	// per repository) and which a fine-grained personal access token with
 	// read access to public repositories fills locally.
 	EnvToken = "GITHUB_TOKEN"
-	// APIURL is the public REST API. A Fact Pack's sources are spelled on
-	// it whatever BaseURL the Client was pointed at.
+	// APIURL is the public REST API.
 	APIURL = "https://api.github.com"
 	// UserAgent identifies the fetch command on every request, as GitHub's
 	// terms ask.

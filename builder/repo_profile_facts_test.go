@@ -150,21 +150,22 @@ func TestRepoProfile_ChangelogWithoutReleasesSaysSo(t *testing.T) {
 
 func TestRepoProfile_FactPackSourcesJoinTheSourcesSectionOncePerURL(t *testing.T) {
 	p := buildtest.ValidRepoProfile()
-	// The body's ## Sources already links the repository; the frontmatter
-	// cites the first API URL; the Fact Pack repeats both and adds one.
-	p.Sources = []buildtest.Source{{Title: "Repository metadata", URL: "https://api.github.com/repos/apache/iggy"}}
+	// The body's ## Sources already links the repository page; the
+	// frontmatter cites the releases page; the Fact Pack's pages repeat both
+	// (one with a trailing slash) and add the contributors graph.
+	p.Sources = []buildtest.Source{{Title: "Release notes", URL: "https://github.com/apache/iggy/releases"}}
 	p.FactPack.Sources = []string{
 		"https://github.com/apache/iggy/",
-		"https://api.github.com/repos/apache/iggy",
-		"https://api.github.com/repos/apache/iggy/releases?per_page=10",
+		"https://github.com/apache/iggy/releases",
+		"https://github.com/apache/iggy/graphs/contributors",
 	}
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.NewTree().WithRepoProfile(p))
 	sources := buildtest.Page(t, out, repoProfilePath).Find("article .sources")
 
 	for href, text := range map[string]string{
-		"https://github.com/apache/iggy":                                "apache/iggy on GitHub", // the body link, not repeated
-		"https://api.github.com/repos/apache/iggy":                      "Repository metadata",   // the frontmatter title wins
-		"https://api.github.com/repos/apache/iggy/releases?per_page=10": "https://api.github.com/repos/apache/iggy/releases?per_page=10",
+		"https://github.com/apache/iggy":                     "apache/iggy on GitHub", // the body link, not repeated
+		"https://github.com/apache/iggy/releases":            "Release notes",         // the frontmatter title wins
+		"https://github.com/apache/iggy/graphs/contributors": "https://github.com/apache/iggy/graphs/contributors",
 	} {
 		links := sources.Find(`a[href="` + href + `"]`)
 		if links.Length() != 1 {
@@ -178,7 +179,7 @@ func TestRepoProfile_FactPackSourcesJoinTheSourcesSectionOncePerURL(t *testing.T
 		t.Errorf("Sources repeats the repository with a trailing slash (%d links)", n)
 	}
 	feed := readFeed(t, out, "/feed.xml")
-	if len(feed.Channel.Items) != 1 || !strings.Contains(feed.Channel.Items[0].Content, `href="https://api.github.com/repos/apache/iggy/releases?per_page=10"`) {
+	if len(feed.Channel.Items) != 1 || !strings.Contains(feed.Channel.Items[0].Content, `href="https://github.com/apache/iggy/graphs/contributors"`) {
 		t.Errorf("the full-text feed item lacks the Fact Pack source")
 	}
 }

@@ -234,13 +234,11 @@ func ValidFactPack() FactPack {
 		README:     README{URL: "https://github.com/apache/iggy/blob/main/README.md", SHA: "7c6b2a0f9e8d4c3b1a0f9e8d7c6b5a4f3e2d1c0b"},
 		Stargazers: 2468,
 		Sources: []string{
-			"https://api.github.com/repos/apache/iggy",
-			"https://api.github.com/repos/apache/iggy/languages",
-			"https://api.github.com/repos/apache/iggy/releases?per_page=10",
-			"https://api.github.com/repos/apache/iggy/contributors?per_page=10",
-			"https://api.github.com/repos/apache/iggy/git/trees/main",
-			"https://api.github.com/repos/apache/iggy/readme",
-			"https://api.github.com/repos/apache/iggy/stargazers/count",
+			"https://github.com/apache/iggy",
+			"https://github.com/apache/iggy/releases",
+			"https://github.com/apache/iggy/graphs/contributors",
+			"https://github.com/apache/iggy/tree/main/.github",
+			"https://github.com/apache/iggy/blob/main/README.md",
 		},
 	}
 }

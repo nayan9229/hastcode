@@ -564,8 +564,8 @@ make refresh                       # every Profile; the command exits 3 when any
   builder's build cache), never into the content tree: the Fact Pack
   carries only the README's URL and blob SHA. It prints each file written
   and every note (a `NOASSERTION` license, a fallback).
-- **Calls.** At most ten GET requests per repository, serially, each
-  recorded in the Fact Pack's `sources`: the repository; `languages`;
+- **Calls.** At most ten GET requests per repository, serially: the
+  repository; `languages`;
   `releases?per_page=10` (`latest_release` is the newest non-prerelease
   among them, drafts skipped); `contributors?per_page=10` (the top ten)
   and `contributors?per_page=1`, whose `Link` header's last page is the
@@ -575,8 +575,16 @@ make refresh                       # every Profile; the command exits 3 when any
   `readme` (page URL, blob SHA and the text, base64 in the same answer);
   `stargazers/count`. A `readme` 404 means no README; a
   `stargazers/count` 404, or an answer without a `count`, falls back to
-  the repository's `stargazers_count` with a note, and the endpoint is not
-  listed as a source. `watchers` is GitHub's `subscribers_count`
+  the repository's `stargazers_count` with a note.
+- **Sources.** Each call that answered cites, in the Fact Pack's
+  `sources`, the github.com page a Reader can open to check it, never the
+  API endpoint, each page once and in call order: the repository page
+  (repository, `languages`, the tree, `stargazers/count`), the releases
+  page, the contributors graph page (`/graphs/contributors`), the
+  `.github` tree page (`/tree/<branch>/.github`) and the README's blob
+  page. The builder lists them in Sources after the frontmatter sources,
+  once per URL, so an Author citing the same page in frontmatter or in
+  the body's Sources section is not repeated. `watchers` is GitHub's `subscribers_count`
   (`watchers_count` is stars). A license URL is its spdx.org page;
   `NOASSERTION` (GitHub could not classify it) sets `needs_review: true`
   and prints a note telling the Author to read the LICENSE file by hand;

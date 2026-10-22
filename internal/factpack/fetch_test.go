@@ -5,6 +5,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -176,14 +177,19 @@ func TestFetch_RepositoryWithoutREADMEOrDotGithub(t *testing.T) {
 		t.Errorf("contributors.total = %d, want 1 (no Link header: the one page is the count)", fp.Contributors.Total)
 	}
 	// stargazers/count is not served for this repository: the repository's
-	// stargazers_count stands in, with a note, and the endpoint is not a source.
+	// stargazers_count stands in, with a note.
 	if fp.Stargazers.Count != 17820 {
 		t.Errorf("stargazers.count = %d, want the repository's 17820", fp.Stargazers.Count)
 	}
-	for _, s := range fp.Sources {
-		if strings.HasSuffix(s, "/stargazers/count") || strings.HasSuffix(s, "/readme") || strings.Contains(s, "/contents/.github") {
-			t.Errorf("source %s answered 404 and must not be listed", s)
-		}
+	// Sources are the github.com pages a Reader opens, each once: no README
+	// page (404) and no .github page (none at the root).
+	wantSources := []string{
+		"https://github.com/nats-io/nats-server",
+		"https://github.com/nats-io/nats-server/releases",
+		"https://github.com/nats-io/nats-server/graphs/contributors",
+	}
+	if !slices.Equal(fp.Sources, wantSources) {
+		t.Errorf("sources = %q, want %q", fp.Sources, wantSources)
 	}
 	if !strings.Contains(h.log.String(), "stargazers_count") {
 		t.Errorf("expected a note about the stargazers fallback; log:\n%s", h.log)
