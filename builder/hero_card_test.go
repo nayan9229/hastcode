@@ -1,9 +1,13 @@
 package builder_test
 
 import (
+	"bytes"
 	"image"
 	"image/color"
+	"image/png"
 	"maps"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -80,6 +84,78 @@ func TestHeroCard_AltTextIsTheRepositoryAndItsDescriptionOnTheImgAndOpenGraph(t 
 	if got := doc.Find(`head meta[property="og:image:alt"]`).AttrOr("content", ""); got != want {
 		t.Errorf("og:image:alt = %q, want %q", got, want)
 	}
+
+	// GitHub has no description: the card and its alt fall back to the
+	// Profile's own.
+	p := buildtest.ValidRepoProfile()
+	p.FactPack.Description = ""
+	out = buildtest.MustBuild(t, buildtest.Config(), buildtest.NewTree().WithRepoProfile(p))
+	if got := buildtest.Page(t, out, repoProfilePath).Find("article picture img").AttrOr("alt", ""); got != "apache/iggy: "+p.Description {
+		t.Errorf("hero alt without a GitHub description = %q, want the repository and the Profile's description", got)
+	}
+}
+
+// heroCardFile is the card the build draws for the fixture Profile: written
+// under the build cache, mirroring the content path (README "hero card").
+func heroCardFile(cacheDir string) string {
+	return filepath.Join(cacheDir, "hero-cards", "explainers", "distributed-systems", "apache-iggy.png")
+}
+
+// Spec: the hero pipeline cuts 16:9, 4:3, 1:1 and 1200x630 crops from the
+// 1600x900 card. The 1:1 crop keeps the middle 900 px and the OG crop trims
+// 30 px top and bottom, so everything but the bottom band must sit inside
+// that, for a short Fact Pack and for one whose every line is too long.
+func TestHeroCard_IsA1600x900PNGWithEveryLineInsideTheSquareAndOpenGraphCrops(t *testing.T) {
+	long := buildtest.ValidRepoProfile()
+	long.Repo = "kubernetes-sigs/cluster-api-provider-aws"
+	long.FactPack.Slug = long.Repo
+	long.FactPack.Description = "Kubernetes Cluster API Provider AWS provides consistent deployment and day 2 operations of self-managed and EKS Kubernetes clusters on AWS."
+	long.FactPack.Language = "Jupyter Notebook"
+	long.FactPack.Stars = 1234567
+	long.FactPack.License = &buildtest.License{SPDXID: "GPL-3.0-or-later", Name: "GNU General Public License v3.0 or later", URL: "https://spdx.org/licenses/GPL-3.0-or-later.html"}
+	long.FactPack.LatestRelease.Tag = "v2.10.0-beta.1"
+
+	for name, p := range map[string]buildtest.Explainer{"short": buildtest.ValidRepoProfile(), "long": long} {
+		t.Run(name, func(t *testing.T) {
+			cfg := buildtest.Config()
+			cfg.CacheDir = t.TempDir()
+			buildtest.MustBuild(t, cfg, buildtest.NewTree().WithRepoProfile(p))
+
+			data, err := os.ReadFile(heroCardFile(cfg.CacheDir))
+			if err != nil {
+				t.Fatalf("the build drew no card: %v", err)
+			}
+			img, err := png.Decode(bytes.NewReader(data))
+			if err != nil {
+				t.Fatal(err)
+			}
+			if b := img.Bounds(); b.Dx() != 1600 || b.Dy() != 900 {
+				t.Fatalf("card is %dx%d, want 1600x900", b.Dx(), b.Dy())
+			}
+			minX, minY, maxX, maxY := 1600, 900, -1, -1
+			for y := 0; y < 860; y++ { // above the accent band
+				for x := range 1600 {
+					if !isWhite(img, x, y) {
+						minX, minY, maxX, maxY = min(minX, x), min(minY, y), max(maxX, x), max(maxY, y)
+					}
+				}
+			}
+			if maxX < 0 {
+				t.Fatal("nothing is drawn above the band")
+			}
+			if minX < 350 || maxX >= 1250 {
+				t.Errorf("ink spans x %d..%d, want within 350..1249 (the 1:1 crop)", minX, maxX)
+			}
+			if minY < 30 || maxY >= 870 {
+				t.Errorf("ink spans y %d..%d, want within 30..869 (the 1200x630 crop)", minY, maxY)
+			}
+		})
+	}
+}
+
+func isWhite(img image.Image, x, y int) bool {
+	r, g, b, _ := img.At(x, y).RGBA()
+	return r>>8 == 0xFF && g>>8 == 0xFF && b>>8 == 0xFF
 }
 
 func TestHeroCard_ProfileWithAHeroUsesItUnchanged(t *testing.T) {
@@ -151,14 +227,23 @@ func TestHeroCard_FileNamesChangeWhenStarsOrTheLatestReleaseChangeButNotWhenOnly
 	}
 }
 
-func TestHeroCard_SecondBuildOfAnUnchangedFactPackHitsTheImageCache(t *testing.T) {
+func TestHeroCard_SecondBuildOfAnUnchangedFactPackDrawsTheSameBytesAndHitsTheImageCache(t *testing.T) {
 	cfg := buildtest.Config()
 	cfg.Images.CacheDir = t.TempDir()
 
+	cfg.CacheDir = t.TempDir()
 	first := buildtest.MustBuild(t, cfg, repoProfileTree())
+	firstCard := heroCardFile(cfg.CacheDir)
 	before := cacheSnapshot(t, cfg.Images.CacheDir)
-	second := buildtest.MustBuild(t, cfg, repoProfileTree()) // fresh content, output and build cache: the card is drawn again
+	cfg.CacheDir = t.TempDir() // fresh content, output and build cache: the card is drawn again
+	second := buildtest.MustBuild(t, cfg, repoProfileTree())
 	after := cacheSnapshot(t, cfg.Images.CacheDir)
+
+	a, errA := os.ReadFile(firstCard)
+	b, errB := os.ReadFile(heroCardFile(cfg.CacheDir))
+	if errA != nil || errB != nil || !bytes.Equal(a, b) {
+		t.Errorf("two builds of the same Fact Pack drew different cards (%v, %v)", errA, errB)
+	}
 
 	if !maps.Equal(before, after) {
 		t.Errorf("image cache changed on a rebuild of the same Fact Pack: the card was re-encoded, so it was not drawn to the same bytes:\nbefore %v\nafter  %v", before, after)

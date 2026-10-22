@@ -190,7 +190,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
-| `builder/step_validate_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's test hook), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
+| `builder/step_validate_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's text seam, see "Tests"), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
 | `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
 | `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
 | `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
@@ -451,8 +451,10 @@ after `.e-content`. Plausible comes
 from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set.
 Everything must work without JS.
 
-**Tests.** Only two seams are tested (spec "Testing Decisions"): the Build seam
-and the Subscribe HTTP seam. Build-seam tests live in `builder/` as package
+**Tests.** Four seams are tested, and only these (spec "Testing
+Decisions"): the Build seam, the Subscribe HTTP seam, the Fetch seam
+(`internal/factpack` against an in-process GitHub) and the hero card's
+text seam (`views.HeroCardText`, below). Build-seam tests live in `builder/` as package
 `builder_test`, import only `builder` and `internal/buildtest`, and assert on
 parsed output. Helpers in `internal/buildtest`:
 
@@ -509,6 +511,16 @@ Subscribe-seam tests live in `subscribe/subscribe_test.go` (package
 `subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,
 BaseURL: fake.URL})`, send form posts through `ServeHTTP`, and assert status,
 `Location`/JSON body and what the `httptest` fake Buttondown received.
+
+The hero card's text seam is `internal/views/hero_card_test.go` (package
+`views_test`): which words the card draws (wordmark, repository,
+description wrapped and cut with an ellipsis, the facts line without
+absent facts or runes the font lacks) cannot be read back from pixels at
+the Build seam, so `views.HeroCardText(views.HeroCard)` returns the lines
+the renderer lays out, the same layout `HeroCardPNG` draws. Everything
+else about the card (pipeline, alt text, 1600x900, crop-safe layout read
+from the card the build writes under its cache, same bytes for the same
+Fact Pack) is asserted at the Build seam in `builder/hero_card_test.go`.
 
 Fetch-seam tests live in `internal/factpack/*_test.go` (package
 `factpack_test`): `newHarness(t)` starts the fake GitHub (`fake_test.go`),

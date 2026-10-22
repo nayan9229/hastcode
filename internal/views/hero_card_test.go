@@ -1,18 +1,18 @@
 package views_test
 
 import (
-	"bytes"
-	"image"
-	"image/png"
 	"strings"
 	"testing"
 
 	"hastcode.com/site/internal/views"
 )
 
-// The hero card renderer. The builder tests prove the card goes through
-// the hero pipeline; these check what is drawn, through the renderer's
-// text hook (HeroCardText) and the PNG itself.
+// The hero card renderer's text seam (README "Tests"). The builder tests
+// prove everything a build shows of the card: the hero pipeline, alt text,
+// the 1600x900 size, the crop-safe layout and the same bytes for the same
+// Fact Pack. Which words are drawn cannot be read back from pixels, so
+// these check the text the renderer lays out (HeroCardText, the same
+// layout HeroCardPNG draws): the lines, the cut description, absent facts.
 
 func iggy() views.HeroCard {
 	return views.HeroCard{
@@ -75,72 +75,4 @@ func TestHeroCard_LeavesOutAbsentFactsAndRunesTheFontCannotDraw(t *testing.T) {
 	if lines := views.HeroCardText(views.HeroCard{Repo: "php/frankenphp"}); strings.Join(lines, "|") != "hastcode|php/frankenphp" {
 		t.Errorf("card lines with no facts = %q, want only the wordmark and repository", lines)
 	}
-}
-
-func TestHeroCard_AltIsTheRepositoryAndTheFullDescription(t *testing.T) {
-	if got := iggy().Alt(); got != "apache/iggy: Persistent message streaming platform written in Rust" {
-		t.Errorf("Alt() = %q", got)
-	}
-	if got := (views.HeroCard{Repo: "apache/iggy"}).Alt(); got != "apache/iggy" {
-		t.Errorf("Alt() without a description = %q, want the repository alone", got)
-	}
-}
-
-func TestHeroCard_PNGIs1600x900AndTheSameBytesEveryTime(t *testing.T) {
-	data := views.HeroCardPNG(iggy())
-
-	img, err := png.Decode(bytes.NewReader(data))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if b := img.Bounds(); b.Dx() != 1600 || b.Dy() != 900 {
-		t.Errorf("card is %dx%d, want 1600x900", b.Dx(), b.Dy())
-	}
-	if !bytes.Equal(data, views.HeroCardPNG(iggy())) {
-		t.Error("two renders of the same card differ")
-	}
-}
-
-// Spec: the hero pipeline cuts 16:9, 4:3, 1:1 and 1200x630 crops from the
-// card. The 1:1 crop keeps the middle 900 px and the OG crop trims 30 px
-// top and bottom, so everything but the bottom band must sit inside that.
-func TestHeroCard_KeepsEveryLineInsideTheSquareAndOpenGraphCrops(t *testing.T) {
-	long := views.HeroCard{
-		Repo:        "kubernetes-sigs/cluster-api-provider-aws",
-		Description: "Kubernetes Cluster API Provider AWS provides consistent deployment and day 2 operations of self-managed and EKS Kubernetes clusters on AWS.",
-		Language:    "Jupyter Notebook",
-		Stars:       1234567,
-		License:     "GPL-3.0-or-later",
-		Release:     "v2.10.0-beta.1",
-	}
-	for name, c := range map[string]views.HeroCard{"short": iggy(), "long": long} {
-		t.Run(name, func(t *testing.T) {
-			img, err := png.Decode(bytes.NewReader(views.HeroCardPNG(c)))
-			if err != nil {
-				t.Fatal(err)
-			}
-			minX, minY, maxX, maxY := 1600, 900, -1, -1
-			for y := 0; y < 860; y++ { // above the accent band
-				for x := range 1600 {
-					if !isBackground(img, x, y) {
-						minX, minY, maxX, maxY = min(minX, x), min(minY, y), max(maxX, x), max(maxY, y)
-					}
-				}
-			}
-			if maxX < 0 {
-				t.Fatal("nothing is drawn above the band")
-			}
-			if minX < 350 || maxX >= 1250 {
-				t.Errorf("ink spans x %d..%d, want within 350..1249 (the 1:1 crop)", minX, maxX)
-			}
-			if minY < 30 || maxY >= 870 {
-				t.Errorf("ink spans y %d..%d, want within 30..869 (the 1200x630 crop)", minY, maxY)
-			}
-		})
-	}
-}
-
-func isBackground(img image.Image, x, y int) bool {
-	r, g, b, _ := img.At(x, y).RGBA()
-	return r>>8 == 0xFF && g>>8 == 0xFF && b>>8 == 0xFF
 }

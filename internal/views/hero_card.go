@@ -104,7 +104,8 @@ func HeroCardPNG(c HeroCard) []byte {
 
 // HeroCardText is the text HeroCardPNG draws, one string per line in
 // reading order: the wordmark, the repository, the description's lines
-// (as wrapped and cut) and the facts line. It is the renderer's test hook:
+// (as wrapped and cut) and the facts line. It is the renderer's text seam
+// (README "Tests"; pixels cannot say which words were drawn):
 // the same layout feeds both.
 func HeroCardText(c HeroCard) []string {
 	runs := heroCardRuns(c)
