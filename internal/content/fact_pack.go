@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+// FactPackReleaseCap is how many releases a Fact Pack lists at most: the
+// fetch command asks GitHub for the latest this many, so a count of
+// releases that reaches it is a floor ("10 or more").
+const FactPackReleaseCap = 10
+
 // FactPack is the machine-fetched facts about a repository that a Repo
 // Profile's fact sections (header card, Signals, Changelog) render from
 // (GLOSSARY "Fact Pack"). It is a JSON file beside the Profile's Markdown,
@@ -45,7 +50,8 @@ type FactPack struct {
 	// PushedAt is the last commit on any branch.
 	PushedAt time.Time `json:"pushed_at"`
 	// LatestRelease is the newest release that is not a prerelease; nil
-	// when there is none. Releases are the latest ten, newest first.
+	// when there is none. Releases are the latest FactPackReleaseCap,
+	// newest first.
 	LatestRelease *Release     `json:"latest_release"`
 	Releases      []Release    `json:"releases"`
 	Contributors  Contributors `json:"contributors"`

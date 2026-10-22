@@ -11,7 +11,7 @@
 //
 //	GET /repos/{owner}/{name}                            repository facts          {repo}
 //	GET /repos/{owner}/{name}/languages                  bytes by language         {repo}
-//	GET /repos/{owner}/{name}/releases?per_page=10       latest ten releases       {repo}/releases
+//	GET /repos/{owner}/{name}/releases?per_page=10       latest ten releases       {repo}/releases  (content.FactPackReleaseCap)
 //	GET /repos/{owner}/{name}/contributors?per_page=10   top ten contributors      {repo}/graphs/contributors
 //	GET /repos/{owner}/{name}/contributors?per_page=1    total: Link's last page   {repo}/graphs/contributors
 //	GET /repos/{owner}/{name}/git/trees/{branch}         root files and dirs       {repo}

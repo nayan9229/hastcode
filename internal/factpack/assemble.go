@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 
@@ -149,7 +150,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	}
 
 	var releases []release
-	if err := get(base+"/releases?per_page=10", &releases, onGitHub("/releases")); err != nil {
+	if err := get(base+"/releases?per_page="+strconv.Itoa(content.FactPackReleaseCap), &releases, onGitHub("/releases")); err != nil {
 		return nil, err
 	}
 	fp.Releases = []content.Release{}

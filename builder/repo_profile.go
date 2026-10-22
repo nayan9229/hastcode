@@ -21,10 +21,6 @@ import (
 // is never invented.
 const factNotFound = views.FactNotFound
 
-// factPackReleaseCap is how many releases a Fact Pack lists at most (the
-// latest ten, content.FactPack): a count that reaches it is a floor.
-const factPackReleaseCap = 10
-
 // repoProfileSignals maps a Fact Pack to the Signals section: the plain
 // facts the spec lists ("Page composition and gates"), no score.
 func repoProfileSignals(fp *content.FactPack) views.RepoProfileSignals {
@@ -75,7 +71,7 @@ func releasesLastYear(fp *content.FactPack) string {
 			n++
 		}
 	}
-	if n == len(fp.Releases) && n >= factPackReleaseCap {
+	if n == len(fp.Releases) && n >= content.FactPackReleaseCap {
 		return strconv.Itoa(n) + " or more"
 	}
 	return strconv.Itoa(n)
