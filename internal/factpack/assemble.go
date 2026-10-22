@@ -94,10 +94,10 @@ type readmeAnswer struct {
 const noAssertion = "NOASSERTION"
 
 // fetch makes the calls the package doc lists and maps the answers.
-func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
+func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error) {
 	out := &fetched{pack: &content.FactPack{FetchedAt: f.now().UTC().Truncate(time.Second)}}
 	fp := out.pack
-	base := "/repos/" + repo
+	base := "/repos/" + repo.String()
 	var r repository
 	// cite records a source: the github.com page a Reader opens to check
 	// what a call answered, once (several calls read the repository page).
@@ -131,7 +131,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	fp.DefaultBranch, fp.Language = r.DefaultBranch, r.Language
 	fp.Stars, fp.Forks, fp.Watchers, fp.OpenIssues = r.Stars, r.Forks, r.Subscribers, r.OpenIssues
 	fp.CreatedAt, fp.PushedAt = r.CreatedAt.UTC(), r.PushedAt.UTC()
-	if r.FullName != repo {
+	if r.FullName != repo.String() {
 		out.notes = append(out.notes, fmt.Sprintf("GitHub names this repository %s (asked for %s): set repo: %s in the Profile's frontmatter", r.FullName, repo, r.FullName))
 	}
 	if r.License != nil && r.License.SPDXID != "" {
@@ -218,7 +218,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	err = get(base+"/readme", &readme, func() string { return readme.HTMLURL })
 	switch {
 	case errors.Is(err, github.ErrNotFound):
-		out.notes = append(out.notes, repo+" has no README")
+		out.notes = append(out.notes, repo.String()+" has no README")
 	case err != nil:
 		return nil, err
 	default:
@@ -243,12 +243,12 @@ func (f *Fetcher) fetch(ctx context.Context, repo string) (*fetched, error) {
 	switch {
 	case errors.Is(err, github.ErrNotFound):
 		fp.Stargazers.Count = r.Stars
-		out.notes = append(out.notes, "stargazers/count is not available for "+repo+" (404); stargazers.count is the repository's stargazers_count")
+		out.notes = append(out.notes, "stargazers/count is not available for "+repo.String()+" (404); stargazers.count is the repository's stargazers_count")
 	case err != nil:
 		return nil, err
 	case count.Count == 0 && r.Stars > 0:
 		fp.Stargazers.Count = r.Stars
-		out.notes = append(out.notes, "stargazers/count answered without a count for "+repo+"; stargazers.count is the repository's stargazers_count")
+		out.notes = append(out.notes, "stargazers/count answered without a count for "+repo.String()+"; stargazers.count is the repository's stargazers_count")
 	default:
 		fp.Stargazers.Count = count.Count
 		cite(onGitHub("")())

@@ -30,7 +30,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"hastcode.com/site/internal/content"
@@ -76,9 +75,10 @@ type Result struct {
 // Profile of that repository, so a Fact Pack never lands beside the wrong
 // piece. A NOASSERTION license sets needs_review and is noted, never an
 // error.
-func (f *Fetcher) Fetch(ctx context.Context, repo, markdownFile string) (*Result, error) {
-	if err := checkRepo(repo); err != nil {
-		return nil, err
+func (f *Fetcher) Fetch(ctx context.Context, fullName, markdownFile string) (*Result, error) {
+	repo, err := content.ParseRepo(fullName)
+	if err != nil {
+		return nil, fmt.Errorf("repository %w", err)
 	}
 	if filepath.Ext(markdownFile) != ".md" {
 		return nil, fmt.Errorf("%s: a Repo Profile's Markdown file ends in .md; the Fact Pack is written beside it with .json", markdownFile)
@@ -110,33 +110,9 @@ func (f *Fetcher) Fetch(ctx context.Context, repo, markdownFile string) (*Result
 	return res, nil
 }
 
-// checkRepo requires owner/name: GitHub's owner (alphanumerics and hyphens)
-// and repository (alphanumerics, hyphens, underscores, dots) names.
-func checkRepo(repo string) error {
-	owner, name, ok := strings.Cut(repo, "/")
-	if !ok || owner == "" || name == "" || strings.Contains(name, "/") {
-		return fmt.Errorf("repository %q must be owner/name", repo)
-	}
-	for _, r := range owner {
-		if !isAlnum(r) && r != '-' {
-			return fmt.Errorf("repository %q must be owner/name", repo)
-		}
-	}
-	for _, r := range name {
-		if !isAlnum(r) && r != '-' && r != '_' && r != '.' {
-			return fmt.Errorf("repository %q must be owner/name", repo)
-		}
-	}
-	return nil
-}
-
-func isAlnum(r rune) bool {
-	return r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9'
-}
-
 // checkProfile refuses to write beside a Markdown file that exists and is
 // not a Repo Profile of repo.
-func checkProfile(markdownFile, repo string) error {
+func checkProfile(markdownFile string, repo content.Repo) error {
 	data, err := os.ReadFile(markdownFile)
 	if errors.Is(err, fs.ErrNotExist) {
 		return nil
@@ -158,12 +134,11 @@ func checkProfile(markdownFile, repo string) error {
 }
 
 // readmePath is where repo's README text goes under CacheDir.
-func (f *Fetcher) readmePath(repo, name string) string {
-	owner, repoName, _ := strings.Cut(repo, "/")
-	return filepath.Join(f.CacheDir, "readmes", owner, repoName, path.Base(name))
+func (f *Fetcher) readmePath(repo content.Repo, name string) string {
+	return filepath.Join(f.CacheDir, "readmes", repo.Owner, repo.Name, path.Base(name))
 }
 
-func (f *Fetcher) writeREADME(repo string, r *readmeText) (string, error) {
+func (f *Fetcher) writeREADME(repo content.Repo, r *readmeText) (string, error) {
 	file := f.readmePath(repo, r.name)
 	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		return "", err

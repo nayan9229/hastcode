@@ -48,7 +48,7 @@ type Explainer struct {
 	Sources     []Source
 	// Repo is the repository a Repo Profile evaluates (owner/name); WhoFor
 	// is its optional "who it is for" line. Both are Repo Profile only.
-	Repo   string
+	Repo   Repo
 	WhoFor string
 	Body   *markdown.Document
 }
@@ -87,7 +87,8 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 	default:
 		return nil, fmt.Errorf("frontmatter: kind %q must be one of case-study, concept, comparison, repo-profile", fm.Kind)
 	}
-	if err := checkRepoProfileKeys(fm); err != nil {
+	repo, err := checkRepoProfileKeys(fm)
+	if err != nil {
 		return nil, err
 	}
 	published, err := parseTime("published", fm.Published)
@@ -114,7 +115,7 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 		Related:     fm.Related,
 		Draft:       fm.Draft,
 		Sources:     fm.Sources,
-		Repo:        fm.Repo,
+		Repo:        repo,
 		WhoFor:      fm.WhoFor,
 		Body:        markdown.Parse(body),
 	}, nil
@@ -123,23 +124,23 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 // checkRepoProfileKeys enforces the keys that belong to a Repo Profile
 // alone: `repo` (owner/name) is required on one and an error on any other
 // kind, so the kind and its Fact Pack always agree; `who_for` is optional
-// on one and an error elsewhere.
-func checkRepoProfileKeys(fm explainerFrontmatter) error {
+// on one and an error elsewhere. It returns the parsed `repo`.
+func checkRepoProfileKeys(fm explainerFrontmatter) (Repo, error) {
 	if fm.Kind != RepoProfile {
 		if fm.Repo != "" {
-			return errors.New("frontmatter: repo is only for a Repo Profile (kind: repo-profile)")
+			return Repo{}, errors.New("frontmatter: repo is only for a Repo Profile (kind: repo-profile)")
 		}
 		if fm.WhoFor != "" {
-			return errors.New("frontmatter: who_for is only for a Repo Profile (kind: repo-profile)")
+			return Repo{}, errors.New("frontmatter: who_for is only for a Repo Profile (kind: repo-profile)")
 		}
-		return nil
+		return Repo{}, nil
 	}
 	if fm.Repo == "" {
-		return errors.New("frontmatter: repo is required for a Repo Profile (owner/name of the repository)")
+		return Repo{}, errors.New("frontmatter: repo is required for a Repo Profile (owner/name of the repository)")
 	}
-	owner, name, ok := strings.Cut(fm.Repo, "/")
-	if !ok || owner == "" || name == "" || strings.Contains(name, "/") {
-		return fmt.Errorf("frontmatter: repo %q must be owner/name", fm.Repo)
+	repo, err := ParseRepo(fm.Repo)
+	if err != nil {
+		return Repo{}, fmt.Errorf("frontmatter: repo %w", err)
 	}
-	return nil
+	return repo, nil
 }

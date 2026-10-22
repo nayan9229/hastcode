@@ -37,8 +37,8 @@ func validateFactPacks(s *site) error {
 			continue
 		}
 		file := content.FactPackFile(e.File)
-		if fp.Slug != e.Repo {
-			s.fail(e.File, ruleFactPackRepo, "Fact Pack %s names repository %q, but repo is %q: fetch the Fact Pack for %s", file, fp.Slug, e.Repo, e.Repo)
+		if fp.Slug != e.Repo.String() {
+			s.fail(e.File, ruleFactPackRepo, "Fact Pack %s names repository %q, but repo is %q: fetch the Fact Pack for %s", file, fp.Slug, e.Repo.String(), e.Repo)
 		}
 		if age := s.cfg.Now.Sub(fp.FetchedAt); age > factPackMaxAge {
 			s.warn(e.File, ruleFactPackStale, "Fact Pack %s unchanged upstream for %d days (since %s): the repository may be dormant; check it at the next Review",

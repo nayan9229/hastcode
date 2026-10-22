@@ -95,7 +95,7 @@ func (f *Fetcher) Refresh(ctx context.Context, contentDir string) (*RefreshRepor
 				return report, err
 			}
 		}
-		change := Change{Repo: p.repo, File: file, Facts: facts}
+		change := Change{Repo: p.repo.String(), File: file, Facts: facts}
 		report.Changes = append(report.Changes, change)
 		f.logf("%s", change)
 		for _, n := range got.notes {
@@ -109,7 +109,7 @@ func (f *Fetcher) Refresh(ctx context.Context, contentDir string) (*RefreshRepor
 // profile is one Repo Profile found in the content tree.
 type profile struct {
 	file string // content-relative Markdown path, "/"-separated
-	repo string
+	repo content.Repo
 }
 
 // repoProfiles lists the Repo Profiles under contentDir/explainers in path
