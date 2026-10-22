@@ -149,6 +149,68 @@ type RepoProfileCard struct {
 	LastCommit time.Time
 }
 
+// FactNotFound is what a Repo Profile's fact sections show for a fact the
+// Fact Pack does not carry; a fact is never invented.
+const FactNotFound = "not found"
+
+// RepoProfileSignals is a Repo Profile's Signals section
+// (partial_repo_profile_signals.templ): plain facts from the Fact Pack,
+// no score and no grade. Zero dates and empty strings render as
+// FactNotFound; the builder decides what counts as absent.
+type RepoProfileSignals struct {
+	// LastCommit is the Fact Pack's pushed date (zero = not found).
+	LastCommit time.Time
+	// ReleasesLastYear is the number of listed releases in the twelve
+	// months before the fetch, already formatted ("3", "10 or more", or
+	// FactNotFound): the Fact Pack lists at most ten releases.
+	ReleasesLastYear string
+	// LatestRelease is the release tag linking its release page (zero =
+	// no release yet) and LatestReleaseDate its date.
+	LatestRelease     Link
+	LatestReleaseDate time.Time
+	// Contributors is the contributor count (0 = not found: a repository
+	// has at least one contributor).
+	Contributors int
+	// TopContributor holds TopShare percent of the ListedContributions
+	// made by the Listed contributors the Fact Pack names (the top ten);
+	// Listed 0 = not found. The Fact Pack does not carry every
+	// contribution, so the share is of the listed ones.
+	TopContributor      Link
+	TopShare            int
+	ListedContributions int
+	Listed              int
+	OpenIssues          int
+	// SecurityPolicy is the security policy's path ("" = not found).
+	SecurityPolicy string
+	// License is the SPDX id, or what the Reader should know instead
+	// ("not found", "not classified").
+	License  string
+	Stars    int
+	Forks    int
+	Watchers int
+	// Documentation lists the documentation files and directories found
+	// (README, CONTRIBUTING, CODE_OF_CONDUCT, docs/, examples/); empty =
+	// none found.
+	Documentation []string
+}
+
+// RepoProfileChangelog is a Repo Profile's Changelog section
+// (partial_repo_profile_changelog.templ): the Fact Pack's releases,
+// newest first. nil = the Fact Pack lists no releases (not found); empty
+// = the repository has none yet.
+type RepoProfileChangelog struct {
+	Releases []ReleaseItem
+}
+
+// ReleaseItem is one release in a Changelog: its tag linking the release
+// page, its name, date and whether it is a pre-release.
+type ReleaseItem struct {
+	Tag        Link
+	Name       string
+	Date       time.Time
+	Prerelease bool
+}
+
 // BriefPage is the view model for a Brief article page.
 type BriefPage struct {
 	Page        Page

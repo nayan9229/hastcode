@@ -139,15 +139,15 @@ func encodeHeroes(s *site) error {
 		hr.files = map[string]string{}
 		imgs := make([]views.Image, len(res.Files))
 		for j, f := range res.Files {
-			sitePath := encodedImageURL(heroAssetDir, ref.hero, f)
+			sitePath := encodedImageURL(heroAssetDir, hr.name, f)
 			hr.files[sitePath] = f.Path
 			imgs[j] = views.Image{URL: s.imageURL(sitePath), Width: f.Width, Height: f.Height}
 		}
-		hr.view = heroViewOf(ref.alt, imgs)
+		hr.view = heroViewOf(hr.alt, imgs)
 		for _, f := range res.Files {
 			if f.Format == images.AVIF && f.Width == heroWeightWidth && f.Size > heroWeightBudget {
 				s.warn(ref.file, ruleHeroWeight, "hero %s: the %d px AVIF is %d KB, over the %d KB budget for the LCP image; re-export it smaller or simpler",
-					ref.hero, heroWeightWidth, f.Size/1000, heroWeightBudget/1000)
+					hr.name, heroWeightWidth, f.Size/1000, heroWeightBudget/1000)
 			}
 		}
 	}

@@ -2,6 +2,7 @@ package builder
 
 import (
 	"cmp"
+	"slices"
 	"strings"
 
 	"hastcode.com/site/internal/content"
@@ -12,7 +13,9 @@ import (
 // links). An Explainer's are appended to its ## Sources section (the last
 // section, so the end of the body), which the page and the full-text feed
 // both render; a Brief's are listed with its source_url (briefPage). Each
-// URL appears once: a source already linked there is not repeated.
+// URL appears once: a source already linked there is not repeated. A Repo
+// Profile's Fact Pack `sources` (the URLs the fetch command read) follow
+// the frontmatter ones under the same rule, titled by their URL.
 func init() {
 	registerStep(phaseTransform, 30, "merge explainer frontmatter sources", mergeExplainerSources)
 }
@@ -26,8 +29,14 @@ func mergeExplainerSources(s *site) error {
 				linked = e.Body.LinkDestinations(sec.Blocks)
 			}
 		}
+		sources := slices.Clone(e.Sources)
+		if fp := s.factPacks[e.File]; fp != nil {
+			for _, u := range fp.Sources {
+				sources = append(sources, content.Source{URL: u})
+			}
+		}
 		var extra []markdown.Link
-		for _, src := range newSources(linked, e.Sources) {
+		for _, src := range newSources(linked, sources) {
 			extra = append(extra, markdown.Link{Text: cmp.Or(src.Title, src.URL), URL: src.URL})
 		}
 		e.Body.AppendLinkList(extra)

@@ -121,7 +121,13 @@ Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: the Explainer names a raster beside its Markdown in `hero` (and
 `hero_alt`). The build fails if it is missing, does not decode, or is narrower
-than 1200 px. It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
+than 1200 px. The one exception is a Repo Profile, which may omit `hero`:
+the build then draws a 1600x900 card from its Fact Pack (wordmark,
+repository, description, language, stars, license, latest release; light
+palette, Go fonts; alt text "{repo}: {description}") and feeds it through
+the same pipeline, so a changed star count or release renames every
+variant and an unchanged Fact Pack hits the cache
+(`step_validate_hero_cards.go`, `internal/views/hero_card.go`). It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
 (never upscaled past the source; `heroWidths`), plus 1200 px JPEG crops at
 16:9, 4:3 and 1:1 (JSON-LD `image`) and 1200x630 (`og:image`,
 `twitter:image`), to `/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of
@@ -176,13 +182,15 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/load.go` | `eachMarkdown` and rule `frontmatter`, shared by the `step_load_*.go` steps. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown). No config or output knowledge. |
-| `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning past 30 days), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`). Tests: `builder/repo_profile_test.go`. |
+| `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go`, `step_transform_fact_sections.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning past 30 days), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`), the Signals and Changelog sections inserted into the body at transform 35 (`repoProfileSignals`, `repoProfileChangelog` -> `views.RepoProfileSignals`, `views.RepoProfileChangelog`; `partial_repo_profile_signals.templ`, `partial_repo_profile_changelog.templ`; rule `fact-sections`) and the `SoftwareSourceCode` and `FAQPage` JSON-LD (`softwareSourceCode`, `faqPage`). Tests: `builder/repo_profile_test.go`, `builder/repo_profile_facts_test.go`. |
+| `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
-| `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
+| `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
+| `builder/step_validate_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's test hook), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
 | `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
 | `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
 | `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
@@ -201,7 +209,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/page_search.templ`, `search.js` | Search page and its inline lazy loader (Pagefind modular UI on first focus). |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 1200x630 hero crop + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
-| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
+| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`; `SoftwareSourceCode` and `FAQPage` + `Question`/`Answer` for Repo Profiles only). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
@@ -233,10 +241,12 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
 and Briefs) 30; validate ads config 5, references 10, Brief references 12,
-Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
-35, section-length warning 40, Review-overdue warning 50, validate heroes 50
+Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
+skeleton 32, Brief skeleton 35, section-length warning 40, draw hero cards 45 (Repo Profiles
+without `hero`), Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
-rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30,
+rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30
+(and a Repo Profile's Fact Pack sources), insert Repo Profile fact sections 35,
 encode heroes 50, encode author photos 55;
 render reset 0, write site assets 10 (and the OG badge), write hero assets 15,
 write author photos 16, upload images 17 (r2 mode), render explainers 20, render briefs 30, render author pages 40,
@@ -285,6 +295,46 @@ slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
 `#fragment` optional); an unknown target is `broken-link`, a known one is
 rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
 ad slot follows "What happened".
+
+**Repo Profiles.** A `kind: repo-profile` Explainer keeps every Explainer
+rule (TL;DR first, Sources last with a link, a Mermaid fence) and adds the
+Repo Profile skeleton (`step_validate_repo_profile_skeleton.go`): the
+body's H2s are exactly TL;DR, In 60 seconds, Architecture, Use it if,
+Don't use it if, Alternatives, FAQ, Verdict, Sources, in that order
+(`repo-profile-sections`; the message names the heading and its position,
+or the first heading out of place); no hand-written Signals or Changelog,
+which the build renders from the Fact Pack after Architecture and
+Alternatives (`repo-profile-fact-section`); and five to eight `###`
+questions under FAQ (`repo-profile-faq`; an H2 under FAQ is an extra
+section). Heading text matches exactly (a straight apostrophe in "Don't").
+The constants in that file are the only spelling of the headings; the
+template and the fact-section placement reuse them.
+
+The fact sections (`step_transform_fact_sections.go`, transform 35) are
+builder HTML placed into the body at the end of the written section each
+follows (`doc.InsertHTMLAfterSection`, the way a rendered diagram replaces
+its fence), so the page, the full-text feeds and the search index all carry
+them. Signals (`partial_repo_profile_signals.templ`: `section.signals`, one
+`div[data-signal=…]` row per fact: last commit, releases in the twelve
+months before the fetch ("10 or more" when the ten listed all fall in it),
+latest release, contributors, the top contributor's share of the listed
+(top ten) contributions, open issues, security policy, license, stars,
+forks, watchers, documentation files and directories) and Changelog
+(`partial_repo_profile_changelog.templ`: `section.changelog`, the Fact
+Pack's releases newest first, each tag linking its release page, a
+pre-release marked in text and by `data-prerelease`). A fact the Fact Pack
+lacks reads "not found" (`views.FactNotFound`); nothing is scored, graded
+or invented. The Fact Pack's `sources` join the Sources section after the
+frontmatter sources, once per URL (`step_transform_sources.go`). The
+page's JSON-LD adds `SoftwareSourceCode` (full name, repository URL, and
+the language, license URL and description the Fact Pack carries) and
+`FAQPage` (one `Question` per `###` under FAQ, in order, answered by the
+HTML under it) beside the Article graph (`repo_profile.go`:
+`softwareSourceCode`, `faqPage`). Rule `fact-sections` fails a published
+Profile lacking the section a fact section follows: a safety net the
+skeleton rule makes unreachable. Both components paint with the brand
+tokens only, so the dark theme applies (`repo_profile_facts_test.go`
+greps their rules for colour literals).
 
 **Paginated listings.** `paginate(items, listingPageSize, baseURL)` in
 `builder/pagination.go` returns `[]listingPage[T]{Items, URL, Pagination}`
@@ -343,7 +393,9 @@ Author `url` is `/authors/<slug>/`; `sameAs` comes from the Author file's
 `same_as` list. `s.author` emits `@type` `Person`, or `Organization` when the
 Author's `kind` is `organization` (unknown kinds fail with `author-kind`;
 organizations get no `author-photo` warning). Article bylines use `@Byline(views.Link{Name, URL: authorURL(slug)})`
-(`partial_byline.templ`), which links the Author page. No `FAQPage`, `HowTo`, `Speakable` or `TechArticle`.
+(`partial_byline.templ`), which links the Author page. No `HowTo`, `Speakable` or `TechArticle`
+anywhere; `FAQPage` and `SoftwareSourceCode` only on a Repo Profile (see
+"Repo Profiles"), never on another kind (`TestExplainerJSONLD_NoUnsupportedTypes`).
 `writePage` fails an indexable page with no `application/ld+json` block
 (rule `jsonld-missing`; the page is not written), so a new page type needs
 at least its BreadcrumbList.
@@ -408,7 +460,7 @@ parsed output. Helpers in `internal/buildtest`:
   `ValidComparison()` (adds a `## Trade-offs` table), `ValidRepoProfile()` +
   `ValidFactPack()` + `Tree.WithRepoProfile(e)` (a Repo Profile of apache/iggy
   with the spec's headings, `repo`, `who_for` and its Fact Pack written
-  beside it; `FactPack.JSON()` spells the keys by hand, independently of
+  beside it, and no `hero`, so the build draws its card; `FactPack.JSON()` spells the keys by hand, independently of
   the parser, and `e.FactPack = nil` leaves the JSON out), `ValidBrief()` +
   `Tree.WithBrief(b)` (meets the Brief skeleton; links `ValidExplainer()` by
   slug, so use it with `ValidTree()`), `DefaultAuthor()`,

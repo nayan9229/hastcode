@@ -1,12 +1,16 @@
 // Package schema holds the schema.org JSON-LD node types the site emits
 // (spec "Structured data and head"): Article/NewsArticle, Person,
-// Organization, BreadcrumbList and WebSite. They are plain data:
-// the builder fills them with absolute URLs and formatted dates, and the
-// views marshal each top-level node into its own
-// <script type="application/ld+json"> block.
+// Organization, BreadcrumbList and WebSite, plus SoftwareSourceCode and
+// FAQPage on Repo Profiles only (content plan, "Page composition and
+// gates"). They are plain data: the builder fills them with absolute URLs
+// and formatted dates, and the views marshal each top-level node into its
+// own <script type="application/ld+json"> block.
 //
-// Deliberately absent: FAQPage, HowTo, Speakable and TechArticle (spec:
-// removed, deprecated, no evidence, unlisted by Google).
+// Deliberately absent: HowTo, Speakable and TechArticle (spec: removed,
+// deprecated, no evidence, unlisted by Google). FAQPage earns no Google
+// rich result any more; a Repo Profile carries it as a machine-readable
+// answer set for answer engines, built from its FAQ, and no other page
+// emits it.
 package schema
 
 // Context is the @context of every top-level block.
@@ -133,6 +137,41 @@ type ListItem struct {
 	Position int    `json:"position"`
 	Name     string `json:"name"`
 	Item     string `json:"item"`
+}
+
+// SoftwareSourceCode is the repository a Repo Profile evaluates, top-level
+// beside the Article. Only facts the Fact Pack carries are set: Name is
+// the repository's full name (owner/name), CodeRepository its URL, License
+// the license's URL.
+type SoftwareSourceCode struct {
+	Context             string `json:"@context"`
+	Type                string `json:"@type"` // "SoftwareSourceCode"
+	Name                string `json:"name"`
+	CodeRepository      string `json:"codeRepository"`
+	ProgrammingLanguage string `json:"programmingLanguage,omitempty"`
+	License             string `json:"license,omitempty"`
+	Description         string `json:"description,omitempty"`
+}
+
+// FAQPage is a Repo Profile's FAQ section as questions and answers: one
+// Question per FAQ H3, in page order, answered by the HTML under it.
+type FAQPage struct {
+	Context    string     `json:"@context"`
+	Type       string     `json:"@type"` // "FAQPage"
+	MainEntity []Question `json:"mainEntity"`
+}
+
+// Question is one FAQ entry: the question (Name) and its answer.
+type Question struct {
+	Type           string `json:"@type"` // "Question"
+	Name           string `json:"name"`
+	AcceptedAnswer Answer `json:"acceptedAnswer"`
+}
+
+// Answer is a Question's answer; Text may carry HTML.
+type Answer struct {
+	Type string `json:"@type"` // "Answer"
+	Text string `json:"text"`
 }
 
 // Crumb is a breadcrumb's name and absolute URL, for NewBreadcrumbList.
