@@ -17,8 +17,9 @@
 # IndexNow page manifest) must persist from one Publish to the next, and
 # GitHub's cache is scoped by ref: "Workflow runs also cannot restore caches
 # created for different tag names." A run on main saves to main's scope,
-# which the next Publish of the same Target restores (keys are per Target)
-# and which branch Previews can also restore.
+# which the next Publish of the same Target restores (keys are per Target:
+# hastcode-cloudflare-*, hastcode-vercel-*; Production's IndexNow manifest
+# apart as hastcode-indexnow-*) and which branch Previews can also restore.
 # Running "Publish" by hand (Actions tab, ref main, input tag) re-deploys an
 # existing tag through the same gate, as long as it is still its Target's
 # newest.
@@ -143,13 +144,23 @@ jobs:
           ref: ${{ needs.gate.outputs.commit }}
       - uses: ./.github/actions/setup
       - run: make test
-      # After npm ci (which wipes node_modules/). Production's own cache:
-      # its pages/production.json is the manifest of the last live build.
+      # After npm ci (which wipes node_modules/). Two caches: the build
+      # cache (encoded images, rendered diagrams; the same path list in
+      # every workflow, so a Preview can restore it) and, apart, the
+      # IndexNow page manifest of the last live build (pages/), which the
+      # go-live step (wizard stage 18) deletes alone.
       - uses: actions/cache/restore@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: &build-cache |
+            node_modules/.cache/hastcode/images
+            node_modules/.cache/hastcode/mermaid
           key: hastcode-cloudflare-${{ github.run_id }}
           restore-keys: hastcode-cloudflare-
+      - uses: actions/cache/restore@v6
+        with:
+          path: &manifest-cache node_modules/.cache/hastcode/pages
+          key: hastcode-indexnow-${{ github.run_id }}
+          restore-keys: hastcode-indexnow-
       # Production mode; every image HEAD/PUT to R2 and referenced on
       # images.hastcode.com. Missing credentials fail here (rule
       # image-store), before anything is encoded or deployed. The R2
@@ -205,8 +216,12 @@ jobs:
             --data-binary @"$RUNNER_TEMP/indexnow.json" -w '%{http_code}\n'
       - uses: actions/cache/save@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: *build-cache
           key: hastcode-cloudflare-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/cache/save@v6
+        with:
+          path: *manifest-cache
+          key: hastcode-indexnow-${{ github.run_id }}-${{ github.run_attempt }}
 
   vercel:
     name: Deploy to Vercel (QA)
@@ -230,9 +245,11 @@ jobs:
         with:
           vercel-cli: "true"
       - run: make test
+      # The build cache only: QA never pings IndexNow, so it needs no
+      # page manifest.
       - uses: actions/cache/restore@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: *build-cache
           key: hastcode-vercel-${{ github.run_id }}
           restore-keys: hastcode-vercel-
       - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
@@ -261,5 +278,5 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/cache/save@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: *build-cache
           key: hastcode-vercel-${{ github.run_id }}-${{ github.run_attempt }}

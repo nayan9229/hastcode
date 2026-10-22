@@ -690,10 +690,11 @@ curl -fsS -X POST https://api.indexnow.org/indexnow \
 200/202 are success; 403 means the key file is not live yet; 422 means a
 URL is not on `host`. Only Production Publishes ping, so
 `INDEXNOW_ENABLED` stays `false` until hastcode.com is served by Cloudflare
-(the setup wizard flips it at cutover and deletes the `hastcode-cloudflare-*`
-Actions caches, so the first Publish after cutover lists every page). The
-manifest the artefact is diffed against is Production's own (cache key
-per Target), so a QA Publish never hides a change from the next Production
+(the setup wizard flips it at cutover and deletes the `hastcode-indexnow-*`
+Actions caches, which hold only the page manifest, so the first Publish
+after cutover lists every page while encoded images and diagrams stay
+cached). The manifest the artefact is diffed against is Production's own
+(only the Cloudflare job restores and saves it), so a QA Publish never hides a change from the next Production
 ping. A failed ping fails the job before the build cache is saved, so the
 next Production Publish lists those URLs again.
 
@@ -966,9 +967,13 @@ images, rendered diagrams, the IndexNow page manifest) must carry from one
 Publish to the next, and GitHub scopes caches by ref ("Workflow runs also
 cannot restore caches created for different tag names"). A run on `main`
 saves into `main`'s scope, which every later Publish and every branch can
-restore. Keys are per Target (`hastcode-cloudflare-*`,
-`hastcode-vercel-*`), so Production's IndexNow diff is always against the
-previous Production build. Running "Publish" by hand from the Actions tab
+restore. Build-cache keys are per Target (`hastcode-cloudflare-*`,
+`hastcode-vercel-*`; path list `images/` + `mermaid/` under
+`node_modules/.cache/hastcode`, identical in `preview.yml`, since the path
+list is part of a cache's version), and Production's IndexNow page manifest
+(`pages/`) is a cache of its own (`hastcode-indexnow-*`, Cloudflare job
+only), so Production's IndexNow diff is always against the previous
+Production build and can be reset without re-encoding every image. Running "Publish" by hand from the Actions tab
 (ref `main`, input `tag`) re-deploys an existing tag through the same gate,
 if it is still its Target's newest.
 
@@ -1089,7 +1094,7 @@ scripts/setup-deploy.sh --from 16   # e.g. once the content threshold is met
 | 15 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
 | 16 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
 | 17 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
-| 18 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-cloudflare-*` caches, `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
+| 18 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
 | 19 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks | |
 
 What only a live run can verify, and the stage that checks it (each line

@@ -891,10 +891,11 @@ if begin "Go live: IndexNow on, publish cf, the live checklist"; then
 value GITHUB_REPO "Repository as owner/name:"
 export GH_REPO="$GITHUB_REPO"
 say "hastcode.com now serves stage 16's Publish. Turn IndexNow on and drop Production's"
-say "build cache so the next Publish lists every page for IndexNow."
-if confirm "Set INDEXNOW_ENABLED=true and delete the hastcode-cloudflare-* Actions caches?"; then
+say "IndexNow page manifest (only that: encoded images and diagrams stay cached) so the"
+say "next Publish lists every page for IndexNow."
+if confirm "Set INDEXNOW_ENABLED=true and delete the hastcode-indexnow-* Actions caches?"; then
   set_var INDEXNOW_ENABLED "true"
-  gh cache list --key hastcode-cloudflare- --limit 100 --json id --jq '.[].id' 2>/dev/null |
+  gh cache list --key hastcode-indexnow- --limit 100 --json id --jq '.[].id' 2>/dev/null |
     while read -r id; do gh cache delete "$id" || true; done || true
 fi
 if confirm "Run scripts/publish.sh cf now (first live Production Publish)?"; then

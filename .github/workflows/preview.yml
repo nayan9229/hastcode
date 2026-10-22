@@ -47,9 +47,13 @@ jobs:
       # After npm ci (which wipes node_modules/). This branch's own latest
       # cache, else the last Production Publish's (saved on main, which
       # every branch can restore): encoded images and rendered diagrams.
+      # The path list must match publish.yml's build cache exactly (it is
+      # part of the cache version), or the fallback never restores.
       - uses: actions/cache/restore@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: &build-cache |
+            node_modules/.cache/hastcode/images
+            node_modules/.cache/hastcode/mermaid
           key: hastcode-preview-${{ github.run_id }}
           restore-keys: |
             hastcode-preview-
@@ -102,7 +106,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
       - uses: actions/cache/save@v6
         with:
-          path: node_modules/.cache/hastcode
+          path: *build-cache
           key: hastcode-preview-${{ github.run_id }}-${{ github.run_attempt }}
 
   lighthouse:
