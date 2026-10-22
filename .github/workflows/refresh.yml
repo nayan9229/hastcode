@@ -1,0 +1,73 @@
+# Refresh: re-fetch every Repo Profile's Fact Pack and propose the changed
+# facts as a pull request (spec "Refresh workflow", GLOSSARY "Refresh").
+# Mondays 06:00 UTC, or by hand (Actions tab, "Refresh", Run workflow).
+#
+# Fetch command exit status (README "Repo Profiles"):
+#   0  nothing changed: the run ends green, no branch, no pull request
+#   1  a fetch or write failed (rate limit, network, I/O): the run fails
+#   2  usage, or GITHUB_TOKEN unset: the run fails
+#   3  Fact Packs rewritten: `make check`, then scripts/refresh-pr.sh
+#      commits them to refresh/<UTC date> and opens (or updates) the PR
+# The binary is built and run directly: `go run` reports 3 as 1 and
+# `make refresh` reports it as 2.
+#
+# The token is the repository token (github.token), for both the GitHub
+# API reads and the push/pull request; no other secret. Pushes and pull
+# requests made with it trigger no workflows (tests.yml and preview.yml
+# stay silent), so this job runs `make check` itself before the pull
+# request exists. Never tags: merging the pull request does not publish
+# (ADR-0004).
+name: Refresh
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never two at once (both would write refresh/<date>); a second run waits.
+concurrency:
+  group: refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    name: Refresh Fact Packs
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      # Go and Node: `make check` builds pages, which needs node_modules.
+      - uses: ./.github/actions/setup
+      - id: refresh
+        name: Re-fetch every Fact Pack
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          go build -o "$RUNNER_TEMP/fetch" ./cmd/fetch
+          status=0
+          "$RUNNER_TEMP/fetch" -refresh -content content >"$RUNNER_TEMP/refresh.out" || status=$?
+          cat "$RUNNER_TEMP/refresh.out"
+          echo "status=$status" >>"$GITHUB_OUTPUT"
+          case $status in
+            0) echo "Nothing changed: $(tail -n 1 "$RUNNER_TEMP/refresh.out")" >>"$GITHUB_STEP_SUMMARY" ;;
+            3) ;;
+            *) echo "::error title=Refresh failed::fetch command exited $status (1 fetch or write failed, 2 usage or GITHUB_TOKEN unset)"
+               exit 1 ;;
+          esac
+      - name: make check
+        if: steps.refresh.outputs.status == '3'
+        run: make check
+      - name: Open or update the Refresh pull request
+        if: steps.refresh.outputs.status == '3'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: scripts/refresh-pr.sh "$RUNNER_TEMP/refresh.out"

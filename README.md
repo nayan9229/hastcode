@@ -526,7 +526,7 @@ hand, and a Refresh rewrites it.
 ```sh
 export GITHUB_TOKEN=github_pat_…   # one token; the command refuses without it
 make fetch REPO=apache/iggy MD=content/explainers/distributed-systems/apache-iggy.md
-make refresh                       # every Profile; exit 3 when anything changed
+make refresh                       # every Profile; the command exits 3 when anything changed (make: "Error 3")
 # same as: go run ./cmd/fetch -repo apache/iggy -markdown content/explainers/distributed-systems/apache-iggy.md
 #          go run ./cmd/fetch -refresh -content content   (go run turns exit 3 into 1)
 ```
@@ -590,6 +590,50 @@ make refresh                       # every Profile; exit 3 when anything changed
   `GITHUB_TOKEN` unset); 3 refresh rewrote at least one Fact Pack.
   `make refresh` builds the binary first because `go run` reports every
   non-zero status as 1.
+
+### Refresh
+
+`.github/workflows/refresh.yml` runs a Refresh every Monday at 06:00 UTC
+and whenever it is started by hand (Actions tab, "Refresh", "Run
+workflow"; it always checks out `main`). Two runs never overlap: a second
+one waits for the first. It builds the fetch command, runs it with
+`-refresh` and acts on its exit status (it runs the binary itself: `go
+run` reports 3 as 1 and `make refresh` as 2):
+
+- **0, nothing changed.** The run ends green with a one-line summary; no
+  branch, no pull request.
+- **1 or 2, failed.** A fetch or write failed (rate limit, network) or the
+  command was misused; the run fails and nothing is pushed. Start it
+  again by hand after the reset.
+- **3, Fact Packs changed.** The job runs `make check`, then
+  `scripts/refresh-pr.sh` commits the changed Fact Packs (and nothing
+  else: any other changed file stops it, since a Refresh never touches
+  prose) as the github-actions bot to `refresh/<UTC date>` and opens the
+  pull request `Refresh: Fact Packs <date>`, whose body lists each
+  changed repository and what changed, plus any `note:` lines for the
+  Author. A second run the same day resets that branch onto `main`,
+  force-pushes it and updates the open pull request's body instead of
+  opening another. The branch belongs to the workflow: do not push to it.
+
+The only token is the repository token (`github.token`, with `contents:
+write` and `pull-requests: write`), used for the GitHub API reads and for
+the push and pull request; no secret to set. One repository setting:
+Settings → Actions → General → "Allow GitHub Actions to create and
+approve pull requests" must be on, or `gh pr create` is refused. Pushes and pull requests
+made with that token trigger no workflows, so `tests.yml` and
+`preview.yml` never run on the Refresh branch: that is why the job runs
+`make check` itself, before the pull request exists. Review the facts in
+the pull request (and the Profile's prose against them; the fetch notes
+flag a `NOASSERTION` license) and merge it. **Merging does not publish**:
+Readers see the new facts after the next Publish tag (`scripts/publish.sh
+vl`, then `cf`; ADR-0004). The workflow never tags.
+
+Locally, `make refresh` with a `GITHUB_TOKEN` does the same re-fetch
+without the commit or the pull request.
+
+First run: not yet performed (the repository has no GitHub remote yet).
+After pushing, start "Refresh" by hand once and record the date and
+outcome (exit status, pull request or "nothing changed") here.
 
 ## Subscribe function
 

@@ -72,10 +72,12 @@ prune-images: generate
 # write the Repo Profile's Fact Pack beside its Markdown and the README
 # text under the build cache (node_modules/.cache/hastcode/readmes/).
 # `make refresh`: re-fetch every Fact Pack under $(CONTENT), rewrite the
-# changed ones and print one line per changed repository; exit 3 when
-# anything changed, 0 when nothing did. Both read GITHUB_TOKEN and refuse
-# without it. The binary is built first because `go run` would turn exit 3
-# into 1. See README "Repo Profiles: fetching a Fact Pack".
+# changed ones and print one line per changed repository; the command
+# exits 3 when anything changed, 0 when nothing did (make then prints
+# "Error 3" and itself exits 2, so .github/workflows/refresh.yml runs the
+# binary). Both read GITHUB_TOKEN and refuse without it. The binary is built
+# first because `go run` would turn exit 3 into 1. See README "Repo
+# Profiles: fetching a Fact Pack".
 FETCH_BIN := node_modules/.cache/hastcode/bin/fetch
 REPO ?=
 MD   ?=
