@@ -1,0 +1,80 @@
+{
+  "fetched_at": "2026-10-22T18:25:44Z",
+  "slug": "deepseek-ai/DeepInfer",
+  "name": "DeepInfer",
+  "url": "https://github.com/deepseek-ai/DeepInfer",
+  "description": "DeepInfer: High-performance, large-scale inference framework for DeepSeek models",
+  "homepage": "",
+  "topics": [],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Python",
+  "languages": {
+    "C++": 278292,
+    "Makefile": 983,
+    "Python": 2345620,
+    "Shell": 8961
+  },
+  "stars": 19729,
+  "forks": 2099,
+  "watchers": 43,
+  "open_issues": 192,
+  "created_at": "2026-10-16T07:47:23Z",
+  "pushed_at": "2026-10-21T04:55:44Z",
+  "latest_release": null,
+  "releases": [],
+  "contributors": {
+    "total": 3,
+    "top": [
+      {
+        "login": "beginlner",
+        "url": "https://github.com/beginlner",
+        "contributions": 2
+      },
+      {
+        "login": "wx-csy",
+        "url": "https://github.com/wx-csy",
+        "contributions": 1
+      },
+      {
+        "login": "hkeee21",
+        "url": "https://github.com/hkeee21",
+        "contributions": 1
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "",
+    "ci": [],
+    "manifests": [
+      "pyproject.toml",
+      "requirements.txt",
+      "setup.py"
+    ],
+    "dockerfile": "",
+    "docs": "doc",
+    "examples": "examples"
+  },
+  "readme": {
+    "url": "https://github.com/deepseek-ai/DeepInfer/blob/main/README.md",
+    "sha": "7143caadd1258f56295e2c7766889478556836b3"
+  },
+  "stargazers": {
+    "count": 19730
+  },
+  "sources": [
+    "https://github.com/deepseek-ai/DeepInfer",
+    "https://github.com/deepseek-ai/DeepInfer/releases",
+    "https://github.com/deepseek-ai/DeepInfer/graphs/contributors",
+    "https://github.com/deepseek-ai/DeepInfer/blob/main/README.md"
+  ]
+}
