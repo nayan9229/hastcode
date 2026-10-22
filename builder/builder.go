@@ -64,7 +64,8 @@ type Config struct {
 	// Build tooling, set by the caller (CLI flags, tests), not site.yaml.
 
 	// ToolsDir holds package.json and node_modules (Node build tools such
-	// as the Mermaid renderer). Default ".".
+	// as the Mermaid renderer). It is the project root: the Cloudflare
+	// manifest's main points at <ToolsDir>/worker/index.js. Default ".".
 	ToolsDir string `yaml:"-"`
 	// Node is the node executable. Default "node" (from PATH).
 	Node string `yaml:"-"`

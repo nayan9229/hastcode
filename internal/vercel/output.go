@@ -32,6 +32,9 @@ type Route struct {
 	Handle        string            `json:"handle,omitempty"`
 }
 
+// ConfigFile is the Build Output API config, at the output root.
+const ConfigFile = "config.json"
+
 // HandleFilesystem starts the phase that runs after static files and
 // functions have been checked and none matched.
 const HandleFilesystem = "filesystem"
@@ -50,7 +53,7 @@ func (o *Output) Reset() error {
 	if err := os.RemoveAll(filepath.Join(o.Dir, "static")); err != nil {
 		return err
 	}
-	if err := os.Remove(filepath.Join(o.Dir, "config.json")); err != nil && !os.IsNotExist(err) {
+	if err := os.Remove(filepath.Join(o.Dir, ConfigFile)); err != nil && !os.IsNotExist(err) {
 		return err
 	}
 	return os.MkdirAll(filepath.Join(o.Dir, "static"), 0o755)
@@ -87,5 +90,5 @@ func (o *Output) WriteConfig(c Config) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(o.Dir, "config.json"), append(data, '\n'), 0o644)
+	return os.WriteFile(filepath.Join(o.Dir, ConfigFile), append(data, '\n'), 0o644)
 }
