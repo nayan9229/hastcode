@@ -9,9 +9,11 @@ Spec: `../spec.md` ("Refresh workflow", User Stories 31–35). Glossary: Refresh
 **Status:** ready-for-human
 
 - [x] Workflow has the Monday schedule and a manual trigger; workflow lint passes
-- [x] Unchanged tree: job ends green with no branch, no pull request
-- [x] Changed tree: tests run before the pull request exists; branch and pull request created with the date title and the per-repository summary in the body
-- [x] Re-run on the same day with further changes updates the existing branch and pull request (no duplicate)
+- [ ] Unchanged tree: job ends green with no branch, no pull request
+- [ ] Changed tree: tests run before the pull request exists; branch and pull request created with the date title and the per-repository summary in the body
+- [ ] Re-run on the same day with further changes updates the existing branch and pull request (no duplicate)
+
+Criteria 2–4 are unticked on purpose: the script's commit, push and pull-request path was checked by reading only (the sandbox blocked a scratch-repo run). The first manual run on GitHub verifies them; tick them then.
 - [x] The token used for the API is the repository token; no other secret is introduced
 - [ ] README section written; first manual run performed and its result noted there (ready-for-human step inside this ticket)
 
