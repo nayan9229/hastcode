@@ -6,9 +6,9 @@ Spec: `../spec.md` ("Image Store"). Research: `docs/research/cloudflare-r2-and-d
 
 **Blocked by:** 03 (Image Store: R2 mode)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Tests against the fake store: with extra objects present, dry run lists exactly the orphans and deletes nothing; `--delete` removes exactly them and leaves referenced keys
-- [ ] Objects a Preview could have uploaded for a draft are listed as orphans only when that draft is not in the current tree (document that Preview images may be pruned)
-- [ ] Missing credentials fail with the same message as the builder
-- [ ] Documented in README with the warning that it is manual and dry-run by default
+- [x] Tests against the fake store: with extra objects present, dry run lists exactly the orphans and deletes nothing; `--delete` removes exactly them and leaves referenced keys
+- [x] Objects a Preview could have uploaded for a draft are listed as orphans only when that draft is not in the current tree (document that Preview images may be pruned)
+- [x] Missing credentials fail with the same message as the builder
+- [x] Documented in README with the warning that it is manual and dry-run by default

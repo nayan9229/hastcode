@@ -156,7 +156,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | Path | What lives there |
 |------|------------------|
 | `cmd/builder/` | CLI only: flags, `LoadConfig`, print `Result`, exit code. No logic. |
-| `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`. Everything else unexported. |
+| `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`, and `Prune` (the prune command). Everything else unexported. |
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, the "skip failed files" filter `passed` behind `publishedExplainers()`/`publishedBriefs()`/`publishedPages()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …), every fixed page, feed and sitemap path, the asset directories, and the retired paths (`retiredSections`, `homeAliasURL`). |
@@ -169,7 +169,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
-| `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool). Shared with the prune command. |
+| `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
+| `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
 | `internal/buildtest/image_store.go` | `NewImageStore(t)`: the fake Image Store (httptest S3: HEAD, PUT, ListObjectsV2, DeleteObjects). |
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
@@ -574,6 +575,47 @@ images:
   and changing `base_url` means a full rebuild and republish.
 - **Keys a build references**: `Result.ImageKeys` (sorted, unique; the same
   in both modes), which the prune command diffs against the bucket.
+
+### Pruning orphans
+
+Builds only ever add objects: a re-exported hero, a removed piece or a
+retuned encoder leaves the old keys in the bucket. The prune command
+lists them. **It is manual and a dry run by default**; nothing runs it
+automatically.
+
+```sh
+make prune-images                          # dry run: list orphans, delete nothing
+make prune-images PRUNE_FLAGS=--delete     # delete the listed orphans
+# same as: go run ./cmd/prune -content content -config site.yaml [--delete]
+```
+
+- It reads the same `site.yaml` (`images.bucket`, `images.base_url`) and the
+  same environment as an r2 build (`CLOUDFLARE_ACCOUNT_ID`,
+  `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, optional `R2_ENDPOINT`),
+  whatever `images.store` says. A missing variable fails with the
+  builder's message (rule `image-store`) before anything is built or
+  requested.
+- It builds the content tree twice with the local store into a temporary
+  directory, Production and Preview, and keeps the union of their
+  `ImageKeys` (nothing is uploaded, no search index is built). It then
+  lists the whole bucket (`ListObjectsV2`, 1,000 keys a page) and prints
+  every other object with its size, then the count and total bytes.
+- If the Production build fails (beyond the skipped search index) it
+  refuses and prints the errors: a failed piece drops its images from the
+  key set and they would look orphaned. Fix the content first.
+- `--delete` removes exactly the listed orphans with `DeleteObjects`, at
+  most 1,000 keys per request.
+- **Preview images may be pruned.** A draft's images are kept only while
+  the draft is in the content tree you prune from (normally `main`). Images
+  a Preview uploaded for a draft that lives only on another branch, or for
+  an earlier version of a hero, are orphans and `--delete` removes them; the
+  next Preview of that branch uploads them again.
+- Pages already published elsewhere (an old deployment, a cached feed or
+  link preview) may still point at an orphan; deleting it breaks that
+  image. Prune after the new Production deploy is live, not before.
+- Not yet verified live: whether R2 accepts the checksum header the SDK
+  sends on `DeleteObjects` (a checksum-required operation, research
+  §1.3). Run the first `--delete` by hand and check the result.
 
 ## Feeds, sitemaps, robots and IndexNow
 

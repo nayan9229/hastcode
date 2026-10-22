@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt
+.PHONY: generate build test vet check dev adapt prune-images
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -49,6 +49,15 @@ check: vet test
 TARGET ?=
 adapt:
 	go run ./cmd/adapt -target "$(TARGET)" -out $(OUT)
+
+# `make prune-images`: list the R2 objects the current $(CONTENT) would not
+# produce (sizes and a total). Dry run: deletes nothing. Needs the r2
+# build's environment (CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID,
+# R2_SECRET_ACCESS_KEY). To delete the listed orphans:
+# `make prune-images PRUNE_FLAGS=--delete`. See README "Image Store".
+PRUNE_FLAGS ?=
+prune-images: generate
+	go run ./cmd/prune -content $(CONTENT) -config $(CONFIG) $(PRUNE_FLAGS)
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)
