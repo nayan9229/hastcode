@@ -308,7 +308,9 @@ Alternatives (`repo-profile-fact-section`); and five to eight `###`
 questions under FAQ (`repo-profile-faq`; an H2 under FAQ is an extra
 section). Heading text matches exactly (a straight apostrophe in "Don't").
 The constants in that file are the only spelling of the headings; the
-template and the fact-section placement reuse them.
+fact-section placement reuses them, and the editorial template
+(`docs/editorial/repo-profile-template.md`) is built against them by
+`builder/repo_profile_template_test.go`.
 
 The fact sections (`step_transform_fact_sections.go`, transform 35) are
 builder HTML placed into the body at the end of the written section each
@@ -463,7 +465,9 @@ parsed output. Helpers in `internal/buildtest`:
   beside it, and no `hero`, so the build draws its card; `FactPack.JSON()` spells the keys by hand, independently of
   the parser, and `e.FactPack = nil` leaves the JSON out), `ValidBrief()` +
   `Tree.WithBrief(b)` (meets the Brief skeleton; links `ValidExplainer()` by
-  slug, so use it with `ValidTree()`), `DefaultAuthor()`,
+  slug, so use it with `ValidTree()`), `RoundupProfiles()` +
+  `RoundupBrief()` (the Friday roundup: five Profiles with Fact Packs and
+  the Brief linking them), `DefaultAuthor()`,
   `HeroPNG(w, h)`, `HeroPNGFilled(w, h, colour)`, `Config()` (launch Verticals,
   production; set `cfg.Now` to pin the clock; fast hero encoding into the
   shared `SharedImageCacheDir()` so each fixture hero is encoded once; set
@@ -515,6 +519,19 @@ endpoint; a missing file is a 404, a `.headers` file adds headers);
 `h.gh.answer(path, …)` / `answerSequence` override one endpoint (403s,
 202s); `h.gh.requestsTo(prefix)` and `h.gh.sleptFor()` show what the
 client did. The golden Fact Pack is `testdata/apache-iggy.json`.
+
+## Repo Profiles: writing one
+
+Start from `docs/editorial/repo-profile-template.md` (frontmatter, the
+nine headings in order, five FAQ questions, the AI-assistance note) and
+follow `docs/editorial/repo-profile-writing-guide.md`: copy, fetch the
+Fact Pack, draft against the Fact Pack, README and release pages, check
+the Preview, have the Author verify every claim, then remove `draft: true`
+and tag. Nothing publishes without the Author. Which repositories qualify:
+`docs/editorial/repo-profile-selection.md`. On each Profile's day 28, fill
+in `docs/editorial/checkpoint-note-template.md` (the ADR-0005 metrics and
+pass rule). The Friday roundup is an ordinary Brief linking the week's
+Profiles (`builder/roundup_brief_test.go` proves the Brief gates take it).
 
 ## Repo Profiles: fetching a Fact Pack
 

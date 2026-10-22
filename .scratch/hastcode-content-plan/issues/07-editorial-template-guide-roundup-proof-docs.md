@@ -6,10 +6,22 @@ Spec: `../spec.md` ("Editorial docs", User Stories 21, 29, 30, 37, 38). Editoria
 
 **Blocked by:** 02 (Skeleton rule for Repo Profiles), 05 (Fetch command)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Template file passes the skeleton rule when filled with placeholder prose (a builder test builds it)
-- [ ] Writing guide covers every section, the citing rule, quickstart verbatim, Alternatives and FAQ counts, title/description patterns, and links the selection guide and Editorial Policy
-- [ ] Checkpoint-note template lists the metrics and the pass rule from ADR-0005
-- [ ] README and agent instructions updated; agent instructions state the no-publish-without-approval rule for Profiles and Refresh pull requests
-- [ ] Roundup Brief fixture builds clean under the existing Brief gates and is written at its Briefs URL
+- [x] Template file passes the skeleton rule when filled with placeholder prose (a builder test builds it)
+- [x] Writing guide covers every section, the citing rule, quickstart verbatim, Alternatives and FAQ counts, title/description patterns, and links the selection guide and Editorial Policy
+- [x] Checkpoint-note template lists the metrics and the pass rule from ADR-0005
+- [x] README and agent instructions updated; agent instructions state the no-publish-without-approval rule for Profiles and Refresh pull requests
+- [x] Roundup Brief fixture builds clean under the existing Brief gates and is written at its Briefs URL
+
+## Implementation notes
+
+Built test-first at the builder seam: four tests, `make check` passes.
+
+- **Template.** `docs/editorial/repo-profile-template.md`: frontmatter `title`, `description`, `kind: repo-profile`, `vertical`, `repo`, `who_for`, `tags`, `published`, `reviewed`, `author: mira-vance`, `draft: true`, and commented optional `hero`/`hero_alt`/`related`; the hook line and the Editorial Policy's AI-assistance note as a blockquote; the nine H2s in the enforced order; three TL;DR bullets, a `sh` fence for the verbatim quickstart, a valid Mermaid fence under Architecture, three Alternatives, five FAQ H3s phrased as searches; no Signals or Changelog. Every placeholder is a `TODO(author): hint` line (with `{repo}`, `{feature}`, `{alternative}` tokens inside hints), so the existing `author-placeholder` rule fails a production build while one is left.
+- **Template tests** (`builder/repo_profile_template_test.go`): `TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule` copies the template into a fixture tree (the house byline as an organization Author, `ValidFactPack()` beside it), fills the frontmatter by key (failing on an unknown or missing placeholder key), drops `draft: true`, turns each hint into prose, and requires a clean production build with no `repo-profile-*`, `tldr`, `sources`, `diagram`, `fact-pack*`, `fact-sections`, `hero-missing` or `author-placeholder` problem, five FAQPage questions, the AI note, and rendered Signals/Changelog. `TestRepoProfileTemplate_UnfilledHintsFailAProductionBuild` leaves the body hints in and requires `author-placeholder` (and no skeleton problem).
+- **Writing guide.** `docs/editorial/repo-profile-writing-guide.md`: the flow (choose, copy, fetch, draft, Preview, Author verifies, remove draft, tag, day 28), grounding (Fact Pack, README, release pages; do not retype Fact Pack numbers), each section (quickstart verbatim, Alternatives 3–5, FAQ 5–8 as searches with self-contained answers), the title/description patterns as a search-intent table, the rules the build checks, and the Friday roundup; links the selection guide, house byline voice guide and Editorial Policy.
+- **Checkpoint template.** `docs/editorial/checkpoint-note-template.md`: copy per Profile to `.scratch/hastcode-content-plan/checkpoints/<slug>.md` at day 28; tables for Plausible pageviews and Tier-1 share vs the median Explainer of the same age (and the site median), Search Console impressions per templated query, Bing Webmaster AI Performance citations, inbound links; ADR-0005's checkpoint paragraph quoted verbatim; the three yes/no readings against the rule.
+- **Roundup proof.** `internal/buildtest/roundup.go`: `RoundupProfiles()` (the first five, each in its Vertical with a Fact Pack) and `RoundupBrief()` (`source_url` `https://github.com/trending?since=weekly`, five bullets linking the Profiles by bare slug, `explainers` = the five slugs). `builder/roundup_brief_test.go`: `TestRoundupBrief_PassesTheBriefGatesAndIsWrittenAtItsBriefsURL` (no `brief-*`, `broken-link` or `frontmatter` problem; clean build; page at `/briefs/trending-repositories-2026-10-23/` with the two H2s and a NewsArticle) and `TestRoundupBrief_WhatHappenedLinksEachOfTheFiveProfiles` (links rewritten to the five Profile URLs, each written).
+- **Docs.** README: new "Repo Profiles: writing one" section (pointers to template, guide, selection guide, checkpoint template; the no-publish-without-the-Author rule; the roundup), the Conventions "Repo Profiles" paragraph names the template test, and the Tests fixture list gains `RoundupProfiles()`/`RoundupBrief()`. CLAUDE.md "Repo Profiles": nothing publishes without the Author's approval for Profiles and Refresh pull requests (an agent never removes `draft: true`, merges either kind of pull request, or tags), plus pointers to the template, guide, selection guide, voice guide and checkpoint template.
+- **Deviation.** The checkpoint note's home follows the spec ("under the feature's scratch directory"); the template itself lives in `docs/editorial/`.
