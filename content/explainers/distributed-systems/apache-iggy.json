@@ -1,0 +1,224 @@
+{
+  "fetched_at": "2026-10-22T14:07:04Z",
+  "slug": "apache/iggy",
+  "name": "iggy",
+  "url": "https://github.com/apache/iggy",
+  "description": "Apache Iggy: Hyper-Efficient Message Streaming at Laser Speed",
+  "homepage": "https://iggy.apache.org",
+  "topics": [
+    "apache",
+    "http",
+    "iggy",
+    "messaging",
+    "quic",
+    "rust",
+    "streaming",
+    "tcp"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "master",
+  "language": "Rust",
+  "languages": {
+    "C#": 2208026,
+    "C++": 777670,
+    "CSS": 87404,
+    "Dockerfile": 49647,
+    "Gherkin": 8710,
+    "Go": 1165361,
+    "Go Template": 16382,
+    "HTML": 13336,
+    "Handlebars": 1050,
+    "Java": 2514123,
+    "JavaScript": 28578,
+    "Just": 5940,
+    "PHP": 100053,
+    "Python": 659776,
+    "Ruby": 1117,
+    "Rust": 26011827,
+    "Shell": 304824,
+    "Starlark": 9166,
+    "Svelte": 253670,
+    "Swift": 700389,
+    "TypeScript": 1074242
+  },
+  "stars": 5160,
+  "forks": 485,
+  "watchers": 35,
+  "open_issues": 271,
+  "created_at": "2023-03-18T21:39:42Z",
+  "pushed_at": "2026-10-22T12:30:22Z",
+  "latest_release": {
+    "tag": "server-0.9.0",
+    "name": "server-0.9.0",
+    "date": "2026-09-18T18:55:45Z",
+    "url": "https://github.com/apache/iggy/releases/tag/server-0.9.0",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "server-0.9.0",
+      "name": "server-0.9.0",
+      "date": "2026-09-18T18:55:45Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.9.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.8.0",
+      "name": "server-0.8.0",
+      "date": "2026-04-22T10:33:27Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.8.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.7.0",
+      "name": "server-0.7.0",
+      "date": "2026-02-25T07:28:41Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.7.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.6.0",
+      "name": "server-0.6.0",
+      "date": "2025-12-09T10:47:28Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.6.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.5.0",
+      "name": "server-0.5.0",
+      "date": "2025-08-10T16:04:25Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.5.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.300",
+      "name": "server-0.4.300",
+      "date": "2025-04-17T19:07:32Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.300",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.214",
+      "name": "server-0.4.214",
+      "date": "2025-02-22T15:09:21Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.214",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.213",
+      "name": "server-0.4.213",
+      "date": "2025-02-21T21:10:58Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.213",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.212",
+      "name": "server-0.4.212",
+      "date": "2025-02-21T16:20:09Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.212",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.211",
+      "name": "server-0.4.211",
+      "date": "2025-02-21T15:04:14Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.211",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 154,
+    "top": [
+      {
+        "login": "hubcio",
+        "url": "https://github.com/hubcio",
+        "contributions": 610
+      },
+      {
+        "login": "spetz",
+        "url": "https://github.com/spetz",
+        "contributions": 463
+      },
+      {
+        "login": "dependabot[bot]",
+        "url": "https://github.com/apps/dependabot",
+        "contributions": 432
+      },
+      {
+        "login": "numinnex",
+        "url": "https://github.com/numinnex",
+        "contributions": 139
+      },
+      {
+        "login": "BartoszCiesla",
+        "url": "https://github.com/BartoszCiesla",
+        "contributions": 135
+      },
+      {
+        "login": "krishvishal",
+        "url": "https://github.com/krishvishal",
+        "contributions": 70
+      },
+      {
+        "login": "mmodzelewski",
+        "url": "https://github.com/mmodzelewski",
+        "contributions": 68
+      },
+      {
+        "login": "lukaszzborek",
+        "url": "https://github.com/lukaszzborek",
+        "contributions": 41
+      },
+      {
+        "login": "chengxilo",
+        "url": "https://github.com/chengxilo",
+        "contributions": 40
+      },
+      {
+        "login": "atharvalade",
+        "url": "https://github.com/atharvalade",
+        "contributions": 37
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "Cargo.toml",
+      "package.json"
+    ],
+    "dockerfile": "Dockerfile",
+    "docs": "",
+    "examples": "examples"
+  },
+  "readme": {
+    "url": "https://github.com/apache/iggy/blob/master/README.md",
+    "sha": "07990be327fb81064dd9e57b372c21cf44097304"
+  },
+  "stargazers": {
+    "count": 5160
+  },
+  "sources": [
+    "https://api.github.com/repos/apache/iggy",
+    "https://api.github.com/repos/apache/iggy/languages",
+    "https://api.github.com/repos/apache/iggy/releases?per_page=10",
+    "https://api.github.com/repos/apache/iggy/contributors?per_page=10",
+    "https://api.github.com/repos/apache/iggy/contributors?per_page=1",
+    "https://api.github.com/repos/apache/iggy/git/trees/master",
+    "https://api.github.com/repos/apache/iggy/contents/.github?ref=master",
+    "https://api.github.com/repos/apache/iggy/readme",
+    "https://api.github.com/repos/apache/iggy/stargazers/count"
+  ]
+}
