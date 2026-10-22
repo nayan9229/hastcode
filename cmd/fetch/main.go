@@ -35,11 +35,12 @@ import (
 	"hastcode.com/site/internal/github"
 )
 
+// Exit statuses besides a Refresh's own (factpack.ExitNothingChanged,
+// factpack.ExitChanged).
 const (
-	exitOK      = 0
-	exitFailed  = 1
-	exitUsage   = 2
-	exitChanged = 3
+	exitOK     = 0
+	exitFailed = 1
+	exitUsage  = 2
 )
 
 func main() {
@@ -75,10 +76,7 @@ func run(repo, markdown string, refresh bool, contentDir, cacheDir string) int {
 			fmt.Fprintln(os.Stderr, "error:", err)
 			return exitFailed
 		}
-		if len(report.Changes) > 0 {
-			return exitChanged
-		}
-		return exitOK
+		return report.ExitStatus()
 	}
 	if _, err := f.Fetch(ctx, repo, markdown); err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)

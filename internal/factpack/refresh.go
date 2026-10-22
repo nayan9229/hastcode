@@ -21,6 +21,24 @@ type RefreshReport struct {
 	Changes []Change
 }
 
+// The fetch command's exit statuses for a Refresh that ran to the end
+// (cmd/fetch; .github/workflows/refresh.yml acts on them).
+const (
+	// ExitNothingChanged: no Fact Pack was rewritten.
+	ExitNothingChanged = 0
+	// ExitChanged: at least one Fact Pack was rewritten.
+	ExitChanged = 3
+)
+
+// ExitStatus is the fetch command's exit status for this Refresh:
+// ExitChanged when any Fact Pack was rewritten, else ExitNothingChanged.
+func (r *RefreshReport) ExitStatus() int {
+	if len(r.Changes) > 0 {
+		return ExitChanged
+	}
+	return ExitNothingChanged
+}
+
 // Change is one rewritten Fact Pack and what changed in it.
 type Change struct {
 	// Repo is owner/name; File the Fact Pack's content-relative path.

@@ -46,6 +46,9 @@ func TestRefresh_RewritesOnlyTheChangedFactPackAndSaysWhatChanged(t *testing.T) 
 	if len(report.Changes) != 1 || report.Changes[0].Repo != "apache/iggy" {
 		t.Fatalf("changes = %+v, want exactly apache/iggy", report.Changes)
 	}
+	if got := report.ExitStatus(); got != 3 {
+		t.Errorf("exit status = %d, want 3 (a Fact Pack was rewritten: refresh.yml opens the pull request)", got)
+	}
 	if report.Profiles != 2 {
 		t.Errorf("profiles checked = %d, want 2", report.Profiles)
 	}
@@ -86,6 +89,9 @@ func TestRefresh_NothingChangedLeavesEveryFileAloneAndReportsNone(t *testing.T) 
 
 	if len(report.Changes) != 0 {
 		t.Errorf("changes = %+v, want none", report.Changes)
+	}
+	if got := report.ExitStatus(); got != 0 {
+		t.Errorf("exit status = %d, want 0 (nothing changed: refresh.yml ends green)", got)
 	}
 	if !bytes.Equal(readFile(t, iggyJSON), iggyBefore) || !bytes.Equal(readFile(t, natsJSON), natsBefore) {
 		t.Error("an unchanged Fact Pack was rewritten (its fetched_at must not move)")
