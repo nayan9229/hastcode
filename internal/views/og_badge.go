@@ -58,15 +58,9 @@ func drawOGBadge() []byte {
 	fill(img, image.Rect(0, ogBadgeHeight-24, ogBadgeWidth, ogBadgeHeight), hexColour(lightPalette.accent))
 
 	const left = 96
-	word := &font.Drawer{Dst: img, Src: image.NewUniform(hexColour(lightPalette.fg)), Face: goFace(gomonobold.TTF, 144), Dot: fixed.P(left, 320)}
-	word.DrawString("hastcode")
-	// The dot: .34em wide, .06em after the word, sitting on the baseline.
-	r := 144 * 0.17
-	cx := float64(word.Dot.X.Round()) + 144*0.06 + r
-	cy := 320 - r
-	disc(img, cx, cy, r, hexColour(lightPalette.accent))
+	drawWordmark(img, 144, left, 320)
 
-	tag := &font.Drawer{Dst: img, Src: image.NewUniform(hexColour(lightPalette.muted)), Face: goFace(goregular.TTF, 56), Dot: fixed.P(left, 420)}
+	tag := &font.Drawer{Dst: img, Src: image.NewUniform(hexColour(lightPalette.muted)), Face: newFace(goRegular(), 56), Dot: fixed.P(left, 420)}
 	tag.DrawString(Tagline)
 
 	var buf bytes.Buffer
@@ -77,17 +71,55 @@ func drawOGBadge() []byte {
 	return buf.Bytes()
 }
 
-func goFace(ttf []byte, size float64) font.Face {
+// The wordmark as the header draws it in CSS: the name in monospace bold
+// with the accent dot, .34em wide, .06em after the word, on the baseline.
+// The OG badge and the hero card both draw it with drawWordmark.
+const (
+	wordmark          = "hastcode"
+	wordmarkDotRadius = 0.17
+	wordmarkDotGap    = 0.06
+)
+
+// drawWordmark draws the wordmark at size px with its baseline at y,
+// starting at x, in the light palette's ink and accent.
+func drawWordmark(img *image.RGBA, size float64, x, y int) {
+	word := &font.Drawer{Dst: img, Src: image.NewUniform(hexColour(lightPalette.fg)), Face: newFace(goMonoBold(), size), Dot: fixed.P(x, y)}
+	word.DrawString(wordmark)
+	r := size * wordmarkDotRadius
+	cx := float64(word.Dot.X.Round()) + size*wordmarkDotGap + r
+	disc(img, cx, float64(y)-r, r, hexColour(lightPalette.accent))
+}
+
+// wordmarkWidth is how wide drawWordmark draws at size px, dot included.
+func wordmarkWidth(size float64) int {
+	return textWidth(newFace(goMonoBold(), size), wordmark) + int(size*wordmarkDotGap+2*size*wordmarkDotRadius)
+}
+
+// The Go fonts (in the module graph, so no system font), parsed once.
+var (
+	goMonoBold = sync.OnceValue(func() *opentype.Font { return parseGoFont(gomonobold.TTF) })
+	goRegular  = sync.OnceValue(func() *opentype.Font { return parseGoFont(goregular.TTF) })
+)
+
+func parseGoFont(ttf []byte) *opentype.Font {
 	f, err := opentype.Parse(ttf)
 	if err != nil {
 		panic("views: parse Go font: " + err.Error())
 	}
+	return f
+}
+
+// newFace is a face of f at size px (72 dpi, full hinting: rasterised the
+// same on every machine).
+func newFace(f *opentype.Font, size float64) font.Face {
 	face, err := opentype.NewFace(f, &opentype.FaceOptions{Size: size, DPI: 72, Hinting: font.HintingFull})
 	if err != nil {
 		panic("views: Go font face: " + err.Error())
 	}
 	return face
 }
+
+func textWidth(face font.Face, s string) int { return font.MeasureString(face, s).Ceil() }
 
 func fill(img *image.RGBA, r image.Rectangle, c color.Color) {
 	draw.Draw(img, r, image.NewUniform(c), image.Point{}, draw.Src)

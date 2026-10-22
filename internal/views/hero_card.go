@@ -6,11 +6,8 @@ import (
 	"image/color"
 	"image/png"
 	"strings"
-	"sync"
 
 	"golang.org/x/image/font"
-	"golang.org/x/image/font/gofont/gomonobold"
-	"golang.org/x/image/font/gofont/goregular"
 	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/font/sfnt"
 	"golang.org/x/image/math/fixed"
@@ -81,17 +78,12 @@ func HeroCardPNG(c HeroCard) []byte {
 	fill(img, image.Rect((heroCardWidth-heroCardRuleWidth)/2, heroCardRuleY, (heroCardWidth+heroCardRuleWidth)/2, heroCardRuleY+heroCardRuleHeight), hexColour(lightPalette.accent))
 
 	for _, r := range heroCardRuns(c) {
-		width := textWidth(r.face, r.text)
-		if r.dot {
-			width += int(r.size*wordmarkDotGap + 2*r.size*wordmarkDotRadius)
+		if r.wordmark {
+			drawWordmark(img, heroCardWordmarkSize, (heroCardWidth-wordmarkWidth(heroCardWordmarkSize))/2, r.y)
+			continue
 		}
-		d := &font.Drawer{Dst: img, Src: image.NewUniform(r.colour), Face: r.face, Dot: fixed.P((heroCardWidth-width)/2, r.y)}
+		d := &font.Drawer{Dst: img, Src: image.NewUniform(r.colour), Face: r.face, Dot: fixed.P((heroCardWidth-textWidth(r.face, r.text))/2, r.y)}
 		d.DrawString(r.text)
-		if r.dot {
-			radius := r.size * wordmarkDotRadius
-			cx := float64(d.Dot.X.Round()) + r.size*wordmarkDotGap + radius
-			disc(img, cx, float64(r.y)-radius, radius, hexColour(lightPalette.accent))
-		}
 	}
 
 	var buf bytes.Buffer
@@ -139,44 +131,36 @@ const (
 	heroCardFactsY       = 720
 
 	heroCardBand = 40
-
-	// The wordmark's dot, as the header draws it in CSS: .34em wide, .06em
-	// after the word, on the baseline.
-	wordmarkDotRadius = 0.17
-	wordmarkDotGap    = 0.06
 )
 
 // heroCardRun is one centred line of text.
 type heroCardRun struct {
-	text   string
-	face   font.Face
-	size   float64
-	colour color.RGBA
-	y      int  // baseline
-	dot    bool // the wordmark's accent dot follows the text
+	text     string
+	face     font.Face
+	colour   color.RGBA
+	y        int  // baseline
+	wordmark bool // drawn by drawWordmark (og_badge.go), dot included
 }
 
 // heroCardRuns lays the card out: every line fitted to heroCardSafeWidth,
 // the repository name and facts by shrinking then cutting, the description
 // by wrapping then cutting.
 func heroCardRuns(c HeroCard) []heroCardRun {
-	mono, text := heroCardMono(), heroCardRegular()
+	mono, text := goMonoBold(), goRegular()
 	fg, muted := hexColour(lightPalette.fg), hexColour(lightPalette.muted)
-	runs := []heroCardRun{{
-		text: "hastcode", face: newFace(mono, heroCardWordmarkSize), size: heroCardWordmarkSize, colour: fg, y: heroCardWordmarkY, dot: true,
-	}}
+	runs := []heroCardRun{{text: wordmark, y: heroCardWordmarkY, wordmark: true}}
 
-	repo, face, size := fitText(drawable(c.Repo, mono), mono, heroCardRepoMaxSize, heroCardRepoMinSize)
-	runs = append(runs, heroCardRun{text: repo, face: face, size: size, colour: fg, y: heroCardRepoY})
+	repo, face := fitText(drawable(c.Repo, mono), mono, heroCardRepoMaxSize, heroCardRepoMinSize)
+	runs = append(runs, heroCardRun{text: repo, face: face, colour: fg, y: heroCardRepoY})
 
 	descFace := newFace(text, heroCardDescriptionSize)
 	for i, line := range wrapText(drawable(c.Description, text), descFace, heroCardSafeWidth, heroCardDescriptionLines) {
-		runs = append(runs, heroCardRun{text: line, face: descFace, size: heroCardDescriptionSize, colour: muted, y: heroCardDescriptionY + i*heroCardLineHeight})
+		runs = append(runs, heroCardRun{text: line, face: descFace, colour: muted, y: heroCardDescriptionY + i*heroCardLineHeight})
 	}
 
 	if facts := heroCardFacts(c); facts != "" {
-		line, face, size := fitText(drawable(facts, text), text, heroCardFactsMaxSize, heroCardFactsMinSize)
-		runs = append(runs, heroCardRun{text: line, face: face, size: size, colour: fg, y: heroCardFactsY})
+		line, face := fitText(drawable(facts, text), text, heroCardFactsMaxSize, heroCardFactsMinSize)
+		runs = append(runs, heroCardRun{text: line, face: face, colour: fg, y: heroCardFactsY})
 	}
 	return runs
 }
@@ -200,31 +184,6 @@ func heroCardFacts(c HeroCard) string {
 	return strings.Join(parts, " · ")
 }
 
-var (
-	heroCardMono    = sync.OnceValue(func() *opentype.Font { return parseGoFont(gomonobold.TTF) })
-	heroCardRegular = sync.OnceValue(func() *opentype.Font { return parseGoFont(goregular.TTF) })
-)
-
-func parseGoFont(ttf []byte) *opentype.Font {
-	f, err := opentype.Parse(ttf)
-	if err != nil {
-		panic("views: parse Go font: " + err.Error())
-	}
-	return f
-}
-
-// newFace is a face of f at size px (72 dpi, full hinting: rasterised the
-// same on every machine).
-func newFace(f *opentype.Font, size float64) font.Face {
-	face, err := opentype.NewFace(f, &opentype.FaceOptions{Size: size, DPI: 72, Hinting: font.HintingFull})
-	if err != nil {
-		panic("views: Go font face: " + err.Error())
-	}
-	return face
-}
-
-func textWidth(face font.Face, s string) int { return font.MeasureString(face, s).Ceil() }
-
 // drawable is s with its whitespace collapsed and every rune the font has
 // no glyph for (emoji, symbols) dropped, so nothing renders as a box.
 func drawable(s string, f *opentype.Font) string {
@@ -241,14 +200,14 @@ func drawable(s string, f *opentype.Font) string {
 
 // fitText shrinks s from maxSize in 4 px steps until it fits
 // heroCardSafeWidth; at minSize it is cut with an ellipsis instead.
-func fitText(s string, f *opentype.Font, maxSize, minSize float64) (string, font.Face, float64) {
+func fitText(s string, f *opentype.Font, maxSize, minSize float64) (string, font.Face) {
 	size := maxSize
 	face := newFace(f, size)
 	for textWidth(face, s) > heroCardSafeWidth && size-4 >= minSize {
 		size -= 4
 		face = newFace(f, size)
 	}
-	return truncateText(s, face, heroCardSafeWidth), face, size
+	return truncateText(s, face, heroCardSafeWidth), face
 }
 
 // wrapText breaks text into at most maxLines lines no wider than maxWidth,
