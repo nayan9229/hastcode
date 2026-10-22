@@ -7,7 +7,7 @@ Ad-monetised publication at hastcode.com: evergreen software-architecture explai
 ### Content
 
 **Explainer**:
-An evergreen, long-form article that teaches one architectural idea. The spine of the site; everything else exists to feed it. Comes in three kinds: Case Study, Concept, Comparison.
+An evergreen, long-form article that teaches one architectural idea or examines one real system. The spine of the site; everything else exists to feed it. Comes in four kinds: Case Study, Concept, Comparison, Repo Profile.
 _Avoid_: Post, blog, tutorial, deep dive
 
 **Case Study**:
@@ -22,13 +22,25 @@ _Avoid_: Guide, primer, 101
 An Explainer that sets two or more alternatives side by side to help the Reader choose.
 _Avoid_: Versus, showdown, review
 
+**Repo Profile**:
+An Explainer that evaluates one open-source repository: what it is, how it is built, and whether the Reader should adopt it. Its fact sections render from a Fact Pack; its opinion sections are written.
+_Avoid_: Deep dive, review, profile page, listing, RepoScope
+
+**Fact Pack**:
+The machine-fetched facts about a repository (description, stars, license, languages, releases, contributors, which files exist) that a Repo Profile's fact sections render from and its opinion sections are drafted against. Fetched, never hand-written.
+_Avoid_: Metadata, data file, facts.json, scrape
+
+**Refresh**:
+A scheduled re-fetch of every Repo Profile's Fact Pack that proposes the changed facts for the Author to merge. Touches facts only, never prose; a Review is the prose counterpart.
+_Avoid_: Sync, update, auto-update, crawl
+
 **Brief**:
 A short, dated commentary on something that just happened in tech, with the architectural "why it matters", linking into Explainers. Curated from public sources; never original reporting.
 _Avoid_: News, article, update, digest
 
 **Review**:
-A scheduled re-read of a published Explainer by its Author, every 90 days, that either changes it (and moves its last-reviewed date) or confirms it is still right (and does not).
-_Avoid_: Refresh, update, audit
+A scheduled re-read of a published Explainer by its Author, every 90 days, that either changes it (and moves its last-reviewed date) or confirms it is still right (and does not). A Refresh is not a Review: it changes facts, not prose.
+_Avoid_: Refresh (that is the Fact Pack re-fetch), update, audit
 
 **Piece**:
 Any published Explainer or Brief. Used when something applies to both.
