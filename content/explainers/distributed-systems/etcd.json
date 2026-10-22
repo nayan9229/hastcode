@@ -1,0 +1,206 @@
+{
+  "fetched_at": "2026-10-22T18:26:08Z",
+  "slug": "etcd-io/etcd",
+  "name": "etcd",
+  "url": "https://github.com/etcd-io/etcd",
+  "description": "Distributed reliable key-value store for the most critical data of a distributed system",
+  "homepage": "https://etcd.io",
+  "topics": [
+    "cncf",
+    "consensus",
+    "database",
+    "distributed-database",
+    "distributed-systems",
+    "etcd",
+    "go",
+    "key-value",
+    "kubernetes",
+    "raft"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Go",
+  "languages": {
+    "Dockerfile": 6157,
+    "Go": 5855618,
+    "Jsonnet": 60077,
+    "Makefile": 25370,
+    "Procfile": 8280,
+    "Shell": 148606
+  },
+  "stars": 52417,
+  "forks": 10548,
+  "watchers": 1268,
+  "open_issues": 396,
+  "created_at": "2013-07-06T21:57:21Z",
+  "pushed_at": "2026-10-22T17:56:12Z",
+  "latest_release": {
+    "tag": "v3.7.2",
+    "name": "v3.7.2",
+    "date": "2026-09-22T21:22:39Z",
+    "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.2",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "v3.7.2",
+      "name": "v3.7.2",
+      "date": "2026-09-22T21:22:39Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.2",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.6.15",
+      "name": "v3.6.15",
+      "date": "2026-09-22T21:06:14Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.6.15",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.5.34",
+      "name": "v3.5.34",
+      "date": "2026-09-22T20:50:57Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.5.34",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.7.1",
+      "name": "v3.7.1",
+      "date": "2026-07-23T19:37:53Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.1",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.6.14",
+      "name": "v3.6.14",
+      "date": "2026-07-23T19:29:31Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.6.14",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.5.33",
+      "name": "v3.5.33",
+      "date": "2026-07-23T19:12:21Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.5.33",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.7.0",
+      "name": "v3.7.0",
+      "date": "2026-07-08T18:26:53Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.0",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.6.13",
+      "name": "v3.6.13",
+      "date": "2026-07-01T20:43:27Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.6.13",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.5.32",
+      "name": "v3.5.32",
+      "date": "2026-07-01T20:32:19Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.5.32",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.7.0-rc.0",
+      "name": "v3.7.0-rc.0",
+      "date": "2026-06-01T21:27:32Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.0-rc.0",
+      "prerelease": true
+    }
+  ],
+  "contributors": {
+    "total": 374,
+    "top": [
+      {
+        "login": "gyuho",
+        "url": "https://github.com/gyuho",
+        "contributions": 4387
+      },
+      {
+        "login": "ahrtr",
+        "url": "https://github.com/ahrtr",
+        "contributions": 2315
+      },
+      {
+        "login": "xiang90",
+        "url": "https://github.com/xiang90",
+        "contributions": 2040
+      },
+      {
+        "login": "serathius",
+        "url": "https://github.com/serathius",
+        "contributions": 1907
+      },
+      {
+        "login": "yichengq",
+        "url": "https://github.com/yichengq",
+        "contributions": 1451
+      },
+      {
+        "login": "ptabor",
+        "url": "https://github.com/ptabor",
+        "contributions": 632
+      },
+      {
+        "login": "jonboulle",
+        "url": "https://github.com/jonboulle",
+        "contributions": 396
+      },
+      {
+        "login": "ivanvc",
+        "url": "https://github.com/ivanvc",
+        "contributions": 367
+      },
+      {
+        "login": "jmhbnz",
+        "url": "https://github.com/jmhbnz",
+        "contributions": 348
+      },
+      {
+        "login": "bcwaldon",
+        "url": "https://github.com/bcwaldon",
+        "contributions": 324
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": ".github/SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "go.mod"
+    ],
+    "dockerfile": "Dockerfile",
+    "docs": "Documentation",
+    "examples": ""
+  },
+  "readme": {
+    "url": "https://github.com/etcd-io/etcd/blob/main/README.md",
+    "sha": "19b0b357f67647f5326d96e0da0a3ac4dd020ccf"
+  },
+  "stargazers": {
+    "count": 52417
+  },
+  "sources": [
+    "https://github.com/etcd-io/etcd",
+    "https://github.com/etcd-io/etcd/releases",
+    "https://github.com/etcd-io/etcd/graphs/contributors",
+    "https://github.com/etcd-io/etcd/tree/main/.github",
+    "https://github.com/etcd-io/etcd/blob/main/README.md"
+  ]
+}
