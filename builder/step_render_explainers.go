@@ -62,7 +62,7 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 			{Name: e.Title, URL: explainerURL(e)},
 		},
 	})
-	return views.ExplainerPage{
+	ep := views.ExplainerPage{
 		Page:         page,
 		Title:        e.Title,
 		Description:  e.Description,
@@ -76,4 +76,10 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 		Newsletter:   views.Newsletter{Source: explainerURL(e)},
 		ReadNext:     s.readingLists(e),
 	}
+	if e.Kind == content.RepoProfile {
+		// Every published Repo Profile has a Fact Pack (loadFactPacks fails
+		// the Profile otherwise).
+		ep.RepoProfile = repoProfileCard(e, s.factPacks[e.File])
+	}
+	return ep
 }

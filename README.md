@@ -173,7 +173,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/render.go` | Output helpers: `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`), `writeXML`, `isWritten`, rule `markdown`. The output reset is `step_render_reset.go`. |
 | `builder/load.go` | `eachMarkdown` and rule `frontmatter`, shared by the `step_load_*.go` steps. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
-| `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`. No config or output knowledge. |
+| `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown). No config or output knowledge. |
+| `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning past 30 days), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`). Tests: `builder/repo_profile_test.go`. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -225,9 +226,10 @@ file per phase. Do not edit a central list. A step returning an error stops
 the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseValidate` ->
 `phaseTransform` -> `phaseRender` -> `phaseWrite`; within a phase, by `order`
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
-load static pages 25, load briefs 25, exclude drafts (production only; Explainers
+load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
+exclude drafts (production only; Explainers
 and Briefs) 30; validate ads config 5, references 10, Brief references 12,
-unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
+Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
 35, section-length warning 40, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30,
@@ -399,7 +401,11 @@ parsed output. Helpers in `internal/buildtest`:
 - Fixtures: `ValidTree()`, `NewTree()` (default Author + `TransparencyPages()`, which the footer links), `Tree.WithExplainer(e)`, `Tree.Without(path)`, `Tree.WithPage(p)`,
   `Tree.WithAuthor(a)`, `Tree.With(path, bytes)`; `ValidExplainer()` (meets the
   full editorial skeleton: TL;DR, Mermaid fence, Sources, 1600x900 PNG hero),
-  `ValidComparison()` (adds a `## Trade-offs` table), `ValidBrief()` +
+  `ValidComparison()` (adds a `## Trade-offs` table), `ValidRepoProfile()` +
+  `ValidFactPack()` + `Tree.WithRepoProfile(e)` (a Repo Profile of apache/iggy
+  with the spec's headings, `repo`, `who_for` and its Fact Pack written
+  beside it; `FactPack.JSON()` spells the keys by hand, independently of
+  the parser, and `e.FactPack = nil` leaves the JSON out), `ValidBrief()` +
   `Tree.WithBrief(b)` (meets the Brief skeleton; links `ValidExplainer()` by
   slug, so use it with `ValidTree()`), `DefaultAuthor()`,
   `HeroPNG(w, h)`, `HeroPNGFilled(w, h, colour)`, `Config()` (launch Verticals,

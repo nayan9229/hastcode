@@ -110,7 +110,13 @@ type Explainer struct {
 	// Sources is the optional `sources` frontmatter list.
 	Sources []Source
 	Draft   bool
-	Body    string
+	// Repo is the `repo` key (owner/name) a Repo Profile carries; WhoFor
+	// its optional `who_for` line; FactPack the Fact Pack WithRepoProfile
+	// writes beside it (nil = none).
+	Repo     string
+	WhoFor   string
+	FactPack *FactPack
+	Body     string
 }
 
 // Source is one `sources` frontmatter entry (Explainers and Briefs).
@@ -232,6 +238,8 @@ func (e Explainer) Markdown() string {
 	field(&b, "author", e.Author)
 	field(&b, "hero", e.Hero)
 	field(&b, "hero_alt", e.HeroAlt)
+	field(&b, "repo", e.Repo)
+	field(&b, "who_for", e.WhoFor)
 	list(&b, "related", e.Related)
 	sources(&b, e.Sources)
 	if e.Draft {

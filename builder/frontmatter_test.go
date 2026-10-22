@@ -43,13 +43,13 @@ func TestFrontmatter_PublishedWithoutTimezoneIsABuildError(t *testing.T) {
 	}
 }
 
-func TestFrontmatter_KindOutsideCaseStudyConceptComparisonIsABuildError(t *testing.T) {
+func TestFrontmatter_KindOutsideTheFourKindsIsABuildErrorNamingThem(t *testing.T) {
 	e := buildtest.ValidExplainer()
 	e.Kind = "tutorial"
 
 	_, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithExplainer(e))
 
-	buildtest.RequireError(t, res, "explainers/distributed-systems/raft-leader-election.md", `kind "tutorial"`)
+	buildtest.RequireError(t, res, "explainers/distributed-systems/raft-leader-election.md", `kind "tutorial" must be one of case-study, concept, comparison, repo-profile`)
 }
 
 func TestFrontmatter_UnknownKeyIsABuildError(t *testing.T) {

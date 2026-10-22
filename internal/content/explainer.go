@@ -1,6 +1,7 @@
 package content
 
 import (
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,9 @@ const (
 	CaseStudy  Kind = "case-study"
 	Concept    Kind = "concept"
 	Comparison Kind = "comparison"
+	// RepoProfile evaluates one open-source repository; its fact sections
+	// render from a Fact Pack (FactPack) beside the Markdown.
+	RepoProfile Kind = "repo-profile"
 )
 
 // Source is a frontmatter source entry (in addition to inline links).
@@ -42,7 +46,11 @@ type Explainer struct {
 	Related     []string
 	Draft       bool
 	Sources     []Source
-	Body        *markdown.Document
+	// Repo is the repository a Repo Profile evaluates (owner/name); WhoFor
+	// is its optional "who it is for" line. Both are Repo Profile only.
+	Repo   string
+	WhoFor string
+	Body   *markdown.Document
 }
 
 type explainerFrontmatter struct {
@@ -59,6 +67,8 @@ type explainerFrontmatter struct {
 	Related     []string `yaml:"related"`
 	Draft       bool     `yaml:"draft"`
 	Sources     []Source `yaml:"sources"`
+	Repo        string   `yaml:"repo"`
+	WhoFor      string   `yaml:"who_for"`
 }
 
 // ParseExplainer parses an Explainer file. file is its content-relative
@@ -73,9 +83,12 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 		return nil, err
 	}
 	switch fm.Kind {
-	case CaseStudy, Concept, Comparison:
+	case CaseStudy, Concept, Comparison, RepoProfile:
 	default:
-		return nil, fmt.Errorf("frontmatter: kind %q must be one of case-study, concept, comparison", fm.Kind)
+		return nil, fmt.Errorf("frontmatter: kind %q must be one of case-study, concept, comparison, repo-profile", fm.Kind)
+	}
+	if err := checkRepoProfileKeys(fm); err != nil {
+		return nil, err
 	}
 	published, err := parseTime("published", fm.Published)
 	if err != nil {
@@ -101,6 +114,32 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 		Related:     fm.Related,
 		Draft:       fm.Draft,
 		Sources:     fm.Sources,
+		Repo:        fm.Repo,
+		WhoFor:      fm.WhoFor,
 		Body:        markdown.Parse(body),
 	}, nil
+}
+
+// checkRepoProfileKeys enforces the keys that belong to a Repo Profile
+// alone: `repo` (owner/name) is required on one and an error on any other
+// kind, so the kind and its Fact Pack always agree; `who_for` is optional
+// on one and an error elsewhere.
+func checkRepoProfileKeys(fm explainerFrontmatter) error {
+	if fm.Kind != RepoProfile {
+		if fm.Repo != "" {
+			return errors.New("frontmatter: repo is only for a Repo Profile (kind: repo-profile)")
+		}
+		if fm.WhoFor != "" {
+			return errors.New("frontmatter: who_for is only for a Repo Profile (kind: repo-profile)")
+		}
+		return nil
+	}
+	if fm.Repo == "" {
+		return errors.New("frontmatter: repo is required for a Repo Profile (owner/name of the repository)")
+	}
+	owner, name, ok := strings.Cut(fm.Repo, "/")
+	if !ok || owner == "" || name == "" || strings.Contains(name, "/") {
+		return fmt.Errorf("frontmatter: repo %q must be owner/name", fm.Repo)
+	}
+	return nil
 }

@@ -2,14 +2,20 @@ package views
 
 // ExplainerArticle is the Explainer page. Markup follows microformats2
 // h-entry (p-name, p-category, p-author, dt-published, dt-updated,
-// e-content); tests select on those classes, so keep them.
+// e-content); tests select on those classes, so keep them. A Repo Profile
+// shows its header card where other kinds show the description (the
+// card's "what it is" is the p-summary).
 templ ExplainerArticle(e ExplainerPage) {
 	@Layout(e.Page) {
 		<article class="h-entry" data-pagefind-body>
 			<header>
 				<p class="article-label"><span class="p-category">{ e.VerticalName }</span></p>
 				<h1 class="p-name">{ e.Title }</h1>
-				<p class="p-summary">{ e.Description }</p>
+				if e.RepoProfile != nil {
+					@RepoProfileHeaderCard(*e.RepoProfile)
+				} else {
+					<p class="p-summary">{ e.Description }</p>
+				}
 				@Byline(e.Author)
 				@PieceDates(e.Published, e.Reviewed)
 			</header>

@@ -90,6 +90,7 @@ var explainerKinds = []explainerKind{
 	{content.CaseStudy, "Case Study", "Case Studies", "Explainers that reconstruct how one real, named system is built, from that company's public material."},
 	{content.Concept, "Concept", "Concepts", "Explainers that define and teach one named architectural idea or pattern."},
 	{content.Comparison, "Comparison", "Comparisons", "Explainers that set two or more alternatives side by side to help you choose."},
+	{content.RepoProfile, "Repo Profile", "Repo Profiles", "Explainers that evaluate one open-source repository: what it is, how it is built, and whether you should adopt it."},
 }
 
 func kindOf(k content.Kind) explainerKind {

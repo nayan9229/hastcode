@@ -55,6 +55,9 @@ type site struct {
 	briefs     []*content.Brief
 	pages      []*content.Page  // static pages; see step_static_pages.go
 	heroes     map[string]*hero // by content file; see step_transform_heroes.go
+	// factPacks are the Repo Profiles' Fact Packs by content file; see
+	// step_load_fact_packs.go.
+	factPacks map[string]*content.FactPack
 	// authorPhotos are encoded Author photos by Author slug; see
 	// step_author_photos.go.
 	authorPhotos map[string]*authorPhoto
@@ -81,6 +84,7 @@ func newSite(cfg Config, contentDir, outDir string, store *imagestore.Client) *s
 		authors:    map[string]*content.Author{},
 		failed:     map[string]bool{},
 		heroes:     map[string]*hero{},
+		factPacks:  map[string]*content.FactPack{},
 	}
 	for _, v := range cfg.Verticals {
 		s.verticals[v.Slug] = v

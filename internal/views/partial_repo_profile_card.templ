@@ -1,0 +1,69 @@
+package views
+
+import (
+	"strconv"
+	"time"
+)
+
+// RepoProfileHeaderCard is a Repo Profile's header card, rendered from its
+// Fact Pack: the repository, what it is, who it is for, stars, license,
+// language, latest release and last commit. It is a fixed-height box
+// (site.css, --repo-profile-card-height) so nothing below it moves. Tests
+// select on .repo-profile-card and each fact's data-fact name.
+templ RepoProfileHeaderCard(c RepoProfileCard) {
+	<div class="repo-profile-card box">
+		<p class="repo-profile-repo"><a href={ templ.SafeURL(c.Repo.URL) }>{ c.Repo.Name }</a> <span class="muted">on GitHub</span></p>
+		<dl>
+			<div data-fact="what" class="repo-profile-text">
+				<dt>What it is</dt>
+				<dd class="p-summary">{ c.WhatItIs }</dd>
+			</div>
+			if c.WhoFor != "" {
+				<div data-fact="who-for" class="repo-profile-text">
+					<dt>Who it is for</dt>
+					<dd>{ c.WhoFor }</dd>
+				</div>
+			}
+			<div data-fact="stars">
+				<dt>Stars</dt>
+				<dd>{ humanInt(c.Stars) }</dd>
+			</div>
+			<div data-fact="license">
+				<dt>License</dt>
+				<dd>{ c.License }</dd>
+			</div>
+			<div data-fact="language">
+				<dt>Language</dt>
+				<dd>{ c.Language }</dd>
+			</div>
+			<div data-fact="latest-release">
+				<dt>Latest release</dt>
+				<dd>
+					if c.LatestRelease.URL != "" {
+						<a href={ templ.SafeURL(c.LatestRelease.URL) }>{ c.LatestRelease.Name }</a>
+						<time datetime={ c.LatestReleaseDate.Format(time.RFC3339) }>{ humanDate(c.LatestReleaseDate) }</time>
+					} else {
+						none yet
+					}
+				</dd>
+			</div>
+			<div data-fact="last-commit">
+				<dt>Last commit</dt>
+				<dd><time datetime={ c.LastCommit.Format(time.RFC3339) }>{ humanDate(c.LastCommit) }</time></dd>
+			</div>
+		</dl>
+	</div>
+}
+
+// humanInt formats a count with thousands separators ("2,468").
+func humanInt(n int) string {
+	s := strconv.Itoa(n)
+	sign := ""
+	if n < 0 {
+		sign, s = "-", s[1:]
+	}
+	for i := len(s) - 3; i > 0; i -= 3 {
+		s = s[:i] + "," + s[i:]
+	}
+	return sign + s
+}

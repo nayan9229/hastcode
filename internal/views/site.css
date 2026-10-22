@@ -12,6 +12,7 @@
   --wide: 72rem;
   --radius: 8px;
   --ad-slot-height: 280px;
+  --repo-profile-card-height: 360px;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -158,6 +159,25 @@ article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1
 @media print {
   .site-header nav, .site-footer, .skip-link { display: none; }
   a { color: inherit; }
+}
+
+/* Repo Profile header card (partial_repo_profile_card.templ): a fixed-height box (--repo-profile-card-height, smaller once the facts fit on two columns) so nothing below it moves; the two text rows clamp, the five facts are dt/dd rows */
+.repo-profile-card { height: var(--repo-profile-card-height); overflow: hidden; margin-block: 1rem 1.25rem; font-size: .9375rem; line-height: 1.5; }
+.repo-profile-repo { margin: 0 0 .75rem; font-weight: 600; }
+.repo-profile-card dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem 1.5rem; }
+.repo-profile-card dl > div { margin: 0; min-width: 0; }
+.repo-profile-card dl > div:not(.repo-profile-text) { display: flex; gap: .5rem; }
+.repo-profile-card dt { flex: 0 0 7.5rem; color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.875; }
+.repo-profile-card dd { margin: 0; min-width: 0; }
+.repo-profile-card .p-summary { color: var(--fg); font-size: inherit; line-height: inherit; }
+.repo-profile-card .repo-profile-text dd { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
+.repo-profile-card [data-fact="what"] dd { -webkit-line-clamp: 3; }
+.repo-profile-card [data-fact="who-for"] dd { -webkit-line-clamp: 2; }
+.repo-profile-card [data-fact="latest-release"] time { margin-left: .25rem; color: var(--muted); }
+@media (min-width: 48rem) {
+  :root { --repo-profile-card-height: 300px; }
+  .repo-profile-card dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .repo-profile-card .repo-profile-text { grid-column: 1 / -1; }
 }
 
 /* partial_ad_slot: only rendered with ads on; fixed height so the AdSense unit filling in never shifts layout */

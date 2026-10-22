@@ -118,6 +118,35 @@ type ExplainerPage struct {
 	// ReadNext are the "More in {Vertical}" and "Related" lists that end
 	// the article.
 	ReadNext RelatedLinks
+	// RepoProfile is the header card of a Repo Profile, rendered from its
+	// Fact Pack; nil for every other kind.
+	RepoProfile *RepoProfileCard
+}
+
+// RepoProfileCard is a Repo Profile's header card
+// (partial_repo_profile_card.templ): what the repository is, who it is
+// for, and the facts a Reader judges it by in five seconds.
+type RepoProfileCard struct {
+	// Repo is the repository's full name (owner/name) linking its GitHub
+	// page.
+	Repo Link
+	// WhatItIs is the Profile's description (it is the h-entry p-summary);
+	// WhoFor is its `who_for` line ("" omits the row).
+	WhatItIs string
+	WhoFor   string
+	Stars    int
+	// License is the SPDX id, or what the Reader should know instead
+	// ("not found", "not classified").
+	License string
+	// Language is the primary language ("not found" when GitHub reports
+	// none).
+	Language string
+	// LatestRelease is the release tag linking its release page (zero =
+	// no release yet) and LatestReleaseDate its date.
+	LatestRelease     Link
+	LatestReleaseDate time.Time
+	// LastCommit is the Fact Pack's pushed date.
+	LastCommit time.Time
 }
 
 // BriefPage is the view model for a Brief article page.

@@ -12,7 +12,7 @@ type ListingItem struct {
 	URL         string
 	Description string
 	// Kind is the Explainer kind badge ("Case Study", "Concept",
-	// "Comparison"); "" for a Brief.
+	// "Comparison", "Repo Profile"); "" for a Brief.
 	Kind      string
 	Published time.Time
 	// Thumb is the hero's 480 px variant.
@@ -45,7 +45,8 @@ type HomePage struct {
 	Explainers []ListingItem
 	Briefs     []ListingItem
 	Verticals  []VerticalCard
-	// Kinds are the kind pages (Case Studies, Concepts, Comparisons).
+	// Kinds are the kind pages (Case Studies, Concepts, Comparisons, Repo
+	// Profiles).
 	Kinds []Link
 }
 
