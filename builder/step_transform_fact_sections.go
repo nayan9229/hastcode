@@ -33,19 +33,24 @@ func insertFactSections(s *site) error {
 		// Every published Repo Profile has a Fact Pack (loadFactPacks fails
 		// the Profile otherwise).
 		fp := s.factPacks[e.File]
-		for heading, section := range map[string]templ.Component{
-			headingSignals:   views.RepoProfileSignalsSection(repoProfileSignals(fp)),
-			headingChangelog: views.RepoProfileChangelogSection(repoProfileChangelog(fp)),
+		// In page order, so the failures a broken Profile gets come in a
+		// fixed order too.
+		for _, fact := range []struct {
+			heading string
+			section templ.Component
+		}{
+			{headingSignals, views.RepoProfileSignalsSection(repoProfileSignals(fp))},
+			{headingChangelog, views.RepoProfileChangelogSection(repoProfileChangelog(fp))},
 		} {
-			html, err := renderHTML(section)
+			html, err := renderHTML(fact.section)
 			if err != nil {
 				return err
 			}
 			// repoProfileFactSections (the skeleton rule) names the written
 			// section each fact section follows.
-			after := repoProfileFactSections[heading]
+			after := repoProfileFactSections[fact.heading]
 			if !e.Body.InsertHTMLAfterSection(after, html) {
-				s.fail(e.File, ruleFactSections, "no ## %s section to insert %s after", after, heading)
+				s.fail(e.File, ruleFactSections, "no ## %s section to insert %s after", after, fact.heading)
 			}
 		}
 	}
