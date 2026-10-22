@@ -1,0 +1,111 @@
+package views
+
+import (
+	"strconv"
+	"strings"
+	"time"
+)
+
+// RepoProfileSignalsSection is a Repo Profile's Signals section, inserted
+// after Architecture by the builder: plain facts from the Fact Pack, one
+// dt/dd row each, no score and no colour grading. A fact the Fact Pack
+// lacks reads FactNotFound. Tests select on .signals and each row's
+// data-signal name.
+templ RepoProfileSignalsSection(s RepoProfileSignals) {
+	<section class="signals">
+		<h2>Signals</h2>
+		<dl>
+			<div data-signal="last-commit">
+				<dt>Last commit</dt>
+				<dd>@factDate(s.LastCommit)</dd>
+			</div>
+			<div data-signal="releases-last-year">
+				<dt>Releases in the last 12 months</dt>
+				<dd>{ s.ReleasesLastYear }</dd>
+			</div>
+			<div data-signal="latest-release">
+				<dt>Latest release</dt>
+				<dd>
+					if s.LatestRelease.URL != "" {
+						<a href={ templ.SafeURL(s.LatestRelease.URL) }>{ s.LatestRelease.Name }</a>
+						{ " " }
+						@factDate(s.LatestReleaseDate)
+					} else {
+						none yet
+					}
+				</dd>
+			</div>
+			<div data-signal="contributors">
+				<dt>Contributors</dt>
+				<dd>
+					if s.Contributors > 0 {
+						{ humanInt(s.Contributors) }
+					} else {
+						{ FactNotFound }
+					}
+				</dd>
+			</div>
+			<div data-signal="top-contributors">
+				<dt>Top contributors</dt>
+				<dd>
+					if s.Listed > 0 {
+						if s.TopContributor.URL != "" {
+							<a href={ templ.SafeURL(s.TopContributor.URL) }>{ s.TopContributor.Name }</a>
+						} else {
+							{ s.TopContributor.Name }
+						}
+						holds { strconv.Itoa(s.TopShare) }% of the { humanInt(s.ListedContributions) } contributions by the top { strconv.Itoa(s.Listed) }
+					} else {
+						{ FactNotFound }
+					}
+				</dd>
+			</div>
+			<div data-signal="open-issues">
+				<dt>Open issues</dt>
+				<dd>{ humanInt(s.OpenIssues) }</dd>
+			</div>
+			<div data-signal="security-policy">
+				<dt>Security policy</dt>
+				<dd>@factText(s.SecurityPolicy)</dd>
+			</div>
+			<div data-signal="license">
+				<dt>License</dt>
+				<dd>{ s.License }</dd>
+			</div>
+			<div data-signal="stars">
+				<dt>Stars</dt>
+				<dd>{ humanInt(s.Stars) }</dd>
+			</div>
+			<div data-signal="forks">
+				<dt>Forks</dt>
+				<dd>{ humanInt(s.Forks) }</dd>
+			</div>
+			<div data-signal="watchers">
+				<dt>Watchers</dt>
+				<dd>{ humanInt(s.Watchers) }</dd>
+			</div>
+			<div data-signal="documentation">
+				<dt>Documentation</dt>
+				<dd>@factText(strings.Join(s.Documentation, ", "))</dd>
+			</div>
+		</dl>
+	</section>
+}
+
+// factDate is a fact that is a date: a <time>, or FactNotFound when zero.
+templ factDate(t time.Time) {
+	if t.IsZero() {
+		{ FactNotFound }
+	} else {
+		<time datetime={ t.Format(time.RFC3339) }>{ humanDate(t) }</time>
+	}
+}
+
+// factText is a fact that is text: itself, or FactNotFound when empty.
+templ factText(s string) {
+	if s == "" {
+		{ FactNotFound }
+	} else {
+		{ s }
+	}
+}

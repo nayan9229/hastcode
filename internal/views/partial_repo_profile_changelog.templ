@@ -1,0 +1,45 @@
+package views
+
+import "time"
+
+// RepoProfileChangelogSection is a Repo Profile's Changelog section,
+// inserted after Alternatives by the builder: the Fact Pack's releases
+// newest first, each its tag (linking the release page), name and date.
+// A pre-release is marked in text (data-prerelease on its item), never by
+// colour. Tests select on .changelog and its list items.
+templ RepoProfileChangelogSection(c RepoProfileChangelog) {
+	<section class="changelog">
+		<h2>Changelog</h2>
+		if c.Releases == nil {
+			<p>{ FactNotFound }</p>
+		} else if len(c.Releases) == 0 {
+			<p>none yet</p>
+		} else {
+			<ul>
+				for _, r := range c.Releases {
+					if r.Prerelease {
+						<li data-prerelease>
+							@releaseItem(r)
+							{ " " }
+							<span class="changelog-prerelease">pre-release</span>
+						</li>
+					} else {
+						<li>
+							@releaseItem(r)
+						</li>
+					}
+				}
+			</ul>
+		}
+	</section>
+}
+
+templ releaseItem(r ReleaseItem) {
+	<a href={ templ.SafeURL(r.Tag.URL) }>{ r.Tag.Name }</a>
+	if r.Name != "" && r.Name != r.Tag.Name {
+		{ " " }
+		<span class="changelog-name">{ r.Name }</span>
+	}
+	{ " " }
+	<time datetime={ r.Date.Format(time.RFC3339) }>{ humanDate(r.Date) }</time>
+}

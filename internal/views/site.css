@@ -180,6 +180,20 @@ article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1
   .repo-profile-card .repo-profile-text { grid-column: 1 / -1; }
 }
 
+/* Repo Profile fact sections (partial_repo_profile_signals.templ, partial_repo_profile_changelog.templ): Signals is a dt/dd grid like the header card, Changelog a plain list; facts only, so nothing is coloured by value and a pre-release is marked in text */
+.signals dl { margin: 0 0 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem 1.5rem; font-size: .9375rem; line-height: 1.5; }
+.signals dl > div { margin: 0; min-width: 0; display: flex; gap: .5rem; }
+.signals dt { flex: 0 0 11rem; color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.875; }
+.signals dd { margin: 0; min-width: 0; }
+.signals [data-signal="latest-release"] time { margin-left: .25rem; color: var(--muted); }
+.changelog ul { list-style: none; padding: 0; }
+.changelog li { display: flex; flex-wrap: wrap; gap: .25rem .75rem; align-items: baseline; padding-block: .4rem; border-bottom: 1px solid var(--border); }
+.changelog time, .changelog-prerelease { color: var(--muted); font-size: .875rem; }
+.changelog-prerelease { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+@media (min-width: 48rem) {
+  .signals dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* partial_ad_slot: only rendered with ads on; fixed height so the AdSense unit filling in never shifts layout */
 .ad-slot { display: block; height: var(--ad-slot-height); margin-block: 2rem; overflow: hidden; background: var(--surface); border-radius: var(--radius); }
 .ad-slot > .adsbygoogle { display: block; width: 100%; height: 100%; }
