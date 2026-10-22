@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt prune-images
+.PHONY: generate build test vet check dev adapt prune-images lint-workflows
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -40,6 +40,15 @@ vet: generate
 	go vet ./...
 
 check: vet test
+
+# `make lint-workflows`: actionlint over .github/workflows/ (tests.yml runs
+# it on every push to main). Pinned; `go run` fetches it into the module
+# cache, so there is nothing to install. It also runs shellcheck over the
+# `run:` scripts when shellcheck is on PATH. The one ignored message is
+# GitHub's `concurrency.queue` (publish.yml), which 1.7.12 predates.
+ACTIONLINT := github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+lint-workflows:
+	go run $(ACTIONLINT) -ignore 'unexpected key "queue" for "concurrency" section'
 
 # `make adapt TARGET=cloudflare|vercel`: the deploy-adapter rule
 # (internal/deploy). Removes the other Target's manifest files from $(OUT)

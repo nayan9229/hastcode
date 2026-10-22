@@ -20,6 +20,7 @@ make test       # generate + go test ./...
 make vet        # generate + go vet ./...
 make build      # generate + go run ./cmd/builder (content/ -> .vercel/output/)
 make dev        # build (preview mode) + serve site and subscribe on http://localhost:3000
+make lint-workflows  # pinned actionlint over .github/workflows/
 ```
 
 ## Working on the site
@@ -933,13 +934,17 @@ only accepts the exact `PUB(CF|VL)-<8 digits>-<6 digits>` shape.
 hops:
 
 1. **Gate** (the tag-push run): `scripts/publish-gate.sh` reads the Target
-   from the prefix (`PUBCF` -> `cloudflare`, `PUBVL` -> `vercel`), peels
+   from the prefix (`PUBCF` -> `cloudflare`, `PUBVL` -> `vercel`, through
+   `go run ./cmd/target`: the spellings live in `internal/deploy`), peels
    the tag to its commit and fails, with the reason in the run's
    annotations, unless that commit is `origin/main` or an ancestor of it
    (`git merge-base --is-ancestor`, checkout with `fetch-depth: 0`). It
    then starts the same workflow on `main` with the tag as input
    (`gh workflow run publish.yml --ref main -f tag=…`).
-2. **Deploy** (the "Publish PUB…" run on `main`): the gate again, then the
+2. **Deploy** (the "Publish PUB…" run on `main`): waits its turn (below),
+   runs the gate again, and stops there, green, with "Skipped <tag>:
+   superseded by <newer tag>" in the run summary when a newer tag for the
+   same Target is on `main`. Otherwise the
    Target's job checks out the gated commit and runs `make test`, one
    production-mode build with images to R2, the Target's adapter and the
    upload:
@@ -964,14 +969,25 @@ saves into `main`'s scope, which every later Publish and every branch can
 restore. Keys are per Target (`hastcode-cloudflare-*`,
 `hastcode-vercel-*`), so Production's IndexNow diff is always against the
 previous Production build. Running "Publish" by hand from the Actions tab
-(ref `main`, input `tag`) re-deploys an existing tag through the same gate.
+(ref `main`, input `tag`) re-deploys an existing tag through the same gate,
+if it is still its Target's newest.
 
-Concurrency: one group per Target (`publish-cloudflare`,
-`publish-vercel`), never cancelled, so Production deploys run one at a
-time and QA never waits on Production or the reverse. While one runs,
-GitHub keeps one pending run per group; a newer Publish of the same Target
-supersedes a pending (not running) one. A failed build or test deploys
-nothing to either Target.
+**Newest tag wins.** Deploy runs have one concurrency group per Target
+(`publish-cloudflare`, `publish-vercel`), never cancelled, so Production
+deploys run one at a time and QA never waits on Production or the reverse.
+The group has `queue: max`: every waiting run stays queued (GitHub's
+default keeps one and silently cancels the others). Gates finish in any
+order, so runs can queue out of tag order; that is why each deploy run,
+once it starts, checks for a newer tag (tag names embed the UTC time
+`publish.sh` created them) whose commit is on `main`, and skips itself
+with the note above if there is one. So an older Publish never deploys
+over a newer one, the newest always deploys, and every skipped tag says
+so in its own run. A later Publish of an older commit is still a newer
+Publish: to roll back, put the old commit on `main` (revert) and publish
+again, or tag it with `publish.sh` from a `main` checkout at that commit.
+`make lint-workflows` ignores actionlint's one complaint here (1.7.12
+predates `queue`). A failed build or test deploys nothing to either
+Target.
 
 ### Previews and Lighthouse
 
@@ -997,7 +1013,9 @@ fails the check; reports are the `lighthouse-reports` artefact (never
 public storage: previews hold drafts). Lighthouse blocks Plausible and
 ad hosts so runs are not counted as pageviews.
 
-`.github/workflows/tests.yml` (push to `main`): `make test`, nothing else.
+`.github/workflows/tests.yml` (push to `main`): `make test` and `make
+lint-workflows` (pinned actionlint, plus shellcheck on `run:` scripts),
+nothing else. Run `make lint-workflows` after editing a workflow.
 
 ### Secrets, variables and settings
 

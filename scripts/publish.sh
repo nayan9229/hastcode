@@ -15,6 +15,8 @@
 #     refuses tags on commits that are not on main).
 # The normal flow is `vl`, check https://qa.hastcode.com/, then `cf` on the
 # same commit. QA_URL overrides the QA address printed after `vl`.
+# The Target codes and tag prefixes come from internal/deploy (`go run
+# ./cmd/target`; the full names cloudflare/vercel work too), so this needs Go.
 set -euo pipefail
 
 usage() {
@@ -22,16 +24,16 @@ usage() {
   exit 2
 }
 
-target=""
+arg_target=""
 dry_run=false
 for arg in "$@"; do
   case "$arg" in
-    cf | vl) [[ -z "$target" ]] || usage; target="$arg" ;;
     -n | --dry-run) dry_run=true ;;
-    *) usage ;;
+    -* | PUB*) usage ;;
+    *) [[ -z "$arg_target" ]] || usage; arg_target="$arg" ;;
   esac
 done
-[[ -n "$target" ]] || usage
+[[ -n "$arg_target" ]] || usage
 
 refuse() {
   echo "publish: $*" >&2
@@ -39,6 +41,10 @@ refuse() {
 }
 
 cd "$(git rev-parse --show-toplevel)"
+
+spelling=$(go run ./cmd/target "$arg_target" 2>/dev/null) || usage
+target=$(sed -n 's/^target=//p' <<<"$spelling")
+prefix=$(sed -n 's/^tag_prefix=//p' <<<"$spelling")
 
 if [[ -n "$(git status --porcelain --untracked-files=normal)" ]]; then
   git status --short >&2
@@ -59,8 +65,9 @@ if [[ "$head" != "$(git rev-parse origin/main)" ]]; then
   echo "note: origin/main is ahead of HEAD; publishing HEAD ${head:0:12} (git pull to publish the latest)" >&2
 fi
 
-prefix=$(tr '[:lower:]' '[:upper:]' <<<"$target")
-tag="PUB${prefix}-$(date -u +%Y%m%d-%H%M%S)"
+# The UTC stamp orders Publishes: publish.yml deploys only the newest tag
+# of a Target and skips older ones that are still waiting.
+tag="${prefix}$(date -u +%Y%m%d-%H%M%S)"
 
 git tag "$tag" "$head"
 if $dry_run; then
@@ -80,7 +87,7 @@ if [[ "$remote" =~ github\.com[:/]([^/]+/[^/]+)$ ]]; then
   echo "Workflow: https://github.com/${BASH_REMATCH[1]%.git}/actions/workflows/publish.yml"
 fi
 
-if [[ "$target" == vl ]]; then
+if [[ "$target" == vercel ]]; then
   cat <<EOF
 
 QA (Vercel), once the workflow is green: ${QA_URL:-https://qa.hastcode.com/}

@@ -8,9 +8,11 @@
 #   1. Tag push: `gate` checks the tag (name, commit is on main; see
 #      scripts/publish-gate.sh) and `hand-off` starts this workflow again
 #      on main with the tag as input (workflow_dispatch).
-#   2. That run re-checks the tag, builds the tagged commit once in
-#      production mode (images to R2), applies the Target's deploy adapter
-#      and deploys; Cloudflare then pings IndexNow.
+#   2. That run waits its turn (one deploy per Target, in queue order),
+#      re-checks the tag, skips it if a newer tag for the same Target
+#      exists (newest tag wins; the run summary names it), else builds the
+#      tagged commit once in production mode (images to R2), applies the
+#      Target's deploy adapter and deploys; Cloudflare then pings IndexNow.
 # Why the hop: the build cache (encoded images, rendered diagrams, the
 # IndexNow page manifest) must persist from one Publish to the next, and
 # GitHub's cache is scoped by ref: "Workflow runs also cannot restore caches
@@ -18,7 +20,8 @@
 # which the next Publish of the same Target restores (keys are per Target)
 # and which branch Previews can also restore.
 # Running "Publish" by hand (Actions tab, ref main, input tag) re-deploys an
-# existing tag through the same gate.
+# existing tag through the same gate, as long as it is still its Target's
+# newest.
 #
 # Secrets (names only; values from scripts/setup-deploy.sh, see README
 # "Deploying"): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
@@ -44,15 +47,23 @@ on:
 permissions:
   contents: read
 
-# One deploy per Target at a time, never cancelled: each Production build
-# diffs its pages against the manifest the previous one saved. A Cloudflare
-# and a Vercel deploy never wait on each other. Gate runs only share a group
-# with themselves. (While one deploy runs, GitHub keeps one pending run per
-# group; a newer one supersedes it.)
+# One deploy run per Target at a time, never cancelled: each Production
+# build diffs its pages against the manifest the previous one saved. A
+# Cloudflare and a Vercel deploy never wait on each other. `queue: max`
+# keeps every waiting run (GitHub's default keeps one and cancels the rest
+# without a word); each then runs in turn and its gate skips it, with a
+# summary note, when a newer tag for its Target exists. So the newest tag
+# always deploys last and no tag disappears silently. The whole run waits,
+# gate included, so the newer-tag check sees every tag pushed meanwhile.
+# Gate runs only share a group with themselves. "PUBCF-" is
+# deploy.Cloudflare.TagPrefix() (an expression cannot run code).
+# actionlint 1.7.12 does not know `queue` yet: `make lint-workflows` ignores
+# exactly that message.
 concurrency:
   group: >-
     ${{ github.event_name == 'push' && format('publish-gate-{0}', github.ref_name) || (startsWith(inputs.tag, 'PUBCF-') && 'publish-cloudflare' || 'publish-vercel') }}
   cancel-in-progress: false
+  queue: max
 
 jobs:
   gate:
@@ -62,14 +73,20 @@ jobs:
       tag: ${{ steps.gate.outputs.tag }}
       target: ${{ steps.gate.outputs.target }}
       commit: ${{ steps.gate.outputs.commit }}
+      superseded-by: ${{ steps.gate.outputs.superseded_by }}
     steps:
-      # fetch-depth 0: every branch and tag, so origin/main and the tag are
-      # both here for the ancestor check.
+      # fetch-depth 0: every branch and tag (as of now: in a deploy run,
+      # after the concurrency queue let it start), so origin/main, the tag
+      # and any newer tag are all here.
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
+      # The gate reads Target spellings through `go run ./cmd/target`.
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
       - id: gate
-        name: Tag must name a Target and point at a commit on main
+        name: Tag must name a Target, point at a commit on main and be its Target's newest
         env:
           EVENT: ${{ github.event_name }}
           REF: ${{ github.ref }}
@@ -84,6 +101,13 @@ jobs:
           out=$(scripts/publish-gate.sh "$TAG" origin/main)
           echo "$out" >> "$GITHUB_OUTPUT"
           echo "$out"
+          # Newest tag wins. Only the deploy run decides (the tag-push run
+          # always hands off), so each skip is noted exactly once.
+          newer=$(sed -n 's/^superseded_by=//p' <<<"$out")
+          if [ "$EVENT" = workflow_dispatch ] && [ -n "$newer" ]; then
+            echo "::notice title=Publish skipped::$TAG superseded by $newer"
+            echo "Skipped $TAG: superseded by $newer, a newer Publish of the same Target. Nothing was deployed by this run; $newer deploys in its own run (newest tag wins, README \"Publishing\")." >> "$GITHUB_STEP_SUMMARY"
+          fi
 
   hand-off:
     name: Start the deploy on main
@@ -105,7 +129,7 @@ jobs:
   cloudflare:
     name: Deploy to Cloudflare (Production)
     needs: gate
-    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'cloudflare'
+    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'cloudflare' && needs.gate.outputs.superseded-by == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment:
@@ -128,9 +152,10 @@ jobs:
           restore-keys: hastcode-cloudflare-
       # Production mode; every image HEAD/PUT to R2 and referenced on
       # images.hastcode.com. Missing credentials fail here (rule
-      # image-store), before anything is encoded or deployed.
+      # image-store), before anything is encoded or deployed. The R2
+      # environment is a YAML anchor, reused by the Vercel build below.
       - name: Build (production mode, images to R2)
-        env:
+        env: &r2-env
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
@@ -186,7 +211,7 @@ jobs:
   vercel:
     name: Deploy to Vercel (QA)
     needs: gate
-    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'vercel'
+    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'vercel' && needs.gate.outputs.superseded-by == ''
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment:
@@ -214,14 +239,10 @@ jobs:
       # vercel.json's build command is `make build`, which reads MODE and
       # FLAGS from the environment; @vercel/go then adds the subscribe
       # function. Production mode: QA ships Production's exact bytes.
+      # (MODE and FLAGS on the command line: an alias cannot be extended.)
       - name: Build (production mode, images to R2)
-        env:
-          MODE: production
-          FLAGS: -image-store=r2
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: vercel build --prod --token="$VERCEL_TOKEN"
+        env: *r2-env
+        run: MODE=production FLAGS=-image-store=r2 vercel build --prod --token="$VERCEL_TOKEN"
       # QA never pings IndexNow; keep the artefact out of the upload.
       - run: rm -f .vercel/output/indexnow.json
       # Deploy-adapter rule: removes wrangler.json, static/_headers and

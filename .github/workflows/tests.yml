@@ -1,5 +1,6 @@
-# Tests on every push to main, and nothing else (spec "Publishing", user
-# story 1): merging never changes what Readers see. Deploys happen only
+# Tests (and actionlint over these workflows) on every push to main, and
+# nothing else (spec "Publishing", user story 1): merging never changes
+# what Readers see. Deploys happen only
 # from Publish tags (publish.yml); branch Previews are preview.yml.
 name: Tests
 
@@ -22,3 +23,15 @@ jobs:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
       - run: make test
+
+  lint-workflows:
+    name: make lint-workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      # Pinned actionlint (Makefile); shellcheck, preinstalled on the
+      # runner, checks the `run:` scripts too.
+      - run: make lint-workflows
