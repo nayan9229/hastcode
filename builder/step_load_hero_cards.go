@@ -16,16 +16,17 @@ import (
 
 // Hero cards (spec "Page composition and gates": generated hero). A Repo
 // Profile that names no `hero` gets one drawn from its Fact Pack
-// (views.HeroCardPNG). The card is written under the build cache and
-// registered as the Profile's hero source here, before validate heroes
-// (50), so the encode and write steps treat it exactly like a sourced
-// file: the responsive widths in AVIF and JPEG, the JSON-LD and Open Graph
+// (views.HeroCardPNG). The card is drawn, cached under the build cache and
+// registered as the Profile's hero source in the load phase, after the
+// Fact Packs (22) and the draft exclusion (30) and so before every
+// validate step, so validate heroes, encode and write treat it exactly
+// like a sourced file: the responsive widths in AVIF and JPEG, the JSON-LD and Open Graph
 // crops, the preload, the weight warning and the image cache, which is
 // keyed on the card's bytes: an unchanged Fact Pack hits it, a changed
 // star count or release renames every variant. A Profile that names a
 // `hero` keeps it and skips the card; every other kind still needs one.
 func init() {
-	registerStep(phaseValidate, 45, "draw hero cards", drawHeroCards)
+	registerStep(phaseLoad, 35, "draw hero cards", drawHeroCards)
 }
 
 // heroCardCacheDir is the directory under Config.CacheDir the drawn cards

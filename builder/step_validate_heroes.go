@@ -17,8 +17,8 @@ import (
 // need into the image cache (step_transform_heroes.go), and publishes them
 // at content-hashed paths under heroAssetDir through the Image Store
 // (step_render_hero_assets.go, image_store.go). A Repo Profile without a
-// `hero` gets a card drawn from its Fact Pack instead, registered here
-// before this step runs (step_validate_hero_cards.go).
+// `hero` gets a card drawn from its Fact Pack instead, registered in the
+// load phase (step_load_hero_cards.go).
 func init() {
 	registerStep(phaseValidate, 50, "validate heroes", validateHeroes)
 }
@@ -59,7 +59,7 @@ type hero struct {
 // heroRef is a piece that must carry a hero (an Explainer or a Brief):
 // its content file and its `hero` / `hero_alt` frontmatter. card marks a
 // Repo Profile without `hero`, whose hero is drawn from its Fact Pack
-// (step_validate_hero_cards.go) rather than sourced.
+// (step_load_hero_cards.go) rather than sourced.
 type heroRef struct {
 	file, hero, alt string
 	card            bool

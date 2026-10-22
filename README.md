@@ -127,7 +127,7 @@ repository, description, language, stars, license, latest release; light
 palette, Go fonts; alt text "{repo}: {description}") and feeds it through
 the same pipeline, so a changed star count or release renames every
 variant and an unchanged Fact Pack hits the cache
-(`step_validate_hero_cards.go`, `internal/views/hero_card.go`). It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
+(`step_load_hero_cards.go`, `internal/views/hero_card.go`). It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
 (never upscaled past the source; `heroWidths`), plus 1200 px JPEG crops at
 16:9, 4:3 and 1:1 (JSON-LD `image`) and 1200x630 (`og:image`,
 `twitter:image`), to `/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of
@@ -190,7 +190,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
-| `builder/step_validate_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's text seam, see "Tests"), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
+| `builder/step_load_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's text seam, see "Tests"), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
 | `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
 | `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
 | `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
@@ -240,10 +240,10 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
-and Briefs) 30; validate ads config 5, references 10, Brief references 12,
+and Briefs) 30, draw hero cards 35 (Repo Profiles without `hero`: the
+card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
-skeleton 32, Brief skeleton 35, section-length warning 40, draw hero cards 45 (Repo Profiles
-without `hero`), Review-overdue warning 50, validate heroes 50
+skeleton 32, Brief skeleton 35, section-length warning 40, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30
 (and a Repo Profile's Fact Pack sources), insert Repo Profile fact sections 35,
