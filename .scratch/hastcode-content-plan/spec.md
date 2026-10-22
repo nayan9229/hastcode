@@ -146,3 +146,12 @@ The content plan around it: three to five Repo Profiles a week beside five other
 - Geography is the risk to watch: GitHub's population is about a quarter Tier-1 and Raptive wants half. Profiles stay a minority of output and the checkpoint measures Tier-1 share, not only pageviews.
 - GitHub removed public access to per-user stargazer lists in July 2026 and added `stargazers/count` and `stargazers/history`; the Fact Pack reserves a place for history but v1 stores only the count.
 - The Cloudflare free plan's cron limits (10 ms CPU, 50 subrequests) rule out a Worker for Refresh; GitHub Actions is the right place and already holds the token.
+
+## Review fixes
+
+Spec text changed by the review fixes on `cp/review-fixes` (2026-10-22):
+
+- **User Story 6 and "Page composition and gates"**: Signals shows the contributor count and the lead contributor's share of the listed top-ten contributions (what the page has always shown), not "the share held by the top ten".
+- **"Content model", Fact Pack fields**: `sources` lists the github.com pages a Reader can open to check what was fetched (repository, README blob, releases, contributors graph, `.github` tree), each once, never an API endpoint; an Author's citation of the same page merges with it.
+- **"Content model", stale warning**: `fact-pack-stale` means the Fact Pack has been unchanged upstream for over 30 days (a Refresh keeps an unchanged Fact Pack's fetched-at), so the repository may be dormant and the Author checks it at the next Review; it no longer advises a Refresh.
+- **"Refresh workflow"**: after the check target the job runs a production build of the real content tree (the Publish build with the Image Store local, no secret), so a changed Fact Pack that breaks the build fails the job before the pull request; and there is one open Refresh pull request at a time: any open pull request from a `refresh/` branch is reused (branch reset onto `main`, force-pushed with a lease, title and body edited) instead of opening a second.
