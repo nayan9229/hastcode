@@ -68,7 +68,7 @@ func heroCardName(e *content.Explainer) string { return e.Slug + "-card.png" }
 // classify is left off, as is anything the Fact Pack lacks.
 func heroCardOf(e *content.Explainer, fp *content.FactPack) views.HeroCard {
 	c := views.HeroCard{
-		Repo:        fp.Slug,
+		Repo:        fp.FullName,
 		Description: cmp.Or(fp.Description, e.Description),
 		Language:    fp.Language,
 		Stars:       fp.Stars,

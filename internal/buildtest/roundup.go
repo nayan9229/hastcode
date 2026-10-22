@@ -38,7 +38,7 @@ func RoundupProfiles() []Explainer {
 		p.Title = r.title
 		p.Repo = r.repo
 		fp := ValidFactPack()
-		fp.Slug = r.repo
+		fp.FullName = r.repo
 		fp.Name = name
 		fp.URL = "https://github.com/" + r.repo
 		fp.Description = r.description

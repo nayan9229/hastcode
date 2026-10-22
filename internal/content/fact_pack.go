@@ -27,9 +27,10 @@ type FactPack struct {
 	// FetchedAt is when the fetch command ran; the builder warns when it
 	// is more than 30 days before the build clock.
 	FetchedAt time.Time `json:"fetched_at"`
-	// Slug is the repository's full name, owner/name. It must equal the
-	// Profile's `repo` frontmatter.
-	Slug string `json:"slug"`
+	// FullName is the repository's full name, owner/name. It must equal
+	// the Profile's `repo` frontmatter. Its JSON key is `slug`, the
+	// original brief's exchange name.
+	FullName string `json:"slug"`
 	// Name is the repository name without the owner.
 	Name        string   `json:"name"`
 	URL         string   `json:"url"`

@@ -105,7 +105,7 @@ func softwareSourceCode(fp *content.FactPack) schema.SoftwareSourceCode {
 	code := schema.SoftwareSourceCode{
 		Context:             schema.Context,
 		Type:                "SoftwareSourceCode",
-		Name:                fp.Slug,
+		Name:                fp.FullName,
 		CodeRepository:      fp.URL,
 		ProgrammingLanguage: fp.Language,
 		Description:         fp.Description,
@@ -191,7 +191,7 @@ func documentation(f content.RepoFiles) []string {
 // from the Fact Pack.
 func repoProfileCard(e *content.Explainer, fp *content.FactPack) *views.RepoProfileCard {
 	c := &views.RepoProfileCard{
-		Repo:       views.Link{Name: fp.Slug, URL: fp.URL},
+		Repo:       views.Link{Name: fp.FullName, URL: fp.URL},
 		WhatItIs:   e.Description,
 		WhoFor:     e.WhoFor,
 		Stars:      fp.Stars,

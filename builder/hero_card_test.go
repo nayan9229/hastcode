@@ -108,7 +108,7 @@ func heroCardFile(cacheDir string) string {
 func TestHeroCard_IsA1600x900PNGWithEveryLineInsideTheSquareAndOpenGraphCrops(t *testing.T) {
 	long := buildtest.ValidRepoProfile()
 	long.Repo = "kubernetes-sigs/cluster-api-provider-aws"
-	long.FactPack.Slug = long.Repo
+	long.FactPack.FullName = long.Repo
 	long.FactPack.Description = "Kubernetes Cluster API Provider AWS provides consistent deployment and day 2 operations of self-managed and EKS Kubernetes clusters on AWS."
 	long.FactPack.Language = "Jupyter Notebook"
 	long.FactPack.Stars = 1234567

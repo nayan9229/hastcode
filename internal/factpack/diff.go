@@ -77,8 +77,8 @@ func diff(old, new *content.FactPack) []string {
 	if !maps.Equal(old.Languages, new.Languages) {
 		out = append(out, "languages changed")
 	}
-	if old.Slug != new.Slug || old.Name != new.Name || old.URL != new.URL {
-		out = append(out, "repository renamed "+old.Slug+" -> "+new.Slug)
+	if old.FullName != new.FullName || old.Name != new.Name || old.URL != new.URL {
+		out = append(out, "repository renamed "+old.FullName+" -> "+new.FullName)
 	}
 	if !slices.Equal(old.Sources, new.Sources) {
 		out = append(out, "sources changed")

@@ -126,7 +126,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 		}
 		return nil, err
 	}
-	fp.Slug, fp.Name, fp.URL = r.FullName, r.Name, r.HTMLURL
+	fp.FullName, fp.Name, fp.URL = r.FullName, r.Name, r.HTMLURL
 	fp.Description, fp.Homepage, fp.Topics = r.Description, r.Homepage, r.Topics
 	fp.DefaultBranch, fp.Language = r.DefaultBranch, r.Language
 	fp.Stars, fp.Forks, fp.Watchers, fp.OpenIssues = r.Stars, r.Forks, r.Subscribers, r.OpenIssues

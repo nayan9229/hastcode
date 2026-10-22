@@ -121,7 +121,7 @@ Adopt it for single-node streaming where a small binary matters; wait for cluste
 // Dates are RFC 3339 strings so a test can blank or backdate one.
 type FactPack struct {
 	FetchedAt     string
-	Slug          string // owner/name
+	FullName      string // owner/name; JSON key "slug"
 	Name          string
 	URL           string
 	Description   string
@@ -196,7 +196,7 @@ type README struct {
 func ValidFactPack() FactPack {
 	return FactPack{
 		FetchedAt:     "2026-10-19T06:00:00Z",
-		Slug:          "apache/iggy",
+		FullName:      "apache/iggy",
 		Name:          "iggy",
 		URL:           "https://github.com/apache/iggy",
 		Description:   "Persistent message streaming platform written in Rust",
@@ -263,7 +263,7 @@ func (f FactPack) JSON() []byte {
 	}
 	doc := map[string]any{
 		"fetched_at":     f.FetchedAt,
-		"slug":           f.Slug,
+		"slug":           f.FullName,
 		"name":           f.Name,
 		"url":            f.URL,
 		"description":    f.Description,

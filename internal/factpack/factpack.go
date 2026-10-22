@@ -168,5 +168,5 @@ func summary(fp *content.FactPack) string {
 	if fp.LatestRelease != nil {
 		latest = "latest release " + fp.LatestRelease.Tag
 	}
-	return fmt.Sprintf("%s: %d stars, %s, %d contributors", fp.Slug, fp.Stars, latest, fp.Contributors.Total)
+	return fmt.Sprintf("%s: %d stars, %s, %d contributors", fp.FullName, fp.Stars, latest, fp.Contributors.Total)
 }

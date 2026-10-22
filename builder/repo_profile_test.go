@@ -104,7 +104,7 @@ func TestRepoProfile_FactPackMissingUnparsableOrForAnotherRepositoryIsABuildErro
 		"names another repository": {
 			func() buildtest.Tree {
 				p := buildtest.ValidRepoProfile()
-				p.FactPack.Slug = "apache/kafka"
+				p.FactPack.FullName = "apache/kafka"
 				return buildtest.NewTree().WithRepoProfile(p)
 			},
 			"fact-pack-repo", `Fact Pack ` + factPackFile + ` names repository "apache/kafka", but repo is "apache/iggy"`,
@@ -225,7 +225,7 @@ func secondRepoProfile() buildtest.Explainer {
 	p.Repo = "php/frankenphp"
 	p.Published = "2026-10-22T09:00:00Z"
 	fp := buildtest.ValidFactPack()
-	fp.Slug = "php/frankenphp"
+	fp.FullName = "php/frankenphp"
 	fp.Name = "frankenphp"
 	fp.URL = "https://github.com/php/frankenphp"
 	p.FactPack = &fp
