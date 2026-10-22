@@ -121,41 +121,52 @@ func softwareSourceCode(fp *content.FactPack) schema.SoftwareSourceCode {
 // answered by the blocks between it and the next H3 (as HTML). nil when
 // the body has no FAQ questions.
 func faqPage(e *content.Explainer) (*schema.FAQPage, error) {
-	_, sections := e.Body.Sections()
-	i := slices.IndexFunc(sections, func(sec markdown.Section) bool { return sec.Heading == headingFAQ })
-	if i < 0 {
+	questions, _ := faqQuestions(e.Body)
+	if len(questions) == 0 {
 		return nil, nil
 	}
 	faq := &schema.FAQPage{Context: schema.Context, Type: "FAQPage"}
-	var answer []ast.Node
-	flush := func() error {
-		if n := len(faq.MainEntity); n > 0 {
-			html, err := markdown.RenderBlocks(e.Body, answer)
-			if err != nil {
-				return err
-			}
-			faq.MainEntity[n-1].AcceptedAnswer = schema.Answer{Type: "Answer", Text: strings.TrimSpace(html)}
+	for _, q := range questions {
+		html, err := markdown.RenderBlocks(e.Body, q.answer)
+		if err != nil {
+			return nil, err
 		}
-		answer = nil
-		return nil
-	}
-	for _, b := range sections[i].Blocks {
-		if h, ok := b.(*ast.Heading); ok && h.Level == 3 {
-			if err := flush(); err != nil {
-				return nil, err
-			}
-			faq.MainEntity = append(faq.MainEntity, schema.Question{Type: "Question", Name: e.Body.Text(h)})
-			continue
-		}
-		answer = append(answer, b)
-	}
-	if err := flush(); err != nil {
-		return nil, err
-	}
-	if len(faq.MainEntity) == 0 {
-		return nil, nil
+		faq.MainEntity = append(faq.MainEntity, schema.Question{
+			Type:           "Question",
+			Name:           e.Body.Text(q.heading),
+			AcceptedAnswer: schema.Answer{Type: "Answer", Text: strings.TrimSpace(html)},
+		})
 	}
 	return faq, nil
+}
+
+// faqQuestion is one ### question under a Repo Profile's ## FAQ and the
+// blocks up to the next question, which answer it.
+type faqQuestion struct {
+	heading *ast.Heading
+	answer  []ast.Node
+}
+
+// faqQuestions walks the ## FAQ section: one faqQuestion per ### heading,
+// in order (anything before the first is no question's answer). ok is false
+// when the body has no ## FAQ. The skeleton rule counts them; the FAQPage
+// JSON-LD is built from them.
+func faqQuestions(body *markdown.Document) (questions []faqQuestion, ok bool) {
+	_, sections := body.Sections()
+	i := slices.IndexFunc(sections, func(sec markdown.Section) bool { return sec.Heading == headingFAQ })
+	if i < 0 {
+		return nil, false
+	}
+	for _, b := range sections[i].Blocks {
+		if h, isHeading := b.(*ast.Heading); isHeading && h.Level == 3 {
+			questions = append(questions, faqQuestion{heading: h})
+			continue
+		}
+		if n := len(questions); n > 0 {
+			questions[n-1].answer = append(questions[n-1].answer, b)
+		}
+	}
+	return questions, true
 }
 
 // documentation lists the documentation files and directories the Fact

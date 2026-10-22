@@ -5,10 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/yuin/goldmark/ast"
-
 	"hastcode.com/site/internal/content"
-	"hastcode.com/site/internal/markdown"
 )
 
 func init() {
@@ -89,17 +86,11 @@ func validateRepoProfileSkeleton(s *site) error {
 // checkRepoProfileFAQ: the ## FAQ section holds minFAQQuestions to
 // maxFAQQuestions ### questions. A missing FAQ is the sections rule's.
 func checkRepoProfileFAQ(s *site, e *content.Explainer) {
-	_, sections := e.Body.Sections()
-	i := slices.IndexFunc(sections, func(sec markdown.Section) bool { return sec.Heading == headingFAQ })
-	if i < 0 {
+	questions, ok := faqQuestions(e.Body)
+	if !ok {
 		return
 	}
-	n := 0
-	for _, b := range sections[i].Blocks {
-		if h, ok := b.(*ast.Heading); ok && h.Level == 3 {
-			n++
-		}
-	}
+	n := len(questions)
 	if n < minFAQQuestions || n > maxFAQQuestions {
 		s.fail(e.File, ruleRepoProfileFAQ, "## FAQ has %d questions, want %d–%d (one ### heading per question, phrased the way a Reader searches)", n, minFAQQuestions, maxFAQQuestions)
 	}
