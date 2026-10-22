@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev
+.PHONY: generate build test vet check dev adapt
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -40,6 +40,15 @@ vet: generate
 	go vet ./...
 
 check: vet test
+
+# `make adapt TARGET=cloudflare|vercel`: the deploy-adapter rule
+# (internal/deploy). Removes the other Target's manifest files from $(OUT)
+# in place, once, after the build and before the upload. Cloudflare then
+# deploys with `wrangler deploy --config $(OUT)/wrangler.json`; Vercel with
+# `vercel deploy --prebuilt`.
+TARGET ?=
+adapt:
+	go run ./cmd/adapt -target "$(TARGET)" -out $(OUT)
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)

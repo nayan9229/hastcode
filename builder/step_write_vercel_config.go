@@ -26,7 +26,11 @@ func writeVercelConfig(s *site) error {
 // lookaround) so the local router (vercel.NewRouter) applies the same file.
 func routes() []vercel.Route {
 	return []vercel.Route{
-		// Cache headers first ("continue": they add headers, then routing
+		// Vercel is only ever the QA Target (ADR-0004): every response,
+		// whatever its status, tells crawlers not to index it. The deploy
+		// adapter also overlays a disallow-all robots.txt (internal/deploy).
+		{Src: "^/.*$", Continue: true, Headers: map[string]string{"X-Robots-Tag": "noindex"}},
+		// Cache headers next ("continue": they add headers, then routing
 		// goes on). Static output only changes with a deployment, and
 		// Vercel scopes its CDN cache to the deployment, so the CDN may
 		// hold HTML for long while browsers revalidate every time.

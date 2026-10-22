@@ -15,8 +15,8 @@
 #
 # Secrets (names only; values come from scripts/setup-deploy.sh):
 #   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
-#   VERCEL_AUTOMATION_BYPASS_SECRET  Protection Bypass for Automation, so
-#                                    Lighthouse can load a protected preview
+# (No protection bypass secret: Lighthouse moves to Cloudflare Previews,
+# ticket 08; Vercel is only the QA Target, ADR-0004.)
 name: Preview
 
 on:
@@ -116,18 +116,12 @@ jobs:
       - name: Run Lighthouse against the preview
         env:
           URLS: ${{ needs.deploy.outputs.lighthouse-urls }}
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
         run: |
-          headers='{}'
-          if [ -n "$BYPASS" ]; then
-            headers=$(jq -nc --arg s "$BYPASS" '{"x-vercel-protection-bypass": $s}')
-          fi
           args=()
           while IFS= read -r u; do
             [ -n "$u" ] && args+=("--collect.url=$u")
           done <<< "$URLS"
-          lhci autorun --config=lighthouserc.json "${args[@]}" \
-            "--collect.settings.extraHeaders=$headers"
+          lhci autorun --config=lighthouserc.json "${args[@]}"
       - uses: actions/upload-artifact@v7
         if: always()
         with:

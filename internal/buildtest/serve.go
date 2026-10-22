@@ -10,6 +10,7 @@ import (
 	"strings"
 	"testing"
 
+	"hastcode.com/site/internal/cloudflare"
 	"hastcode.com/site/internal/vercel"
 	"hastcode.com/site/subscribe"
 )
@@ -67,6 +68,11 @@ func URLPaths(tb testing.TB, outDir string) []string {
 			return err
 		}
 		u := "/" + filepath.ToSlash(rel)
+		// Cloudflare's manifest files: Workers parses them and never
+		// serves them; the Vercel adapter removes them. Not URLs.
+		if u == "/"+cloudflare.HeadersFile || u == "/"+cloudflare.RedirectsFile {
+			return nil
+		}
 		if dir, ok := strings.CutSuffix(u, "/index.html"); ok {
 			u = dir + "/"
 		}

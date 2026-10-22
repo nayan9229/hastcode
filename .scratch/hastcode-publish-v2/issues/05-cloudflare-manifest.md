@@ -6,10 +6,20 @@ Spec: `../spec.md` ("One build, per-Target manifests"). Research: `docs/research
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests read the Workers config and assert the assets directory, trailing-slash and 404 handling, `run_worker_first` containing only the signup path, and `main`
-- [ ] `_headers` asserts immutable caching for the hashed-assets path and revalidation for HTML; `_redirects` contains exactly the `/home` rule
-- [ ] No rule for `/video`, `/community`, `/group`; an unknown path resolves to the 404 page per the config
-- [ ] The adapter rule is implemented as a documented list (or function) both deploy steps will use, with a test that the Vercel set excludes Cloudflare files and the Cloudflare set excludes `config.json`
-- [ ] README "Deploying" documents the Cloudflare manifest and the adapter rule
+- [x] Build-seam tests read the Workers config and assert the assets directory, trailing-slash and 404 handling, `run_worker_first` containing only the signup path, and `main`
+- [x] `_headers` asserts immutable caching for the hashed-assets path and revalidation for HTML; `_redirects` contains exactly the `/home` rule
+- [x] No rule for `/video`, `/community`, `/group`; an unknown path resolves to the 404 page per the config
+- [x] The adapter rule is implemented as a documented list (or function) both deploy steps will use, with a test that the Vercel set excludes Cloudflare files and the Cloudflare set excludes `config.json`
+- [x] README "Deploying" documents the Cloudflare manifest and the adapter rule
+
+## Comments
+
+**Implementer (05):** Done on `v2/05-cf-manifest`.
+
+- Config: `<out>/wrangler.json` (plain JSON), written by `builder/step_write_cloudflare_manifest.go` (write phase, order 105) via `internal/cloudflare`. Deploy with `wrangler deploy --config .vercel/output/wrangler.json`; relative paths resolve against the config file, so `main` is `../../worker/index.js` for the default `OUT` (anchored on `-tools`, the project root). No `routes` (no automatic domain attach); `workers_dev` and `preview_urls` true.
+- `_headers`: `/assets/*` immutable; `/`, `/*/`, `/*.html` revalidate (non-overlapping, since Workers joins duplicate headers); `https://:worker.:account.workers.dev/*` gets `X-Robots-Tag: noindex`. `_redirects`: `/home / 301`, `/home/ / 301`.
+- Adapter rule: `internal/deploy` (`Files`, `Apply`, `ParseTarget`), CLI `cmd/adapt`, `make adapt TARGET=cloudflare|vercel`.
+- `buildtest.URLPaths` skips `_headers`/`_redirects` (not URLs on either Target); the production noindex test whitelists `static/_headers` (host-scoped rule).
+- Verified by hand with wrangler 4.149.0: `wrangler deploy --dry-run --config .vercel/output/wrangler.json` bundles the Worker and reads the assets; `wrangler dev` on the same config: `/home` and `/home/` 301 `/`; `/video/abc`, `/video`, `/community/x`, `/group/` 404 with the 404 page; `/about` and `/about/index.html` 307 `/about/`; `/_headers`, `/_redirects` 404; hashed CSS `public, max-age=31536000, immutable`; HTML and feeds `public, max-age=0, must-revalidate`; `POST /api/subscribe` reaches the Worker (bad email 400).
