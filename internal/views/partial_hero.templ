@@ -1,13 +1,12 @@
 package views
 
-// HeroPicture is the hero figure: AVIF and WebP sources with a JPEG <img>
+// HeroPicture is the hero figure: an AVIF source with a JPEG <img>
 // fallback. width/height reserve layout space (no CLS); the hero is the LCP
 // element, so it loads eagerly at high priority.
 templ HeroPicture(h Hero) {
 	<figure class="hero">
 		<picture>
 			<source type="image/avif" srcset={ Srcset(h.AVIF) } sizes={ h.Sizes }/>
-			<source type="image/webp" srcset={ Srcset(h.WebP) } sizes={ h.Sizes }/>
 			<img
 				src={ h.Img.URL }
 				srcset={ Srcset(h.JPEG) }

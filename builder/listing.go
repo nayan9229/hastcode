@@ -72,7 +72,7 @@ func (s *site) thumbnail(file string) views.Thumbnail {
 	if len(h.JPEG) == 0 {
 		return views.Thumbnail{}
 	}
-	return views.Thumbnail{AVIF: h.AVIF[0], WebP: h.WebP[0], JPEG: h.JPEG[0]}
+	return views.Thumbnail{AVIF: h.AVIF[0], JPEG: h.JPEG[0]}
 }
 
 // explainerKind is an Explainer kind as Readers see it, with its kind

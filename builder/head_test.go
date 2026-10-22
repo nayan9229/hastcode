@@ -36,16 +36,19 @@ func TestExplainerHead_CanonicalOpenGraphAndTwitterCardUseTheHero(t *testing.T) 
 	}
 
 	image := meta("property", "og:image")
+	if got := meta("name", "twitter:image"); got != image {
+		t.Errorf("twitter:image = %q, want og:image %q", got, image)
+	}
 	path, ok := strings.CutPrefix(image, "https://hastcode.test/")
 	if !ok {
 		t.Fatalf("og:image = %q, want an absolute URL on the site", image)
 	}
 	img := buildtest.DecodeImage(t, out, "/"+path)
-	if img.Width < 1200 || img.Width*9 != img.Height*16 {
-		t.Errorf("og:image is %dx%d, want the ≥1200 px 16:9 hero crop", img.Width, img.Height)
+	if img.Format != "jpeg" || img.Width != 1200 || img.Height != 630 {
+		t.Errorf("og:image is a %dx%d %s, want the 1200x630 JPEG hero crop", img.Width, img.Height, img.Format)
 	}
-	if meta("property", "og:image:width") != "1200" || meta("property", "og:image:height") != "675" {
-		t.Errorf("og:image:width/height = %q/%q, want 1200/675", meta("property", "og:image:width"), meta("property", "og:image:height"))
+	if meta("property", "og:image:width") != "1200" || meta("property", "og:image:height") != "630" {
+		t.Errorf("og:image:width/height = %q/%q, want 1200/630", meta("property", "og:image:width"), meta("property", "og:image:height"))
 	}
 }
 
@@ -70,6 +73,9 @@ func TestPagesWithoutAHero_UseTheGeneratedOGBadgeAsALargeImageCard(t *testing.T)
 		}
 		if got := meta("name", "twitter:card"); got != "summary_large_image" {
 			t.Errorf("%s twitter:card = %q, want summary_large_image", page, got)
+		}
+		if got := meta("name", "twitter:image"); got != image {
+			t.Errorf("%s twitter:image = %q, want og:image %q", page, got, image)
 		}
 		if meta("property", "og:image:width") != "1200" || meta("property", "og:image:height") != "630" {
 			t.Errorf("%s og:image:width/height = %q/%q, want 1200/630", page, meta("property", "og:image:width"), meta("property", "og:image:height"))

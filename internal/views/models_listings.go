@@ -22,7 +22,7 @@ type ListingItem struct {
 // Thumbnail is a hero's smallest (480 px) variant in each format, for
 // listing items. It is decorative: the item's title says what it is.
 type Thumbnail struct {
-	AVIF, WebP, JPEG Image
+	AVIF, JPEG Image
 }
 
 // ListingPage is one page of a paginated listing of Explainers: a

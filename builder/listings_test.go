@@ -188,7 +188,7 @@ func TestBriefsIndex_ItemShowsHeroThumbnailAndNoKindBadge(t *testing.T) {
 }
 
 // assertThumbnail480 checks a listing item's thumbnail is the hero's
-// 480 px variant in AVIF, WebP and JPEG, with its size reserved.
+// 480 px variant in AVIF and JPEG, with its size reserved.
 func assertThumbnail480(t *testing.T, out string, item *goquery.Selection) {
 	t.Helper()
 	img := item.Find("picture img")
@@ -199,7 +199,7 @@ func assertThumbnail480(t *testing.T, out string, item *goquery.Selection) {
 	if w, h := img.AttrOr("width", ""), img.AttrOr("height", ""); w != "480" || h != "270" {
 		t.Errorf("thumbnail size = %sx%s, want 480x270", w, h)
 	}
-	for _, typ := range []string{"image/avif", "image/webp"} {
+	for _, typ := range []string{"image/avif"} {
 		srcset := item.Find(`picture source[type="`+typ+`"]`).AttrOr("srcset", "")
 		if !strings.Contains(srcset, "-480x270.") {
 			t.Errorf("%s thumbnail = %q, want the 480 px variant", typ, srcset)
