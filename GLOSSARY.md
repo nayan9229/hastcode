@@ -55,3 +55,21 @@ _Avoid_: Writer, contributor, editor
 **House Byline**:
 A disclosed editorial voice the team publishes under, with its own name and author page, never presented as a real individual. HastCode's is Mira Vance.
 _Avoid_: Persona, pen name, ghostwriter, fake author
+
+### Publishing
+
+**Target**:
+One of the two hosts a build can be deployed to. The Production Target serves hastcode.com; the QA Target is for checking a release and never serves hastcode.com.
+_Avoid_: Environment, stage, primary, standby
+
+**Publish**:
+Deploying one commit of the main branch to a Target by tagging it. The tag names the Target.
+_Avoid_: Release, ship, push live
+
+**Preview**:
+A build of a branch, drafts included, deployed to a temporary address for review before merging.
+_Avoid_: Staging, QA (that is a Target)
+
+**Image Store**:
+Where a Piece's image variants live and are served from, separate from the pages.
+_Avoid_: CDN, bucket, media library
