@@ -414,8 +414,21 @@ the function answers `303 /subscribed/` (a static noindex page the builder
 writes); the form's inline script (< 1 KB) sends `Accept: application/json`
 and shows `{"ok", "message"}` in place. Errors: 400 invalid email, 429 per-IP
 rate limit (5 per 10 min per warm instance, best-effort), 502 when Buttondown
-fails or the key is missing. A honeypot hit or an already-subscribed email
-gets the normal success answer and (honeypot) no upstream call.
+fails or the key is missing, 405 for any method but POST. A honeypot hit or
+an already-subscribed email gets the normal success answer and (honeypot) no
+upstream call.
+
+Two implementations serve this one contract (ADR-0004):
+
+| Target | Code | Verified by |
+|--------|------|-------------|
+| QA (Vercel) and `make dev` | Go handler in `subscribe/`, deployed as `api/subscribe.go` | `make test` (`subscribe/subscribe_test.go`) |
+| Production (Cloudflare) | Worker module `worker/index.js` | `scripts/check-worker.sh` (by hand; tests stay Go-only) |
+
+A change to one is a change to both: the check script curls the same cases
+the Go tests assert.
+
+### Go function (QA Target)
 
 Environment (Vercel project settings, Production and Preview):
 
@@ -450,6 +463,49 @@ out of the trailing-slash redirects (a pass-through route before them) and
 put the 404 catch-all after `{"handle":"filesystem"}`, so a POST is never
 redirected to `/api/subscribe/` or answered by the 404. A POST on a real
 deployment is still to be seen (setup wizard, stage 10).
+
+### Worker (Production Target)
+
+`worker/index.js` exports `fetch`: `/api/subscribe` runs the same contract as
+the Go handler; every other request goes to the static assets binding
+(`env.ASSETS`). The builder's Workers config sets `main` to this file and
+`run_worker_first` to the signup path only, so pages and assets are served
+without running any code. Client IP for the rate limit and Buttondown's
+`ip_address` is `CF-Connecting-IP` (set by Cloudflare's edge). The rate
+limit counters live in the isolate's memory: each Cloudflare location and
+each isolate keeps its own, and an eviction resets them, so the limit is
+best-effort abuse damping, as on Vercel. Email syntax matches the Go check
+for everything a Reader types (it rejects quoted local parts, which Go's
+`net/mail` accepts).
+
+Worker secret and variable (same names as the Go function):
+
+| Name | Kind | Notes |
+|------|------|-------|
+| `BUTTONDOWN_API_KEY` | secret, required | `wrangler secret put BUTTONDOWN_API_KEY` (or the dashboard). Sent upstream only; never in a response or a log line. Missing: every signup is a 502. |
+| `BUTTONDOWN_BASE_URL` | var, optional | Default `https://api.buttondown.com`. The check script points it at a stub. |
+
+Check it locally (no Cloudflare login, no network):
+
+```sh
+npm ci                         # pinned wrangler (package.json)
+scripts/check-worker.sh        # assets from .vercel/output/static; builds if missing
+scripts/check-worker.sh DIR    # or any built static tree
+```
+
+The script starts a stub Buttondown (logs each request's email,
+`Authorization: Token` header and tags), runs the Worker under `wrangler dev`
+with a throwaway Workers config (same assets settings as the builder's), and
+prints PASS/FAIL for: form 303 to `/subscribed/` with the upstream request
+checked; JSON 200 `{"ok":true}`; invalid emails 400 (JSON and form, link back
+to the source page); honeypot success with no upstream call; rate limit after
+5 from one IP, another IP unaffected; upstream 5xx and unreachable upstream
+502 without the key or upstream body; already-subscribed success;
+Buttondown-rejected email 400; GET 405 with `Allow: POST`; missing key 502
+with no upstream call; non-signup paths served from assets (200, trailing-slash
+307, 404 page); the key absent from every response. Exit status is the number
+of failed cases. `STUB_PORT`/`WORKER_PORT` (default 18790/18791, plus 18792
+for the missing-key instance) move the ports.
 
 ## Feeds, sitemaps, robots and IndexNow
 
