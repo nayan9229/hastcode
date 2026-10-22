@@ -598,6 +598,7 @@ fi
 # ── 8 ─────────────────────────────────────────────────────────────────────
 if begin "First Worker deploy and its secret"; then
 secret_value BUTTONDOWN_TEST_API_KEY "Test newsletter API key:"
+value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 say "Previews ('wrangler versions upload') need the Worker '$WORKER' to exist, so it is"
 say "deployed once from here: a local preview-mode build (drafts included, local"
 say "images). The builder's wrangler.json has no routes, so this serves only"
@@ -605,14 +606,16 @@ say "$WORKER.<subdomain>.workers.dev (noindex); hastcode.com is untouched. The f
 say "'publish.sh cf' (stage 16) replaces it with a production build."
 if confirm "Build locally and run the first 'wrangler deploy'?"; then
   bootstrap_build
-  wr deploy --config .vercel/output/wrangler.json --message bootstrap
+  wr deploy --config .vercel/output/wrangler.json --message bootstrap ||
+    SKIPPED+=("bootstrap wrangler deploy failed: fix, then scripts/setup-deploy.sh --from 8")
 fi
 ask WORKER_URL "The workers.dev URL wrangler printed (https://$WORKER.<subdomain>.workers.dev):"
 WORKER_URL="${WORKER_URL%/}"
 write_env WORKER_URL "$WORKER_URL"
 say "Worker secret BUTTONDOWN_API_KEY = the TEST newsletter key until the DNS flip"
 say "(Preview versions share the Worker's secrets; stage 17 switches it to production)."
-printf '%s' "$BUTTONDOWN_TEST_API_KEY" | wr secret put BUTTONDOWN_API_KEY --name "$WORKER"
+printf '%s' "$BUTTONDOWN_TEST_API_KEY" | wr secret put BUTTONDOWN_API_KEY --name "$WORKER" ||
+  SKIPPED+=("Worker secret BUTTONDOWN_API_KEY (test key): npx wrangler secret put BUTTONDOWN_API_KEY --name hastcode")
 BASE_URL="$WORKER_URL"
 read -r st _ <<<"$(fetch GET /)";              check "workers.dev home → 200" 200 "$st"
 check "workers.dev sends X-Robots-Tag: noindex" noindex "$(header x-robots-tag "$(headers /)")"
@@ -636,8 +639,9 @@ pause "Press Enter once deploy-check.hastcode.com shows Active…"
 read -r st _ <<<"$(curl -s -o /dev/null -w '%{http_code} ' https://deploy-check.hastcode.com/ || echo '000 ')"
 check "deploy-check.hastcode.com serves the Worker (before the deploy)" 200 "$st"
 if confirm "Redeploy exactly as a Publish does (wrangler deploy, no routes, no vars)?"; then
-  [[ -f .vercel/output/wrangler.json ]] || bootstrap_build
-  wr deploy --config .vercel/output/wrangler.json --message survival-check
+  bootstrap_build   # fresh: a make dev in between leaves config.json behind
+  wr deploy --config .vercel/output/wrangler.json --message survival-check ||
+    SKIPPED+=("survival-check wrangler deploy failed: re-run with --from 9")
   read -r st _ <<<"$(curl -s -o /dev/null -w '%{http_code} ' https://deploy-check.hastcode.com/ || echo '000 ')"
   check "deploy-check.hastcode.com still serves after the deploy" 200 "$st"
   if ! confirm "Domains & Routes (reload) still lists deploy-check.hastcode.com?"; then
@@ -679,7 +683,8 @@ step "Node.js Version: 24.x. Save. Leave Framework, Build and Install alone (ver
 note "Do NOT connect the Git repository: Publish tags deploy QA from GitHub Actions."
 say "QA's Go subscribe function reads BUTTONDOWN_API_KEY at runtime (Production"
 say "environment: QA deploys are Vercel production deploys). Test newsletter key:"
-printf '%s' "$BUTTONDOWN_TEST_API_KEY" | vercel env add BUTTONDOWN_API_KEY --environment production --sensitive --force --yes
+printf '%s' "$BUTTONDOWN_TEST_API_KEY" | vercel env add BUTTONDOWN_API_KEY --environment production --sensitive --force --yes ||
+  SKIPPED+=("Vercel env BUTTONDOWN_API_KEY (Production, test key): vercel env add BUTTONDOWN_API_KEY --environment production --sensitive")
 note "BUTTONDOWN_BASE_URL stays unset (default https://api.buttondown.com)."
 pause
 fi
@@ -864,7 +869,8 @@ if ! confirm "Flip hastcode.com and www.hastcode.com to the Worker now?"; then
 fi
 say "Worker secret BUTTONDOWN_API_KEY → the PRODUCTION newsletter key (Previews"
 say "share it from now on: test signups on Previews reach the real list)."
-printf '%s' "$BUTTONDOWN_PROD_API_KEY" | wr secret put BUTTONDOWN_API_KEY --name "$WORKER"
+printf '%s' "$BUTTONDOWN_PROD_API_KEY" | wr secret put BUTTONDOWN_API_KEY --name "$WORKER" ||
+  SKIPPED+=("Worker secret BUTTONDOWN_API_KEY (production key): npx wrangler secret put BUTTONDOWN_API_KEY --name hastcode")
 open_url "https://dash.cloudflare.com/"
 step "hastcode.com → DNS → Records: write down, then delete, the records for @ and www"
 step "that point at the old Genuin host. Leave MX, TXT, images and qa alone."
@@ -889,7 +895,7 @@ say "build cache so the next Publish lists every page for IndexNow."
 if confirm "Set INDEXNOW_ENABLED=true and delete the hastcode-cloudflare-* Actions caches?"; then
   set_var INDEXNOW_ENABLED "true"
   gh cache list --key hastcode-cloudflare- --limit 100 --json id --jq '.[].id' 2>/dev/null |
-    while read -r id; do gh cache delete "$id" || true; done
+    while read -r id; do gh cache delete "$id" || true; done || true
 fi
 if confirm "Run scripts/publish.sh cf now (first live Production Publish)?"; then
   scripts/publish.sh cf || SKIPPED+=("publish.sh cf refused or failed: fix and re-run with --from 18")
