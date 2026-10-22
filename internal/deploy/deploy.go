@@ -20,10 +20,10 @@ package deploy
 
 import (
 	"fmt"
-	"io/fs"
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"hastcode.com/site/internal/cloudflare"
 	"hastcode.com/site/internal/vercel"
@@ -72,61 +72,42 @@ var overlays = map[Target]map[string]string{
 	Vercel: {RobotsFile: DisallowAllRobots},
 }
 
-// ParseTarget parses a Target name ("cloudflare" or "vercel").
+// codes are the Targets' short codes, the one place each Target's other
+// spellings come from: `scripts/publish.sh cf|vl` takes the code, and a
+// Publish tag starts with "PUB" + the upper-case code + "-" (TagPrefix).
+// The scripts read them through cmd/target; publish.yml's concurrency
+// group (an expression, which cannot run code) spells "PUBCF-" itself.
+var codes = map[Target]string{Cloudflare: "cf", Vercel: "vl"}
+
+// Code is t's short code ("cf", "vl").
+func (t Target) Code() string { return codes[t] }
+
+// TagPrefix is the start of t's Publish tags ("PUBCF-", "PUBVL-").
+func (t Target) TagPrefix() string { return "PUB" + strings.ToUpper(codes[t]) + "-" }
+
+// ParseTarget reads a Target from any of its spellings: the name
+// ("cloudflare", "vercel") or short code ("cf", "vl"), in any case, or a
+// Publish tag or tag prefix ("PUBCF-20261022-101500", "PUBVL-").
 func ParseTarget(s string) (Target, error) {
-	if t := Target(s); slices.Contains(Targets, t) {
-		return t, nil
-	}
-	return "", fmt.Errorf("target %q must be %q or %q", s, Cloudflare, Vercel)
-}
-
-// foreign reports whether rel (output-relative, slash-separated) belongs
-// only to Targets other than t.
-func foreign(t Target, rel string) bool {
-	for other, files := range own {
-		if other != t && slices.Contains(files, rel) {
-			return true
+	for _, t := range Targets {
+		if strings.EqualFold(s, string(t)) || strings.EqualFold(s, t.Code()) || strings.HasPrefix(s, t.TagPrefix()) {
+			return t, nil
 		}
 	}
-	return false
-}
-
-// Files returns t's file set: every file under outDir (output-relative,
-// slash-separated, sorted) except those only another Target reads.
-func Files(outDir string, t Target) ([]string, error) {
-	if _, err := ParseTarget(string(t)); err != nil {
-		return nil, err
+	var spellings []string
+	for _, t := range Targets {
+		spellings = append(spellings, fmt.Sprintf("%s (%s, %s…)", t, t.Code(), t.TagPrefix()))
 	}
-	var files []string
-	err := filepath.WalkDir(outDir, func(p string, d fs.DirEntry, err error) error {
-		if err != nil || d.IsDir() {
-			return err
-		}
-		rel, err := filepath.Rel(outDir, p)
-		if err != nil {
-			return err
-		}
-		if rel = filepath.ToSlash(rel); !foreign(t, rel) && overlays[t][rel] == "" {
-			files = append(files, rel)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	for rel := range overlays[t] {
-		files = append(files, rel)
-	}
-	slices.Sort(files)
-	return files, nil
+	return "", fmt.Errorf("target %q must be %s", s, strings.Join(spellings, " or "))
 }
 
 // Apply removes from outDir every file only another Target reads and writes
-// t's overlays, leaving exactly Files(outDir, t). It returns the removed
-// paths. Applying twice is harmless.
+// t's overlays, leaving exactly t's file set: the shared files plus t's own,
+// with t's overlays in place. It returns the removed paths. Applying twice
+// is harmless.
 func Apply(outDir string, t Target) (removed []string, err error) {
-	if _, err := ParseTarget(string(t)); err != nil {
-		return nil, err
+	if !slices.Contains(Targets, t) {
+		return nil, fmt.Errorf("unknown target %q (use ParseTarget)", t)
 	}
 	for other, files := range own {
 		if other == t {

@@ -6,6 +6,7 @@
 //	go run ./cmd/adapt -target cloudflare -out .vercel/output
 //	go run ./cmd/adapt -target vercel -out .vercel/output
 //
+// -target takes any spelling deploy.ParseTarget reads ("cf", "PUBVL-…").
 // Run it once per deploy, after the build and before the upload. It prints
 // each removed file; exit 2 on a bad target, 1 on an I/O error.
 package main
@@ -19,7 +20,7 @@ import (
 )
 
 func main() {
-	target := flag.String("target", "", `"cloudflare" (Production Target) or "vercel" (QA Target)`)
+	target := flag.String("target", "", `"cloudflare"/"cf" (Production Target) or "vercel"/"vl" (QA Target), or a Publish tag`)
 	outDir := flag.String("out", ".vercel/output", "build output directory")
 	flag.Parse()
 

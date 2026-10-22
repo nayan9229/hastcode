@@ -4,13 +4,11 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 
 	"hastcode.com/site/builder"
 	"hastcode.com/site/internal/buildtest"
-	"hastcode.com/site/internal/deploy"
 )
 
 // The QA Target (ticket 07, ADR-0004): Vercel only ever serves QA, so
@@ -55,9 +53,7 @@ func TestQATarget_CanonicalAndOpenGraphURLsAreProductions(t *testing.T) {
 	cfg := buildtest.Config()
 	cfg.SiteURL = site.SiteURL
 	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
-	if _, err := deploy.Apply(out, deploy.Vercel); err != nil {
-		t.Fatal(err)
-	}
+	buildtest.Adapt(t, out, "vercel")
 
 	const want = "https://hastcode.com" + raftURL
 	doc := buildtest.Page(t, out, raftURL)
@@ -77,19 +73,10 @@ func TestQATarget_CanonicalAndOpenGraphURLsAreProductions(t *testing.T) {
 // place of the real one; the Cloudflare adapter keeps the real one.
 func TestQATarget_VercelAdapterOverlaysADisallowAllRobotsTxt(t *testing.T) {
 	const disallowAll = "User-agent: *\nDisallow: /\n"
-	for target, wantQA := range map[deploy.Target]bool{deploy.Vercel: true, deploy.Cloudflare: false} {
-		t.Run(string(target), func(t *testing.T) {
+	for target, wantQA := range map[string]bool{"vercel": true, "cloudflare": false} {
+		t.Run(target, func(t *testing.T) {
 			out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
-			files, err := deploy.Files(out, target)
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !slices.Contains(files, "static/robots.txt") {
-				t.Errorf("%s file set lacks static/robots.txt", target)
-			}
-			if _, err := deploy.Apply(out, target); err != nil {
-				t.Fatal(err)
-			}
+			buildtest.Adapt(t, out, target)
 			data, err := os.ReadFile(buildtest.StaticPath(out, "/robots.txt"))
 			if err != nil {
 				t.Fatal(err)

@@ -202,7 +202,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
 | `builder/step_write_cloudflare_manifest.go`, `internal/cloudflare/` | The Production Target's manifest: `<out>/wrangler.json` (Workers Static Assets config, `main` -> `worker/index.js`) plus `static/_headers` and `static/_redirects`. See "Deploying". |
-| `internal/deploy/`, `cmd/adapt/` | The deploy-adapter rule: `Files(out, target)` (a Target's file set) and `Apply(out, target)` (remove the other Target's files in place); `make adapt TARGET=cloudflare\|vercel` runs it. |
+| `internal/deploy/`, `cmd/adapt/` | The deploy-adapter rule: `Apply(out, target)` (remove the other Target's files in place, write the Target's overlays); `make adapt TARGET=cloudflare\|vercel` runs it. Also the one map of Target spellings: `ParseTarget` reads a name (`cloudflare`), short code (`cf`) or Publish tag (`PUBCF-…`); `Target.Code()`, `Target.TagPrefix()`. |
+| `cmd/target/` | `go run ./cmd/target <name\|code\|tag>` prints `target=`, `code=`, `tag_prefix=`: how `scripts/publish.sh` and `scripts/publish-gate.sh` spell a Target. |
 | `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
 | `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
 | `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
@@ -410,6 +411,10 @@ parsed output. Helpers in `internal/buildtest`:
   the reason) when the tree has a Mermaid fence but `node` or
   `node_modules/beautiful-mermaid` is missing. `ValidExplainer()` has a fence,
   so most build tests need `npm ci` to run rather than skip.
+- Deploy adapter: `Adapt(t, outDir, target)` runs the real `cmd/adapt` (what
+  `make adapt` runs) and fails on a non-zero exit; `RunAdapt(t, outDir,
+  target) (exitCode, output)` for refusals; `OutputFiles(t, outDir)` lists
+  every output file (output-relative, sorted).
 - Serve: `Serve(t, outDir)` runs the output through the local router (the
   built `config.json` routes, `static/`, a stub subscribe function counting
   `FunctionCalls`); `srv.Get(t, path)` / `srv.Do(t, method, path, body)`
