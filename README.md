@@ -660,6 +660,14 @@ flag a `NOASSERTION` license) and merge it. **Merging does not publish**:
 Readers see the new facts after the next Publish tag (`scripts/publish.sh
 vl`, then `cf`; ADR-0004). The workflow never tags.
 
+**Rate limit.** The repository token allows 1,000 requests an hour, and a
+Refresh makes about 9 per Profile (ten at most), so one run covers about
+110 Profiles. Past that, switch the workflow's `GITHUB_TOKEN` to a GitHub
+App installation token (5,000 an hour and up) or a fine-grained personal
+access token (5,000 an hour; read access to public repositories only)
+stored as a repository secret; the push and pull request can keep the
+repository token.
+
 Locally, `make refresh` with a `GITHUB_TOKEN` does the same re-fetch
 without the commit or the pull request.
 
