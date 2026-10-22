@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net/http"
 	"slices"
 	"strconv"
 	"strings"
@@ -100,28 +101,26 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	fp := out.pack
 	base := "/repos/" + repo.String()
 	var r repository
-	// cite records a source: the github.com page a Reader opens to check
-	// what a call answered, once (several calls read the repository page).
-	cite := func(page string) {
-		if page != "" && !slices.Contains(fp.Sources, page) {
-			fp.Sources = append(fp.Sources, page)
+	// get is every call: it makes one GET and, when it answers, records its
+	// source, the github.com page a Reader opens to check it, once (several
+	// calls cite the repository page). page is read after the answer is
+	// decoded, so it may use the answer.
+	get := func(path string, v any, page func() string) (http.Header, error) {
+		header, err := f.GitHub.Get(ctx, path, v)
+		if err != nil {
+			return nil, err
 		}
-	}
-	// get makes one call and, when it answers, cites its page; page is
-	// read after the answer is decoded, so it may use the answer.
-	get := func(path string, v any, page func() string) error {
-		if _, err := f.GitHub.Get(ctx, path, v); err != nil {
-			return err
+		if p := page(); p != "" && !slices.Contains(fp.Sources, p) {
+			fp.Sources = append(fp.Sources, p)
 		}
-		cite(page())
-		return nil
+		return header, nil
 	}
 	// onGitHub is the repository's page plus suffix, e.g. "/releases".
 	onGitHub := func(suffix string) func() string {
 		return func() string { return r.HTMLURL + suffix }
 	}
 
-	if err := get(base, &r, onGitHub("")); err != nil {
+	if _, err := get(base, &r, onGitHub("")); err != nil {
 		if errors.Is(err, github.ErrNotFound) {
 			return nil, fmt.Errorf("repository %s is not on GitHub (or the token cannot see it): %w", repo, err)
 		}
@@ -145,12 +144,12 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	}
 
 	fp.Languages = map[string]int64{}
-	if err := get(base+"/languages", &fp.Languages, onGitHub("")); err != nil {
+	if _, err := get(base+"/languages", &fp.Languages, onGitHub("")); err != nil {
 		return nil, err
 	}
 
 	var releases []release
-	if err := get(base+"/releases?per_page="+strconv.Itoa(content.FactPackReleaseCap), &releases, onGitHub("/releases")); err != nil {
+	if _, err := get(base+"/releases?per_page="+strconv.Itoa(content.FactPackReleaseCap), &releases, onGitHub("/releases")); err != nil {
 		return nil, err
 	}
 	fp.Releases = []content.Release{}
@@ -171,28 +170,27 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	}
 
 	var top []contributor
-	if err := get(base+"/contributors?per_page=10", &top, onGitHub("/graphs/contributors")); err != nil {
+	if _, err := get(base+"/contributors?per_page=10", &top, onGitHub("/graphs/contributors")); err != nil {
 		return nil, err
 	}
 	fp.Contributors.Top = []content.Contributor{}
 	for _, c := range top {
 		fp.Contributors.Top = append(fp.Contributors.Top, content.Contributor{Login: c.Login, URL: c.HTMLURL, Contributions: c.Contributions})
 	}
-	var one []contributor
-	countPath := base + "/contributors?per_page=1"
-	header, err := f.GitHub.Get(ctx, countPath, &one)
+	// One contributor per page: the Link header's last page is the total.
+	var onePerPage []contributor
+	header, err := get(base+"/contributors?per_page=1", &onePerPage, onGitHub("/graphs/contributors"))
 	if err != nil {
 		return nil, err
 	}
-	cite(onGitHub("/graphs/contributors")())
-	fp.Contributors.Total = len(one)
+	fp.Contributors.Total = len(onePerPage)
 	if last, ok := github.LastPage(header); ok {
 		fp.Contributors.Total = last
 	}
 
 	var tree gitTree
 	entries := []entry{}
-	err = get(base+"/git/trees/"+r.DefaultBranch, &tree, onGitHub(""))
+	_, err = get(base+"/git/trees/"+r.DefaultBranch, &tree, onGitHub(""))
 	switch {
 	case errors.Is(err, github.ErrNotFound): // an empty repository has no tree
 		out.notes = append(out.notes, fmt.Sprintf("%s has no files on %s yet", repo, r.DefaultBranch))
@@ -206,7 +204,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	}
 	if hasGithubDir {
 		var dir []contentEntry
-		if err := get(base+"/contents/.github?ref="+r.DefaultBranch, &dir, onGitHub("/tree/"+r.DefaultBranch+"/.github")); err != nil {
+		if _, err := get(base+"/contents/.github?ref="+r.DefaultBranch, &dir, onGitHub("/tree/"+r.DefaultBranch+"/.github")); err != nil {
 			return nil, err
 		}
 		for _, d := range dir {
@@ -216,7 +214,7 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 	fp.Files = detectFiles(entries)
 
 	var readme readmeAnswer
-	err = get(base+"/readme", &readme, func() string { return readme.HTMLURL })
+	_, err = get(base+"/readme", &readme, func() string { return readme.HTMLURL })
 	switch {
 	case errors.Is(err, github.ErrNotFound):
 		out.notes = append(out.notes, repo.String()+" has no README")
@@ -236,23 +234,21 @@ func (f *Fetcher) fetch(ctx context.Context, repo content.Repo) (*fetched, error
 		}
 	}
 
-	var count struct {
+	var stargazers struct {
 		Count int `json:"count"`
 	}
-	countPath = base + "/stargazers/count"
-	_, err = f.GitHub.Get(ctx, countPath, &count)
+	_, err = get(base+"/stargazers/count", &stargazers, onGitHub(""))
 	switch {
 	case errors.Is(err, github.ErrNotFound):
 		fp.Stargazers.Count = r.Stars
 		out.notes = append(out.notes, "stargazers/count is not available for "+repo.String()+" (404); stargazers.count is the repository's stargazers_count")
 	case err != nil:
 		return nil, err
-	case count.Count == 0 && r.Stars > 0:
+	case stargazers.Count == 0 && r.Stars > 0:
 		fp.Stargazers.Count = r.Stars
 		out.notes = append(out.notes, "stargazers/count answered without a count for "+repo.String()+"; stargazers.count is the repository's stargazers_count")
 	default:
-		fp.Stargazers.Count = count.Count
-		cite(onGitHub("")())
+		fp.Stargazers.Count = stargazers.Count
 	}
 
 	if fp.License != nil && fp.License.NeedsReview {
