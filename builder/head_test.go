@@ -127,7 +127,12 @@ func TestProductionOutput_NothingIsNoindexButTheSubscribed404AndSearchPages(t *t
 	}
 	out := buildtest.MustBuild(t, buildtest.Config(), tree)
 
-	noindex := map[string]bool{"static/subscribed/index.html": true, "static/404.html": true, "static/search/index.html": true}
+	noindex := map[string]bool{
+		"static/subscribed/index.html": true, "static/404.html": true, "static/search/index.html": true,
+		// Cloudflare's header rules: noindex only on *.workers.dev hosts,
+		// never hastcode.com (TestCloudflare_WorkersDevHostnamesAreNoindexAndHastcodeIsNot).
+		"static/_headers": true,
+	}
 	for _, file := range buildtest.FilesContaining(t, out, "noindex") {
 		if !noindex[file] {
 			t.Errorf("%s contains noindex", file)
