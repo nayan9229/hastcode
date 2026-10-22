@@ -181,6 +181,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown). No config or output knowledge. |
 | `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning past 30 days), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`). Tests: `builder/repo_profile_test.go`. |
+| `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -236,9 +237,9 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
 and Briefs) 30; validate ads config 5, references 10, Brief references 12,
-Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
-35, section-length warning 40, draw hero cards 45 (Repo Profiles without
-`hero`), Review-overdue warning 50, validate heroes 50
+Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
+skeleton 32, Brief skeleton 35, section-length warning 40, draw hero cards 45 (Repo Profiles
+without `hero`), Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30,
 encode heroes 50, encode author photos 55;
@@ -289,6 +290,20 @@ slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
 `#fragment` optional); an unknown target is `broken-link`, a known one is
 rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
 ad slot follows "What happened".
+
+**Repo Profiles.** A `kind: repo-profile` Explainer keeps every Explainer
+rule (TL;DR first, Sources last with a link, a Mermaid fence) and adds the
+Repo Profile skeleton (`step_validate_repo_profile_skeleton.go`): the
+body's H2s are exactly TL;DR, In 60 seconds, Architecture, Use it if,
+Don't use it if, Alternatives, FAQ, Verdict, Sources, in that order
+(`repo-profile-sections`; the message names the heading and its position,
+or the first heading out of place); no hand-written Signals or Changelog,
+which the build renders from the Fact Pack after Architecture and
+Alternatives (`repo-profile-fact-section`); and five to eight `###`
+questions under FAQ (`repo-profile-faq`; an H2 under FAQ is an extra
+section). Heading text matches exactly (a straight apostrophe in "Don't").
+The constants in that file are the only spelling of the headings; the
+template and the fact-section placement reuse them.
 
 **Paginated listings.** `paginate(items, listingPageSize, baseURL)` in
 `builder/pagination.go` returns `[]listingPage[T]{Items, URL, Pagination}`
