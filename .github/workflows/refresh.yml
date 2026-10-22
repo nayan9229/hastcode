@@ -8,8 +8,9 @@
 #   2  usage, or GITHUB_TOKEN unset: the run fails
 #   3  Fact Packs rewritten: `make check`, then a production build of the
 #      real content tree (the Publish build, images kept local: no R2
-#      secret), then scripts/refresh-pr.sh commits them to
-#      refresh/<UTC date> and opens (or updates) the PR
+#      secret), then scripts/refresh-pr.sh commits them and opens the PR
+#      on refresh/<UTC date>, or updates the Refresh PR already open (any
+#      open PR from a refresh/ branch): one open at a time
 # The binary is built and run directly: `go run` reports 3 as 1 and
 # `make refresh` reports it as 2.
 #
@@ -30,7 +31,7 @@ on:
 permissions:
   contents: read
 
-# Never two at once (both would write refresh/<date>); a second run waits.
+# Never two at once (both would push the one Refresh branch); a second run waits.
 concurrency:
   group: refresh
   cancel-in-progress: false

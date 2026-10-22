@@ -631,9 +631,13 @@ run` reports 3 as 1 and `make refresh` as 2):
   prose) as the github-actions bot to `refresh/<UTC date>` and opens the
   pull request `Refresh: Fact Packs <date>`, whose body lists each
   changed repository and what changed, plus any `note:` lines for the
-  Author. A second run the same day resets that branch onto `main`,
-  force-pushes it and updates the open pull request's body instead of
-  opening another. The branch belongs to the workflow: do not push to it.
+  Author. There is one open Refresh pull request at a time: while any
+  pull request whose branch starts with `refresh/` is open (a re-run, a
+  manual run, or next Monday's run before you merged last week's), the
+  script resets that branch onto `main`, commits the new Fact Packs,
+  pushes with `--force-with-lease` and edits the pull request's title and
+  body instead of opening another. The branch belongs to the workflow: do
+  not push to it.
 
 The only token is the repository token (`github.token`, with `contents:
 write` and `pull-requests: write`), used for the GitHub API reads and for

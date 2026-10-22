@@ -6,11 +6,14 @@
 #
 # REFRESH_STDOUT is the fetch command's stdout: one `owner/name: …` line
 # per changed repository, `note: …` lines, then the `refresh: …` total.
-# Commits the changed Fact Packs, on top of the checked-out main, to
-# refresh/<UTC date> as the github-actions bot (the branch is created, or
-# reset onto main and force-updated: it belongs to the workflow), pushes it
-# and opens the pull request, or updates the open one for that branch
-# (title and body), so a re-run on the same day never makes a second.
+# One open Refresh pull request at a time: when a pull request whose head
+# branch starts with refresh/ is open, its branch is reused (reset onto the
+# checked-out main, the changed Fact Packs committed, pushed with
+# --force-with-lease) and its title and body are edited; otherwise the
+# Fact Packs are committed to refresh/<UTC date> and a pull request is
+# opened. Commits are made as the github-actions bot; the branch belongs to
+# the workflow. A re-run, a manual run or next Monday's run while the
+# pull request is still open never makes a second one.
 # Refuses when anything but a .json file under content/ changed: a
 # Refresh touches facts, never prose. Never tags (ADR-0004).
 # Needs GH_TOKEN (the repository token); RUN_URL, when set, is linked.
@@ -40,11 +43,23 @@ if git diff --cached --quiet; then
   exit 1
 fi
 
+# The open Refresh pull request, if any, as "<number> <head branch>".
+open_pr=$(gh pr list --base main --state open --json number,headRefName \
+  --jq 'map(select(.headRefName | startswith("refresh/"))) | first | select(. != null) | "\(.number) \(.headRefName)"')
+pr=
+if [ -n "$open_pr" ]; then
+  read -r pr branch <<<"$open_pr"
+fi
+
+# The branch is rebuilt on the checked-out main. The lease is the branch's
+# current remote tip (empty for a new branch: it must not exist yet), so a
+# push made since is never overwritten.
+lease=$(git ls-remote origin "refs/heads/$branch" | cut -f1)
 git checkout -q -B "$branch"
 git -c user.name='github-actions[bot]' \
   -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
   commit -q -m "$title" -m "$changes"
-git push -q --force origin "HEAD:refs/heads/$branch"
+git push -q --force-with-lease="refs/heads/$branch:$lease" origin "HEAD:refs/heads/$branch"
 
 bullets() { while IFS= read -r line; do printf -- "- %s\n" "$line"; done; }
 
@@ -65,7 +80,6 @@ body=$(mktemp)
   echo "**Merging does not publish.** Readers see these facts after the next Publish tag (\`scripts/publish.sh vl\`, then \`cf\`; ADR-0004)."
 } >"$body"
 
-pr=$(gh pr list --head "$branch" --base main --state open --json number --jq '.[0].number // empty')
 if [ -n "$pr" ]; then
   gh pr edit "$pr" --title "$title" --body-file "$body"
   action="Updated pull request #$pr"
