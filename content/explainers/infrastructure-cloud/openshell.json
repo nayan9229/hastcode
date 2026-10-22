@@ -1,0 +1,206 @@
+{
+  "fetched_at": "2026-10-22T18:25:58Z",
+  "slug": "NVIDIA/OpenShell",
+  "name": "OpenShell",
+  "url": "https://github.com/NVIDIA/OpenShell",
+  "description": "OpenShell is the safe, private runtime for autonomous AI agents.",
+  "homepage": "https://docs.nvidia.com/openshell/latest/",
+  "topics": [],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Rust",
+  "languages": {
+    "C": 7490,
+    "CSS": 23947,
+    "Dockerfile": 7724,
+    "Go": 1304984,
+    "Go Template": 76205,
+    "JavaScript": 22783,
+    "Jinja": 2718,
+    "Nix": 59119,
+    "Open Policy Agent": 35934,
+    "PowerShell": 106565,
+    "Python": 693856,
+    "Rust": 23477662,
+    "Shell": 909200,
+    "TypeScript": 248475,
+    "XSLT": 7724,
+    "jq": 1635
+  },
+  "stars": 17192,
+  "forks": 1821,
+  "watchers": 69,
+  "open_issues": 555,
+  "created_at": "2026-02-24T22:52:22Z",
+  "pushed_at": "2026-10-22T18:03:51Z",
+  "latest_release": {
+    "tag": "v0.1.5",
+    "name": "OpenShell v0.1.5",
+    "date": "2026-10-20T17:28:32Z",
+    "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.5",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "dev",
+      "name": "OpenShell Development Build",
+      "date": "2026-03-18T21:11:50Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/dev",
+      "prerelease": true
+    },
+    {
+      "tag": "v0.1.5",
+      "name": "OpenShell v0.1.5",
+      "date": "2026-10-20T17:28:32Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.5",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.1.4",
+      "name": "OpenShell v0.1.4",
+      "date": "2026-10-13T20:48:39Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.4",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.1.3",
+      "name": "OpenShell v0.1.3",
+      "date": "2026-10-09T15:22:35Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.3",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.1.2",
+      "name": "OpenShell v0.1.2",
+      "date": "2026-09-28T03:58:00Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.2",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.1.1",
+      "name": "OpenShell v0.1.1",
+      "date": "2026-09-26T03:45:16Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.1",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.1.0",
+      "name": "OpenShell v0.1.0",
+      "date": "2026-09-25T21:49:01Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.1.0",
+      "prerelease": false
+    },
+    {
+      "tag": "vm-runtime",
+      "name": "OpenShell VM Runtime",
+      "date": "2026-05-06T05:44:03Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/vm-runtime",
+      "prerelease": true
+    },
+    {
+      "tag": "v0.0.116",
+      "name": "OpenShell v0.0.116",
+      "date": "2026-08-28T09:10:23Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.0.116",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.0.115",
+      "name": "OpenShell v0.0.115",
+      "date": "2026-08-27T18:03:17Z",
+      "url": "https://github.com/NVIDIA/OpenShell/releases/tag/v0.0.115",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 133,
+    "top": [
+      {
+        "login": "drew",
+        "url": "https://github.com/drew",
+        "contributions": 357
+      },
+      {
+        "login": "johntmyers",
+        "url": "https://github.com/johntmyers",
+        "contributions": 205
+      },
+      {
+        "login": "pimlock",
+        "url": "https://github.com/pimlock",
+        "contributions": 147
+      },
+      {
+        "login": "elezar",
+        "url": "https://github.com/elezar",
+        "contributions": 119
+      },
+      {
+        "login": "krishicks",
+        "url": "https://github.com/krishicks",
+        "contributions": 83
+      },
+      {
+        "login": "SDAChess",
+        "url": "https://github.com/SDAChess",
+        "contributions": 68
+      },
+      {
+        "login": "TaylorMutch",
+        "url": "https://github.com/TaylorMutch",
+        "contributions": 62
+      },
+      {
+        "login": "shiju-nv",
+        "url": "https://github.com/shiju-nv",
+        "contributions": 53
+      },
+      {
+        "login": "dependabot[bot]",
+        "url": "https://github.com/apps/dependabot",
+        "contributions": 48
+      },
+      {
+        "login": "ericcurtin",
+        "url": "https://github.com/ericcurtin",
+        "contributions": 45
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "CODE_OF_CONDUCT.md",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "Cargo.toml",
+      "pyproject.toml"
+    ],
+    "dockerfile": "",
+    "docs": "docs",
+    "examples": "examples"
+  },
+  "readme": {
+    "url": "https://github.com/NVIDIA/OpenShell/blob/main/README.md",
+    "sha": "e0aaa43641b41a8e7cd4a2f8ffcb345a356e754b"
+  },
+  "stargazers": {
+    "count": 17193
+  },
+  "sources": [
+    "https://github.com/NVIDIA/OpenShell",
+    "https://github.com/NVIDIA/OpenShell/releases",
+    "https://github.com/NVIDIA/OpenShell/graphs/contributors",
+    "https://github.com/NVIDIA/OpenShell/tree/main/.github",
+    "https://github.com/NVIDIA/OpenShell/blob/main/README.md"
+  ]
+}
