@@ -22,10 +22,12 @@ func (t Tree) WithRepoProfile(e Explainer) Tree {
 }
 
 // ValidRepoProfile returns a Repo Profile of apache/iggy that satisfies the
-// Explainer skeleton (TL;DR, Mermaid fence, Sources, 1600x900 hero), carries
-// the Repo Profile headings in the spec's order with five FAQ questions, the
+// Explainer skeleton (TL;DR, Mermaid fence, Sources), carries the Repo
+// Profile headings in the spec's order with five FAQ questions, the
 // AI-assistance note from the Editorial Policy, a `who_for` line, and a
-// valid Fact Pack (ValidFactPack) beside it.
+// valid Fact Pack (ValidFactPack) beside it. It names no hero: the build
+// draws its hero card from the Fact Pack. Set Hero, HeroAlt and HeroImage
+// (e.g. HeroPNG(1600, 900)) for a Profile with a sourced hero.
 func ValidRepoProfile() Explainer {
 	fp := ValidFactPack()
 	return Explainer{
@@ -40,9 +42,6 @@ func ValidRepoProfile() Explainer {
 		Published:   "2026-10-21T09:00:00Z",
 		Reviewed:    "2026-10-21T09:00:00Z",
 		Author:      DefaultAuthor().Slug,
-		Hero:        "apache-iggy.png",
-		HeroAlt:     "The Iggy server fanning a stream out to consumers",
-		HeroImage:   HeroPNG(1600, 900),
 		FactPack:    &fp,
 		Body:        ValidRepoProfileBody,
 	}
