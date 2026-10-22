@@ -17,3 +17,4 @@ node_modules/
 
 # Lighthouse CI reports (lhci autorun)
 .lighthouseci/
+todo.list
