@@ -6,11 +6,23 @@ Spec: `../spec.md` ("Page composition and gates": generated hero, User Stories 2
 
 **Blocked by:** 01 (Repo Profile kind renders from a Fact Pack)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] A Profile without `hero` builds clean and the page offers the same widths, formats, OG crop and preload the hero tests require
-- [ ] The card contains the wordmark, repository name, language, stars and license (verified by rendering the card and checking the pixels against a golden image, or by asserting the drawn text through the renderer's test hook)
-- [ ] Alt text is set on the `<img>` and in the Article image metadata
-- [ ] A Profile with `hero` uses it; a Case Study without `hero` still fails as today
-- [ ] The card changes when stars or the latest release change, so file names change and caches bust; an unchanged Fact Pack re-uses the cache
-- [ ] Card renders deterministically (same bytes for the same Fact Pack) so builds stay reproducible
+- [x] A Profile without `hero` builds clean and the page offers the same widths, formats, OG crop and preload the hero tests require
+- [x] The card contains the wordmark, repository name, language, stars and license (verified by rendering the card and checking the pixels against a golden image, or by asserting the drawn text through the renderer's test hook)
+- [x] Alt text is set on the `<img>` and in the Article image metadata
+- [x] A Profile with `hero` uses it; a Case Study without `hero` still fails as today
+- [x] The card changes when stars or the latest release change, so file names change and caches bust; an unchanged Fact Pack re-uses the cache
+- [x] Card renders deterministically (same bytes for the same Fact Pack) so builds stay reproducible
+
+## Implementation notes
+
+Built test-first at the builder seam (`builder/hero_card_test.go`, seven tests) with the renderer's text hook covered in `internal/views/hero_card_test.go` (six tests). `make check` passes.
+
+- **Renderer.** `views.HeroCardPNG(views.HeroCard) []byte` in `internal/views/hero_card.go` draws the 1600x900 PNG: the wordmark with its teal dot, the repository full name (Go Mono Bold, shrunk from 100 px to 48 px to fit, then cut with an ellipsis), a centred accent rule, the description (Go Regular 42 px, wrapped to two lines, cut with an ellipsis), a facts line ("Rust · 2,468 stars · Apache-2.0 · server-0.5.0": language, stars, license, latest release; absent facts are left out, a NOASSERTION license too) and the OG badge's accent band along the bottom. Light palette (`lightPalette`), reusing `goFace`-style faces, `fill`, `disc`, `hexColour` and `humanInt`. Runes the font has no glyph for (emoji, symbols) are dropped so nothing renders as a box. Every line is centred within the middle 900 px and kept 30 px off the top and bottom, so the 1:1, 4:3, 16:9 and 1200x630 crops all keep the whole text (tested on the PNG's ink bounds). `views.HeroCardText(c) []string` is the test hook: the lines the same layout draws, in reading order. `HeroCard.Alt()` is "{repo}: {description}" (the full description, the repository alone when there is none).
+- **Step.** `builder/step_validate_hero_cards.go` ("draw hero cards", validate 45, before validate heroes 50): for every Repo Profile with no `hero` whose Fact Pack loaded, `heroCardOf(e, fp)` maps the Fact Pack (the repository's own description, falling back to the Profile's when GitHub has none), the PNG is written under the build cache at `<CacheDir>/hero-cards/explainers/<vertical>/<slug>.png` (only when its bytes changed; temp file + rename), inspected with `images.Inspect` like a sourced file, and registered in `s.heroes` with name `<slug>-card.png` and the card's alt. Nothing else in the pipeline knows about cards: encode heroes keys its cache on the PNG bytes, so an unchanged Fact Pack hits the cache and a changed star count or release renames every variant; `fetched_at` is never drawn, so a Refresh that changes nothing else keeps every URL (tested).
+- **Hero plumbing.** `hero` gained `name` and `alt` (set from `hero`/`hero_alt` for sourced heroes, from the card otherwise); `encodeHeroes` names variants and builds the view from them instead of from the frontmatter ref. `heroRef.card` marks a Repo Profile without `hero`; `validateHeroes` skips those (the card was drawn, or the Fact Pack failed and so did the Profile), so `hero-missing` still fires for every other kind and for nothing else. A Profile that names `hero` goes through `validateHeroes` unchanged.
+- **Content model.** No change to `internal/content/explainer.go`: `hero` was never required at parse time; the requirement lives in `validateHeroes`, which now exempts this kind only.
+- **Fixtures.** `buildtest.ValidRepoProfile()` names no hero (the production default); set `Hero`, `HeroAlt`, `HeroImage` for a sourced one. `secondRepoProfile()` in `repo_profile_test.go` dropped its `Hero`.
+- **Tests.** Builder seam: five widths in AVIF and JPEG, `fetchpriority=high`, no `loading`, the preload's `imagesrcset`, `og:image` 1200x630 and the three JSON-LD crops; alt on the `<img>` and `og:image:alt`; a sourced hero kept (pixels and name) with its own alt; a Case Study without `hero` still fails `hero-missing`; URLs change with stars and with the latest release but not with `fetched_at`; a rebuild of the same Fact Pack adds nothing to the image cache and keeps every URL (determinism at the seam); light background and accent band pixels. Renderer hook: the drawn lines, two-line truncation with an ellipsis, absent facts and emoji left out, alt text, 1600x900 and byte-identical renders, crop-safe ink bounds for a short and a long card. No golden image.
+- **Docs.** README: the Heroes paragraph, the step list (draw hero cards 45) and a codebase-map row.

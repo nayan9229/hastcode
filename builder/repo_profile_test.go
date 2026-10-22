@@ -214,7 +214,6 @@ func secondRepoProfile() buildtest.Explainer {
 	p.Slug = "php-frankenphp"
 	p.Title = "FrankenPHP: PHP on a Go server"
 	p.Repo = "php/frankenphp"
-	p.Hero = "php-frankenphp.png"
 	p.Published = "2026-10-22T09:00:00Z"
 	fp := buildtest.ValidFactPack()
 	fp.Slug = "php/frankenphp"
