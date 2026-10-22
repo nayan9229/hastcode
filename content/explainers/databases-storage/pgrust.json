@@ -1,0 +1,135 @@
+{
+  "fetched_at": "2026-10-22T18:26:16Z",
+  "slug": "malisper/pgrust",
+  "name": "pgrust",
+  "url": "https://github.com/malisper/pgrust",
+  "description": "Postgres rewritten in Rust, now faster than Postgres and Clickhouse",
+  "homepage": "https://pgrust.com",
+  "topics": [
+    "ai-assisted-development",
+    "database",
+    "postgres",
+    "postgresql",
+    "rust"
+  ],
+  "license": {
+    "spdx_id": "AGPL-3.0",
+    "name": "GNU Affero General Public License v3.0",
+    "url": "https://spdx.org/licenses/AGPL-3.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Rust",
+  "languages": {
+    "Assembly": 2468,
+    "Awk": 15421,
+    "C": 56092434,
+    "C++": 3104675,
+    "CMake": 35264,
+    "CSS": 12113,
+    "DTrace": 3452,
+    "Emacs Lisp": 4164,
+    "GLSL": 17,
+    "HTML": 192702,
+    "JavaScript": 256004,
+    "Lex": 235946,
+    "M4": 194857,
+    "Makefile": 382491,
+    "Meson": 389164,
+    "PLSQL": 56452,
+    "PLpgSQL": 4396361,
+    "Perl": 2658176,
+    "Python": 3401047,
+    "RenderScript": 726,
+    "Roff": 17748,
+    "Ruby": 246797,
+    "Rust": 132357100,
+    "Shell": 354883,
+    "Starlark": 3859,
+    "WebAssembly": 585,
+    "XS": 6958,
+    "XSLT": 92476,
+    "Yacc": 700066,
+    "sed": 581
+  },
+  "stars": 5306,
+  "forks": 207,
+  "watchers": 50,
+  "open_issues": 32,
+  "created_at": "2026-04-20T03:35:59Z",
+  "pushed_at": "2026-10-22T16:16:47Z",
+  "latest_release": {
+    "tag": "v0.3.1",
+    "name": "v0.3.1",
+    "date": "2026-10-19T23:49:06Z",
+    "url": "https://github.com/malisper/pgrust/releases/tag/v0.3.1",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "v0.4-beta",
+      "name": "pgrust v0.4-beta",
+      "date": "2026-10-22T16:16:49Z",
+      "url": "https://github.com/malisper/pgrust/releases/tag/v0.4-beta",
+      "prerelease": true
+    },
+    {
+      "tag": "v0.3.1",
+      "name": "v0.3.1",
+      "date": "2026-10-19T23:49:06Z",
+      "url": "https://github.com/malisper/pgrust/releases/tag/v0.3.1",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.3",
+      "name": "v0.3: Try us on real world workloads in non-critical environments",
+      "date": "2026-09-15T17:16:33Z",
+      "url": "https://github.com/malisper/pgrust/releases/tag/v0.3",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2-release",
+      "name": "pgrust v0.2: Now faster than Postgres and Clickhouse",
+      "date": "2026-07-30T15:36:35Z",
+      "url": "https://github.com/malisper/pgrust/releases/tag/v0.2-release",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 1,
+    "top": [
+      {
+        "login": "malisper",
+        "url": "https://github.com/malisper",
+        "contributions": 3
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "",
+    "contributing": "",
+    "code_of_conduct": "",
+    "ci": [],
+    "manifests": [
+      "Cargo.toml"
+    ],
+    "dockerfile": "",
+    "docs": "docs",
+    "examples": ""
+  },
+  "readme": {
+    "url": "https://github.com/malisper/pgrust/blob/main/README.md",
+    "sha": "16d62b9717ddc725c96753be0caddd9fbb1643d6"
+  },
+  "stargazers": {
+    "count": 5306
+  },
+  "sources": [
+    "https://github.com/malisper/pgrust",
+    "https://github.com/malisper/pgrust/releases",
+    "https://github.com/malisper/pgrust/graphs/contributors",
+    "https://github.com/malisper/pgrust/blob/main/README.md"
+  ]
+}
