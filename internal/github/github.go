@@ -12,6 +12,7 @@
 package github
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -53,10 +54,11 @@ const (
 var ErrNotFound = errors.New("not found (404)")
 
 // Client makes authenticated GET requests against BaseURL. The zero value
-// is unusable; NewClient fills every field from the environment and the
-// defaults. Tests point BaseURL at an httptest server and replace Sleep.
+// is unusable: NewClient is the one place every field gets its default,
+// and nothing else falls back. Tests point BaseURL at an httptest server
+// and replace Sleep.
 type Client struct {
-	// BaseURL is where requests go; APIURL unless a test overrides it.
+	// BaseURL is where requests go: APIURL unless a test overrides it.
 	BaseURL string
 	// Token is sent as a Bearer token on every request.
 	Token string
@@ -66,7 +68,7 @@ type Client struct {
 	MaxWait time.Duration
 	// Retries bounds the retries of one request (DefaultRetries).
 	Retries int
-	// Sleep waits between retries; the default sleeps, honouring ctx.
+	// Sleep waits between retries; NewClient's sleeps, honouring ctx.
 	Sleep func(ctx context.Context, d time.Duration) error
 	// Now is the clock the rate-limit reset is measured against.
 	Now func() time.Time
@@ -109,7 +111,7 @@ type RateLimitError struct {
 
 func (e *RateLimitError) Error() string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "GitHub rate limit reached: GET %s (%d of %d requests left on the %s limit", e.Path, e.Remaining, e.Limit, cmpOr(e.Resource, "primary"))
+	fmt.Fprintf(&b, "GitHub rate limit reached: GET %s (%d of %d requests left on the %s limit", e.Path, e.Remaining, e.Limit, cmp.Or(e.Resource, "primary"))
 	if !e.Reset.IsZero() {
 		fmt.Fprintf(&b, "; resets at %s, in %s", e.Reset.UTC().Format(time.RFC3339), e.Wait.Round(time.Second))
 	} else {
@@ -163,7 +165,7 @@ func (c *Client) Get(ctx context.Context, path string, v any) (http.Header, erro
 		case status == http.StatusNotFound:
 			return header, fmt.Errorf("GET %s: %w", path, ErrNotFound)
 		case status == http.StatusAccepted:
-			if attempt >= c.retries() {
+			if attempt >= c.Retries {
 				return header, fmt.Errorf("GET %s: GitHub is still computing the answer (202) after %d attempts; run the command again in a minute", path, attempt+1)
 			}
 			wait = computingDelay << attempt
@@ -172,26 +174,26 @@ func (c *Client) Get(ctx context.Context, path string, v any) (http.Header, erro
 			if !ok {
 				return header, statusError(path, status, body)
 			}
-			if limit.Wait > c.maxWait() || attempt >= c.retries() {
+			if limit.Wait > c.MaxWait || attempt >= c.Retries {
 				return header, limit
 			}
 			wait = limit.Wait
 		case status >= 500:
-			if attempt >= c.retries() {
+			if attempt >= c.Retries {
 				return header, statusError(path, status, body)
 			}
 			wait = time.Second << attempt
 		default:
 			return header, statusError(path, status, body)
 		}
-		if err := c.sleep(ctx, wait); err != nil {
+		if err := c.Sleep(ctx, wait); err != nil {
 			return header, fmt.Errorf("GET %s: %w", path, err)
 		}
 	}
 }
 
 func (c *Client) do(ctx context.Context, path string) (int, http.Header, []byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, cmpOr(c.BaseURL, APIURL)+path, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.BaseURL+path, nil)
 	if err != nil {
 		return 0, nil, nil, err
 	}
@@ -199,11 +201,7 @@ func (c *Client) do(ctx context.Context, path string) (int, http.Header, []byte,
 	req.Header.Set("X-GitHub-Api-Version", apiVersion)
 	req.Header.Set("Authorization", "Bearer "+c.Token)
 	req.Header.Set("User-Agent", UserAgent)
-	httpClient := c.HTTP
-	if httpClient == nil {
-		httpClient = http.DefaultClient
-	}
-	resp, err := httpClient.Do(req)
+	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return 0, nil, nil, err
 	}
@@ -231,7 +229,7 @@ func (c *Client) rateLimit(path string, h http.Header, body []byte) (*RateLimitE
 		secs, _ := strconv.Atoi(h.Get("Retry-After"))
 		e.Wait = time.Duration(secs) * time.Second
 	case h.Get("X-RateLimit-Remaining") == "0" && !e.Reset.IsZero():
-		e.Wait = e.Reset.Sub(c.now()) + time.Second
+		e.Wait = e.Reset.Sub(c.Now()) + time.Second
 	case strings.Contains(strings.ToLower(message(body)), "rate limit"):
 		e.Wait = time.Minute
 	default:
@@ -272,34 +270,6 @@ func message(body []byte) string {
 	return m.Message
 }
 
-func (c *Client) retries() int {
-	if c.Retries <= 0 {
-		return DefaultRetries
-	}
-	return c.Retries
-}
-
-func (c *Client) maxWait() time.Duration {
-	if c.MaxWait <= 0 {
-		return DefaultMaxWait
-	}
-	return c.MaxWait
-}
-
-func (c *Client) now() time.Time {
-	if c.Now == nil {
-		return time.Now()
-	}
-	return c.Now()
-}
-
-func (c *Client) sleep(ctx context.Context, d time.Duration) error {
-	if c.Sleep == nil {
-		return sleep(ctx, d)
-	}
-	return c.Sleep(ctx, d)
-}
-
 func sleep(ctx context.Context, d time.Duration) error {
 	t := time.NewTimer(d)
 	defer t.Stop()
@@ -309,11 +279,4 @@ func sleep(ctx context.Context, d time.Duration) error {
 	case <-t.C:
 		return nil
 	}
-}
-
-func cmpOr(a, b string) string {
-	if a != "" {
-		return a
-	}
-	return b
 }
