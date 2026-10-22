@@ -1,12 +1,13 @@
 {
   "name": "hastcode-build-tools",
   "private": true,
-  "description": "Node tools the Go builder shells out to at build time (Mermaid diagrams, Pagefind search index). Not a JS app.",
+  "description": "Node tools: what the Go builder shells out to at build time (Mermaid diagrams, Pagefind search index) and wrangler for the Cloudflare deploy and scripts/check-worker.sh. Not a JS app; no JS tests.",
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
     "beautiful-mermaid": "1.1.3",
-    "pagefind": "1.5.2"
+    "pagefind": "1.5.2",
+    "wrangler": "4.149.0"
   }
 }
