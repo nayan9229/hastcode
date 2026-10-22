@@ -622,7 +622,10 @@ run` reports 3 as 1 and `make refresh` as 2):
 - **1 or 2, failed.** A fetch or write failed (rate limit, network) or the
   command was misused; the run fails and nothing is pushed. Start it
   again by hand after the reset.
-- **3, Fact Packs changed.** The job runs `make check`, then
+- **3, Fact Packs changed.** The job runs `make check`, then the
+  Publish build over the real content tree (`make build MODE=production
+  FLAGS=-image-store=local`: images stay local, so no R2 secret), so a
+  changed Fact Pack that breaks a page fails the job; then
   `scripts/refresh-pr.sh` commits the changed Fact Packs (and nothing
   else: any other changed file stops it, since a Refresh never touches
   prose) as the github-actions bot to `refresh/<UTC date>` and opens the
@@ -639,7 +642,7 @@ Settings → Actions → General → "Allow GitHub Actions to create and
 approve pull requests" must be on, or `gh pr create` is refused. Pushes and pull requests
 made with that token trigger no workflows, so `tests.yml` and
 `preview.yml` never run on the Refresh branch: that is why the job runs
-`make check` itself, before the pull request exists. Review the facts in
+`make check` and the production build itself, before the pull request exists. Review the facts in
 the pull request (and the Profile's prose against them; the fetch notes
 flag a `NOASSERTION` license) and merge it. **Merging does not publish**:
 Readers see the new facts after the next Publish tag (`scripts/publish.sh

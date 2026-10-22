@@ -106,7 +106,7 @@ The content plan around it: three to five Repo Profiles a week beside five other
 
 ### Refresh workflow
 
-- A scheduled GitHub Actions workflow (Monday 06:00 UTC, plus manual trigger) checks out `main`, runs the fetch command in refresh mode, and stops if nothing changed. If something changed it runs the full check target, then commits to a `refresh/<date>` branch and opens a pull request titled with the date, listing the changed repositories; if that branch and pull request already exist it updates them instead. The job uses the repository token; because pull requests opened by that token do not trigger the test workflow, the job runs the tests itself before opening it, and the README says so.
+- A scheduled GitHub Actions workflow (Monday 06:00 UTC, plus manual trigger) checks out `main`, runs the fetch command in refresh mode, and stops if nothing changed. If something changed it runs the full check target and a production build of the content tree (the Publish build with the Image Store local, so no secret is needed), then commits to a `refresh/<date>` branch and opens a pull request titled with the date, listing the changed repositories; if that branch and pull request already exist it updates them instead. The job uses the repository token; because pull requests opened by that token do not trigger the test workflow, the job runs the tests itself before opening it, and the README says so.
 - Publish stays by tag (ADR-0004). The workflow never tags.
 
 ### Editorial docs

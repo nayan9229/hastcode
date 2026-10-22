@@ -6,16 +6,19 @@
 #   0  nothing changed: the run ends green, no branch, no pull request
 #   1  a fetch or write failed (rate limit, network, I/O): the run fails
 #   2  usage, or GITHUB_TOKEN unset: the run fails
-#   3  Fact Packs rewritten: `make check`, then scripts/refresh-pr.sh
-#      commits them to refresh/<UTC date> and opens (or updates) the PR
+#   3  Fact Packs rewritten: `make check`, then a production build of the
+#      real content tree (the Publish build, images kept local: no R2
+#      secret), then scripts/refresh-pr.sh commits them to
+#      refresh/<UTC date> and opens (or updates) the PR
 # The binary is built and run directly: `go run` reports 3 as 1 and
 # `make refresh` reports it as 2.
 #
 # The token is the repository token (github.token), for both the GitHub
 # API reads and the push/pull request; no other secret. Pushes and pull
 # requests made with it trigger no workflows (tests.yml and preview.yml
-# stay silent), so this job runs `make check` itself before the pull
-# request exists. Never tags: merging the pull request does not publish
+# stay silent), so this job runs `make check` and the production build
+# itself before the pull request exists: a changed Fact Pack that breaks
+# the build fails the job. Never tags: merging the pull request does not publish
 # (ADR-0004).
 name: Refresh
 
@@ -65,6 +68,12 @@ jobs:
       - name: make check
         if: steps.refresh.outputs.status == '3'
         run: make check
+      # The Publish build (publish.yml) over the real content tree, with the
+      # Image Store local instead of R2 (no secret here): a Fact Pack that
+      # breaks a page fails the job before any pull request exists.
+      - name: Build the site (production mode, images local)
+        if: steps.refresh.outputs.status == '3'
+        run: make build MODE=production FLAGS=-image-store=local OUT="$RUNNER_TEMP/site"
       - name: Open or update the Refresh pull request
         if: steps.refresh.outputs.status == '3'
         env:
