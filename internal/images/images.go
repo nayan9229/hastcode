@@ -1,11 +1,11 @@
-// Package images resizes, crops and encodes raster images (AVIF, WebP,
-// JPEG) with an on-disk cache keyed on the source bytes and encoder
-// settings. It knows nothing about heroes, pages or URLs: the builder
-// decides which variants a hero needs and where they are served.
+// Package images resizes, crops and encodes raster images (AVIF, JPEG)
+// with an on-disk cache keyed on the source bytes and encoder settings. It
+// knows nothing about heroes, pages or URLs: the builder decides which
+// variants a hero needs, at what quality, and where they are served.
 //
-// AVIF and WebP use gen2brain/avif and gen2brain/webp (libavif and libwebp
-// as WASM, no cgo). Build with CGO_ENABLED=0 -tags nodynamic so they never
-// load a system library and output is identical on every machine.
+// AVIF uses gen2brain/avif (libavif as WASM, no cgo). Build with
+// CGO_ENABLED=0 -tags nodynamic so it never loads a system library and
+// output is identical on every machine. JPEG is the stdlib encoder.
 package images
 
 import (
@@ -26,22 +26,25 @@ import (
 	"sync"
 
 	"github.com/gen2brain/avif"
-	"github.com/gen2brain/webp"
 	"golang.org/x/image/draw"
 	"golang.org/x/sync/errgroup"
 )
 
-// cacheVersion is part of every cache key. Bump it when resizing or
-// encoding changes in a way the settings below do not capture.
-// 2: EXIF orientation is applied before resizing.
-const cacheVersion = "2"
+// settingsVersion is part of every cache key. Bump it when resizing or
+// encoding changes in a way the settings below do not capture, so every
+// cached variant is re-encoded exactly once.
+// 2: WebP dropped, AVIF 4:4:4, per-variant quality
+//
+//	(docs/research/image-optimisation-targets.md).
+//
+// 3: EXIF orientation applied before resizing (merged with 2).
+const settingsVersion = "3"
 
 // Format is an output encoding.
 type Format string
 
 const (
 	AVIF Format = "avif"
-	WebP Format = "webp"
 	JPEG Format = "jpeg"
 )
 
@@ -63,10 +66,17 @@ type Variant struct {
 	Format Format
 	Width  int
 	Height int
+	// Quality (1-100) overrides the encoder's default quality for Format;
+	// 0 keeps the default.
+	Quality int
 }
 
 func (v Variant) fileName() string {
-	return fmt.Sprintf("%s-%dx%d%s", v.Format, v.Width, v.Height, v.Format.Ext())
+	q := ""
+	if v.Quality != 0 {
+		q = fmt.Sprintf("q%d-", v.Quality)
+	}
+	return fmt.Sprintf("%s-%s%dx%d%s", v.Format, q, v.Width, v.Height, v.Format.Ext())
 }
 
 // Job asks for a set of variants of one source file.
@@ -82,6 +92,8 @@ type File struct {
 	Path string
 	// Hash is the hex SHA-256 of the encoded bytes.
 	Hash string
+	// Size is the encoded file's length in bytes.
+	Size int64
 }
 
 // Result is the outcome of one Job. Err is set when the source cannot be
@@ -118,21 +130,23 @@ type Encoder struct {
 
 type settings struct {
 	avif avif.Options
-	webp webp.Options
 	jpeg jpeg.Options
 }
 
+// settings are the encoder defaults (a Variant's Quality overrides the
+// quality). AVIF is 4:4:4: no chroma smear on illustration edges and text,
+// for ~1 % bytes. Fast only raises AVIF speed (2.5-4x quicker for a few %
+// bytes) and lowers JPEG quality, so AVIF quality and chroma behave the
+// same in tests as in production.
 func (e *Encoder) settings() settings {
 	if e.Fast {
 		return settings{
-			avif: avif.Options{Quality: 50, Speed: 10, ChromaSubsampling: image.YCbCrSubsampleRatio420},
-			webp: webp.Options{Quality: 75, Method: 0},
+			avif: avif.Options{Quality: 60, Speed: 10, ChromaSubsampling: image.YCbCrSubsampleRatio444},
 			jpeg: jpeg.Options{Quality: 75},
 		}
 	}
 	return settings{
-		avif: avif.Options{Quality: 60, Speed: 8, ChromaSubsampling: image.YCbCrSubsampleRatio420},
-		webp: webp.Options{Quality: 80, Method: 4},
+		avif: avif.Options{Quality: 60, Speed: 8, ChromaSubsampling: image.YCbCrSubsampleRatio444},
 		jpeg: jpeg.Options{Quality: 82},
 	}
 }
@@ -208,11 +222,11 @@ func (e *Encoder) Run(jobs []Job) ([]Result, error) {
 		files := make([]File, 0, len(j.Variants))
 		for _, v := range j.Variants {
 			p := sources[i].cached(v)
-			sum, err := hashFile(p)
+			sum, size, err := hashFile(p)
 			if err != nil {
 				return nil, err
 			}
-			files = append(files, File{Variant: v, Path: p, Hash: sum})
+			files = append(files, File{Variant: v, Path: p, Hash: sum, Size: size})
 		}
 		results[i].Files = files
 	}
@@ -235,7 +249,7 @@ func openSource(path string, set settings, cacheRoot string) (*source, error) {
 	}
 	defer f.Close()
 	h := sha256.New()
-	fmt.Fprintf(h, "v%s avif%+v webp%+v jpeg%+v\n", cacheVersion, set.avif, set.webp, set.jpeg)
+	fmt.Fprintf(h, "v%s avif%+v jpeg%+v\n", settingsVersion, set.avif, set.jpeg)
 	if _, err := io.Copy(h, f); err != nil {
 		return nil, err
 	}
@@ -266,11 +280,17 @@ func (s *source) encode(v Variant, set settings) ([]byte, error) {
 	var buf bytes.Buffer
 	switch v.Format {
 	case AVIF:
-		err = avif.Encode(&buf, scaled, set.avif)
-	case WebP:
-		err = webp.Encode(&buf, scaled, set.webp)
+		opts := set.avif
+		if v.Quality != 0 {
+			opts.Quality = v.Quality
+		}
+		err = avif.Encode(&buf, scaled, opts)
 	case JPEG:
-		err = jpeg.Encode(&buf, scaled, &set.jpeg)
+		opts := set.jpeg
+		if v.Quality != 0 {
+			opts.Quality = v.Quality
+		}
+		err = jpeg.Encode(&buf, scaled, &opts)
 	default:
 		err = fmt.Errorf("unknown format %q", v.Format)
 	}
@@ -300,17 +320,19 @@ func cover(src image.Image, w, h int) image.Image {
 	return dst
 }
 
-func hashFile(path string) (string, error) {
+// hashFile returns the hex SHA-256 and length of a file.
+func hashFile(path string) (string, int64, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
 	defer f.Close()
 	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
+	n, err := io.Copy(h, f)
+	if err != nil {
+		return "", 0, err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return hex.EncodeToString(h.Sum(nil)), n, nil
 }
 
 // writeAtomic writes data so a concurrent or interrupted build never sees a

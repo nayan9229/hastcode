@@ -3,9 +3,10 @@ package views
 import "strconv"
 
 // SocialMeta is the Open Graph and Twitter card preview in <head>. Twitter
-// reads og:title/description/image, so only twitter:card is its own tag:
-// summary_large_image when there is an image (an article's hero, else the
-// OG badge s.page sets), summary otherwise.
+// reads og:title/description, so only twitter:card and twitter:image are
+// its own tags: summary_large_image with the image when there is one (an
+// article's 1200x630 hero crop, else the OG badge s.page sets), summary
+// otherwise.
 templ SocialMeta(p Page) {
 	<meta property="og:type" content={ p.Social.Type }/>
 	<meta property="og:site_name" content={ PublicationName }/>
@@ -21,6 +22,7 @@ templ SocialMeta(p Page) {
 		<meta property="og:image:height" content={ strconv.Itoa(img.Height) }/>
 		<meta property="og:image:alt" content={ p.Social.ImageAlt }/>
 		<meta name="twitter:card" content="summary_large_image"/>
+		<meta name="twitter:image" content={ img.URL }/>
 	} else {
 		<meta name="twitter:card" content="summary"/>
 	}

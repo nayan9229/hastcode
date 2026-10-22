@@ -23,7 +23,6 @@ templ listingEntry(it ListingItem, level int) {
 	<li class="h-entry">
 		<picture class="thumb">
 			<source type="image/avif" srcset={ it.Thumb.AVIF.URL }/>
-			<source type="image/webp" srcset={ it.Thumb.WebP.URL }/>
 			<img src={ it.Thumb.JPEG.URL } width={ strconv.Itoa(it.Thumb.JPEG.Width) } height={ strconv.Itoa(it.Thumb.JPEG.Height) } alt="" loading="lazy" decoding="async"/>
 		</picture>
 		<div class="entry">

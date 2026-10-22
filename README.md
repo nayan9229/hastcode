@@ -82,9 +82,8 @@ from the environment (the preview job sets `MODE=preview`).
 `scripts/setup-deploy.sh`.
 
 The Makefile exports `CGO_ENABLED=0` and `GOFLAGS=-tags=nodynamic`: the AVIF
-and WebP encoders (gen2brain/avif, gen2brain/webp) then run as WASM in-process
-and never load a system libavif/libwebp, so image output is byte-identical
-everywhere. Use the same settings when calling `go` directly.
+encoder (gen2brain/avif) then runs as WASM in-process and never loads a
+system libavif, so image output is byte-identical everywhere. Use the same settings when calling `go` directly.
 
 Builder flags: `-content` (default `content`), `-config` (default `site.yaml`),
 `-out` (default `.vercel/output`), `-mode production|preview`, `-tools` (dir
@@ -115,13 +114,24 @@ Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: the Explainer names a raster beside its Markdown in `hero` (and
 `hero_alt`). The build fails if it is missing, does not decode, or is narrower
-than 1200 px. It writes AVIF, WebP and JPEG at 480/800/1200/1600 px wide (never
-upscaled) plus 1200 px JPEG crops at 16:9, 4:3 and 1:1, to
-`/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of the file bytes, so
-immutable). Encoded variants are cached in `images.cache_dir` (default
-`node_modules/.cache/hastcode/images`, which CI persists between deploys),
-keyed on the source bytes and encoder settings; an unchanged hero is never
-re-encoded. `images.fast: true` trades file size for encode speed (tests).
+than 1200 px. It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
+(never upscaled past the source; `heroWidths`), plus 1200 px JPEG crops at
+16:9, 4:3 and 1:1 (JSON-LD `image`) and 1200x630 (`og:image`,
+`twitter:image`), to `/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of
+the file bytes, so immutable). No WebP: AVIF covers nearly every browser
+and the JPEG covers the rest. Encoder settings
+(`docs/research/image-optimisation-targets.md`): AVIF 4:4:4 chroma, speed
+8, quality 60 below 1200 px and 55 at 1200 px and above (`heroQuality`;
+the 1200 px file is the mobile LCP image); stdlib JPEG quality 82. When a
+hero's 1200 px AVIF is over 150 KB the build warns (rule `hero-weight`,
+naming the piece): re-export a lighter hero. Encoded variants are cached in
+`images.cache_dir` (default `node_modules/.cache/hastcode/images`, which CI
+persists between deploys), keyed on the source bytes, the encoder settings
+and `settingsVersion` (`internal/images`; bump it when encoding changes in
+a way the settings do not capture, and every cached variant re-encodes
+once); an unchanged hero is never re-encoded. `images.fast: true` raises
+AVIF speed to 10 and drops JPEG to quality 75 for quicker encodes (tests);
+AVIF quality tiers and chroma stay the same.
 
 Hero source rules: drop the file straight from a phone or an export tool;
 the build reads its bytes, not its name.
@@ -158,7 +168,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
-| `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
+| `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
@@ -172,7 +182,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/pagefind/` | Runs the Pagefind CLI (`node node_modules/pagefind/lib/runner/bin.cjs --site …`) and reads the bundle's page count. |
 | `internal/views/page_search.templ`, `search.js` | Search page and its inline lazy loader (Pagefind modular UI on first focus). |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
-| `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 16:9 hero + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
+| `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 1200x630 hero crop + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
@@ -236,7 +246,7 @@ source, under the same rule.
 
 **Listings.** Every listing shows `views.ListingItem`s through
 `@PieceList(class, items, headingLevel)` (`partial_piece_list.templ`):
-480 px hero thumbnail (AVIF/WebP/JPEG, lazy, size reserved), kind badge
+480 px hero thumbnail (AVIF/JPEG, lazy, size reserved), kind badge
 (Explainers), title, description, date, as h-entry. Listings use
 `s.publishedExplainers()`/`s.publishedBriefs()`, so drafts never appear in
 production. Verticals come only from `site.yaml` (`slug`, `name`,
@@ -300,8 +310,9 @@ robots `max-image-preview:large` (or `noindex` when `Page.NoIndex`; only
 `/subscribed/`, `/404.html` and `/search/` are noindex in production; the 404 has no
 canonical), an absolute trailing-slash
 canonical, Open Graph + Twitter card and both theme-colors. Every page has
-an `og:image` ≥ 1200 px and `twitter:card` `summary_large_image`: an
-article its 16:9 hero crop, every other page the OG badge (`s.page` sets
+an `og:image` ≥ 1200 px (repeated as `twitter:image`) and `twitter:card`
+`summary_large_image`: an article its 1200x630 hero crop, every other page
+the 1200x630 OG badge (`s.page` sets
 it; drawn at build time from the wordmark, tagline and light palette). JSON-LD URLs
 are absolute (`s.absURL`), dates are RFC 3339 with the frontmatter's
 offset (the same instants as the visible `<time datetime>`), and an

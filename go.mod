@@ -8,7 +8,6 @@ require (
 	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/a-h/templ v0.3.1070
 	github.com/gen2brain/avif v0.6.0
-	github.com/gen2brain/webp v0.6.4
 	github.com/yuin/goldmark v1.8.6
 	golang.org/x/image v0.47.0
 	golang.org/x/net v0.59.0

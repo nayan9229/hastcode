@@ -39,13 +39,13 @@ type articleHead struct {
 }
 
 // articlePage returns an article's views.Page: s.page plus hero preload,
-// og:type article with the 16:9 hero crop, the visible breadcrumb trail,
+// og:type article with the 1200x630 hero crop, the visible breadcrumb trail,
 // and the Article/NewsArticle and BreadcrumbList JSON-LD.
 func (s *site) articlePage(a articleHead) views.Page {
 	p := s.page(a.URL, a.Headline+" | "+views.PublicationName, a.Description)
 	hero := a.Hero
 	p.HeroPreload = &hero
-	og := hero.Crop16x9
+	og := hero.CropOG
 	og.URL = s.absURL(og.URL)
 	p.Social = views.Social{
 		Type:      "article",

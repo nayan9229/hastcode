@@ -183,14 +183,15 @@ type Hero struct {
 	Alt string
 	// Sizes is the <img sizes> value for the responsive variants.
 	Sizes string
-	// AVIF, WebP and JPEG hold the same widths in ascending order, at the
+	// AVIF and JPEG hold the same widths in ascending order, at the
 	// source's aspect ratio.
-	AVIF, WebP, JPEG []Image
+	AVIF, JPEG []Image
 	// Img is the <img> fallback (a JPEG); its width and height reserve
 	// layout space.
 	Img Image
-	// Crops, 1200 px wide JPEGs, for JSON-LD image and og:image.
-	Crop16x9, Crop4x3, Crop1x1 Image
+	// Crops, 1200 px wide JPEGs: 16:9, 4:3 and 1:1 for JSON-LD image,
+	// 1200x630 for og:image and twitter:image.
+	Crop16x9, Crop4x3, Crop1x1, CropOG Image
 }
 
 // Srcset formats images as a srcset attribute with width descriptors.

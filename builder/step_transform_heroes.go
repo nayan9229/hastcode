@@ -13,46 +13,72 @@ func init() {
 }
 
 const (
-	// heroCropWidth is the width of the 16:9, 4:3 and 1:1 crops.
-	heroCropWidth = 1200
 	// heroFallbackWidth is the width of the <img src> JPEG.
 	heroFallbackWidth = 1200
 	// heroSizes is the <img sizes> for the article column.
 	heroSizes = "(min-width: 48rem) 46rem, 100vw"
+
+	// AVIF quality tiers: the 1200 px variant is the mobile LCP image on
+	// most phones, so it and wider ones trade a little quality for bytes
+	// on slow 4G (docs/research/image-optimisation-targets.md).
+	heroAVIFQuality      = 60
+	heroAVIFQualityLarge = 55
+	heroAVIFLargeFrom    = 1200
+
+	// heroWeightBudget is the most the 1200 px AVIF (the mobile LCP
+	// image) should weigh; over it the build warns (rule hero-weight).
+	heroWeightBudget = 150_000
+	heroWeightWidth  = 1200
 )
 
+const ruleHeroWeight = "hero-weight"
+
 // heroWidths are the responsive widths, each written in every heroFormat.
-var heroWidths = []int{480, 800, 1200, 1600}
+var heroWidths = []int{480, 800, 1000, 1200, 1472}
 
 // heroFormats are the responsive formats, in <picture> source order.
-var heroFormats = []images.Format{images.AVIF, images.WebP, images.JPEG}
+var heroFormats = []images.Format{images.AVIF, images.JPEG}
 
-// heroCropRatios are the JPEG crops (width:height) for Discover, Open
-// Graph and JSON-LD: 16:9, 4:3, 1:1, in views.Hero field order.
-var heroCropRatios = [][2]int{{16, 9}, {4, 3}, {1, 1}}
+// heroCrops are the 1200 px wide JPEG crops (width, height), in
+// views.Hero field order: 16:9, 4:3 and 1:1 for Discover and JSON-LD, then
+// 1200x630 for Open Graph and the Twitter card.
+var heroCrops = [][2]int{{1200, 675}, {1200, 900}, {1200, 1200}, {1200, 630}}
 
 // heroVariants is every image a hero needs, in this order: the responsive
 // widths (never upscaled past the source) in each of heroFormats, then
-// heroCropRatios. heroViewOf splits encoder output by the same layout.
+// heroCrops. heroViewOf splits encoder output by the same layout.
 func heroVariants(w, h int) []images.Variant {
 	var vs []images.Variant
 	for _, f := range heroFormats {
 		for _, rw := range heroWidths {
 			if rw <= w {
-				vs = append(vs, images.Variant{Format: f, Width: rw, Height: (rw*h + w/2) / w})
+				vs = append(vs, images.Variant{Format: f, Width: rw, Height: (rw*h + w/2) / w, Quality: heroQuality(f, rw)})
 			}
 		}
 	}
-	for _, r := range heroCropRatios {
-		vs = append(vs, images.Variant{Format: images.JPEG, Width: heroCropWidth, Height: heroCropWidth * r[1] / r[0]})
+	for _, c := range heroCrops {
+		vs = append(vs, images.Variant{Format: images.JPEG, Width: c[0], Height: c[1]})
 	}
 	return vs
+}
+
+// heroQuality is the encoder quality of a responsive variant: the AVIF
+// tiers, or 0 (the encoder's default) for JPEG.
+func heroQuality(f images.Format, width int) int {
+	switch {
+	case f != images.AVIF:
+		return 0
+	case width >= heroAVIFLargeFrom:
+		return heroAVIFQualityLarge
+	default:
+		return heroAVIFQuality
+	}
 }
 
 // heroViewOf builds a hero's view model from its encoded images, laid out
 // as heroVariants returns them.
 func heroViewOf(alt string, imgs []views.Image) views.Hero {
-	nCrops := len(heroCropRatios)
+	nCrops := len(heroCrops)
 	perFormat := (len(imgs) - nCrops) / len(heroFormats)
 	widths := func(i int) []views.Image { return imgs[i*perFormat : (i+1)*perFormat] }
 	crops := imgs[len(imgs)-nCrops:]
@@ -60,11 +86,11 @@ func heroViewOf(alt string, imgs []views.Image) views.Hero {
 		Alt:      alt,
 		Sizes:    heroSizes,
 		AVIF:     widths(0),
-		WebP:     widths(1),
-		JPEG:     widths(2),
+		JPEG:     widths(1),
 		Crop16x9: crops[0],
 		Crop4x3:  crops[1],
 		Crop1x1:  crops[2],
+		CropOG:   crops[3],
 	}
 	for _, im := range v.JPEG {
 		if im.Width == heroFallbackWidth {
@@ -113,6 +139,12 @@ func encodeHeroes(s *site) error {
 			imgs[j] = views.Image{URL: url, Width: f.Width, Height: f.Height}
 		}
 		hr.view = heroViewOf(ref.alt, imgs)
+		for _, f := range res.Files {
+			if f.Format == images.AVIF && f.Width == heroWeightWidth && f.Size > heroWeightBudget {
+				s.warn(ref.file, ruleHeroWeight, "hero %s: the %d px AVIF is %d KB, over the %d KB budget for the LCP image; re-export it smaller or simpler",
+					ref.hero, heroWeightWidth, f.Size/1000, heroWeightBudget/1000)
+			}
+		}
 	}
 	return nil
 }
