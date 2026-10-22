@@ -73,9 +73,8 @@ subscribe function reads two (Vercel project settings, see "Subscribe
 function"): `BUTTONDOWN_API_KEY` (required, Sensitive; production list in
 Production, test list in Preview) and `BUTTONDOWN_BASE_URL` (optional,
 default `https://api.buttondown.com`). CI uses GitHub secrets
-`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
-`VERCEL_AUTOMATION_BYPASS_SECRET` and the repository variable
-`INDEXNOW_ENABLED`. `make build` itself also reads `MODE`, `FLAGS`, `OUT`
+`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and the repository
+variable `INDEXNOW_ENABLED`. `make build` itself also reads `MODE`, `FLAGS`, `OUT`
 from the environment (the preview job sets `MODE=preview`).
 
 **Deploy.** See "Deploying" below; first-time setup is
@@ -475,7 +474,7 @@ package therefore lives at `subscribe/`. The builder's routes keep `/api/*`
 out of the trailing-slash redirects (a pass-through route before them) and
 put the 404 catch-all after `{"handle":"filesystem"}`, so a POST is never
 redirected to `/api/subscribe/` or answered by the 404. A POST on a real
-deployment is still to be seen (setup wizard, stage 10).
+deployment is still to be seen (setup wizard, stage 9).
 
 ### Worker (Production Target)
 
@@ -544,7 +543,9 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   out of the file at the first build after it is 48 h old, not on the dot.
 - **`/robots.txt`**: allow all, explicit allow groups for `Googlebot`,
   `Bingbot`, `OAI-SearchBot`, `PerplexityBot`, both sitemap lines. Training
-  crawlers (`GPTBot`, `Google-Extended`) fall under `*` (allowed).
+  crawlers (`GPTBot`, `Google-Extended`) fall under `*` (allowed). That is
+  Production's file; on the QA Target (Vercel) the deploy adapter
+  overlays `User-agent: *` / `Disallow: /` (see "Deploying").
 - **IndexNow**: `indexnow_key` in `site.yaml` (public by design; keep it
   stable) is served as `/<key>.txt`. The build diffs every indexable page's
   `<main>` hash against the previous successful build's manifest
@@ -586,6 +587,10 @@ equivalent is the Cloudflare manifest (`wrangler.json`, `_headers`,
 RE2-compatible, no lookaround, so the local router can apply the same file).
 In order:
 
+0. `X-Robots-Tag: noindex` on every response, whatever its status
+   (`continue`): Vercel is only ever the QA Target (ADR-0004), so nothing
+   it serves may be indexed. `make dev` sends it too. Canonical, Open Graph
+   and JSON-LD URLs still point at `site_url` (`https://hastcode.com`).
 1. Cache headers (`continue`): HTML (paths ending in `/` or `.html`) gets
    `Cache-Control: public, max-age=0, must-revalidate` for browsers and
    `Vercel-CDN-Cache-Control: s-maxage=31536000, stale-while-revalidate=86400`
@@ -614,7 +619,7 @@ done   # 410, 301 /, 308 /about/, 200, 308 /about/, 308 /mark.svg, 404
 The local router (`vercel.NewRouter`) refuses a `config.json` using route
 features it does not implement (other `handle` phases, `has`/`missing`, a
 non-RE2 regex), so the check cannot silently diverge from the file. It is not
-Vercel itself: the setup wizard (stage 10) repeats the check against the
+Vercel itself: the setup wizard (stage 9) repeats the check against the
 first preview. Note that `vercel build`'s merged `config.json` (with
 `@vercel/go`'s `error`/`miss` phases) is not servable by this router: run
 `make dev`, which serves the builder's own output.
@@ -713,7 +718,8 @@ One `make build` writes one output directory (`$(OUT)`, default
 | File (relative to `$(OUT)`) | Target | What it is |
 |---|---|---|
 | `static/**` (except the two below) | both | The site. |
-| `config.json` | Vercel (QA) | Build Output API routes ("Routes and caching"). |
+| `config.json` | Vercel (QA) | Build Output API routes ("Routes and caching"), incl. `X-Robots-Tag: noindex` on everything. |
+| `static/robots.txt` | both, overlaid for Vercel | Production's real file; `make adapt TARGET=vercel` overwrites it with `User-agent: *` / `Disallow: /`. |
 | `wrangler.json` | Cloudflare (Production) | Workers Static Assets config. |
 | `static/_headers` | Cloudflare | Cache policy; parsed by Workers, never served. |
 | `static/_redirects` | Cloudflare | `/home` and `/home/` -> `/` 301; parsed, never served. |
@@ -759,7 +765,8 @@ Check it locally against real Wrangler (no Cloudflare login needed):
 
 **The deploy-adapter rule** (`internal/deploy`): each Target's file set is
 every file in the output except those only the other Target reads (table
-above). Neither host may serve the other's configuration. Every deploy step
+above), with the Target's overlays written in place (today one: Vercel's
+disallow-all `robots.txt`). Neither host may serve the other's configuration. Every deploy step
 runs the adapter once, after the build and before the upload; the output
 then belongs to that Target:
 
@@ -768,12 +775,13 @@ make build                      # or `vercel build` (runs make build)
 make adapt TARGET=cloudflare    # removes config.json
 npx wrangler deploy --config .vercel/output/wrangler.json
 
-make adapt TARGET=vercel        # removes wrangler.json, static/_headers, static/_redirects
+make adapt TARGET=vercel        # removes wrangler.json, static/_headers, static/_redirects;
+                                # overlays a disallow-all static/robots.txt
 vercel deploy --prebuilt
 ```
 
 Tag prefix to Target: `PUBCF-*` -> `cloudflare`, `PUBVL-*` -> `vercel`. A
-new per-Target file (e.g. the QA `robots.txt` overlay) goes in
+new per-Target file or overlay (like the QA `robots.txt`) goes in
 `internal/deploy`, never in a workflow.
 
 ### Vercel (v1 flow, until the publish workflows replace it)
@@ -810,11 +818,12 @@ false`):
   (compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
   (uncompressed, analytics included) is enforced by `make test`. A miss
   fails the check; reports are the `lighthouse-reports` artefact (never
-  public storage: previews hold drafts). The preview is behind Vercel
-  Authentication, so Lighthouse sends `x-vercel-protection-bypass`; it
-  blocks Plausible and ad hosts so no third party sees that header and runs
-  are not counted as pageviews (third-party JS sizes are covered by
-  `TestJSBudget_EveryPageStaysWithin60KB` instead).
+  public storage: previews hold drafts). Lighthouse blocks Plausible and
+  ad hosts so runs are not counted as pageviews (third-party JS sizes are
+  covered by `TestJSBudget_EveryPageStaysWithin60KB` instead). There is no
+  protection bypass secret any more (ticket 07): Lighthouse moves to
+  Cloudflare Previews (ticket 08), and a Vercel deployment stays behind
+  Vercel Authentication.
 - Shared setup: `.github/actions/setup` (Go from `go.mod`, Node 24, `npm
   ci`, `vercel@65.0.0`).
 
@@ -828,13 +837,12 @@ scripts/setup-deploy.sh
 Stages: tools and logins; GitHub repo (private, remote `origin`); Vercel
 team on Pro; Vercel project + `vercel link` + Node 24.x; Buttondown
 production and test newsletter keys; Vercel env vars
-(`BUTTONDOWN_API_KEY`, Sensitive, Production and Preview); Protection
-Bypass for Automation secret; Vercel token and GitHub secrets
-(`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
-`VERCEL_AUTOMATION_BYPASS_SECRET`, variable `INDEXNOW_ENABLED=false`);
-first push and a draft PR; an automated check of the first preview
-(every route, cache header and subscribe POST that could not be checked
-without a real deploy); then the **domain cutover**, behind a
+(`BUTTONDOWN_API_KEY`, Sensitive, Production and Preview); Vercel token
+and GitHub secrets (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
+variable `INDEXNOW_ENABLED=false`); first push and a draft PR; an
+automated check of the first preview (every route, cache header and
+subscribe POST that could not be checked without a real deploy; Vercel
+Authentication is switched off for the check and back on after); then the **domain cutover**, behind a
 confirmation that ADR-0001's threshold is met (≥ 30 Explainers across all
 six Verticals and ≥ 20 Briefs): `vercel domains add`, Cloudflare records
 DNS only, `www` -> apex 301 at Vercel, live checks, `INDEXNOW_ENABLED=true`.

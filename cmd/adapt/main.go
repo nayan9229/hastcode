@@ -1,5 +1,6 @@
 // Command adapt applies the deploy-adapter rule (internal/deploy) to a build
-// output in place: it removes every file only the other Target reads, so the
+// output in place: it removes every file only the other Target reads and
+// writes the Target's overlays (Vercel: a disallow-all robots.txt), so the
 // upload that follows ships exactly the Target's file set.
 //
 //	go run ./cmd/adapt -target cloudflare -out .vercel/output

@@ -213,7 +213,7 @@ finish() {
 
 run_wizard() {
 
-TOTAL_STAGES=13
+TOTAL_STAGES=12
 CHECK_FAILS=()
 
 # need CMD "how to install": stop early if a tool is missing.
@@ -236,24 +236,18 @@ check() {
 }
 
 # fetch METHOD PATH [curl args]: prints "<status> <redirect_url>" for
-# BASE_URL+PATH, sending the protection bypass header when one is set.
+# BASE_URL+PATH.
 fetch() {
   local method="$1" path="$2"; shift 2
-  local hdr=()
-  [[ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]] && hdr=(-H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET")
-  curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -X "$method" ${hdr[@]+"${hdr[@]}"} "$@" "$BASE_URL$path" || echo "000 "
+  curl -s -o /dev/null -w '%{http_code} %{redirect_url}' -X "$method" "$@" "$BASE_URL$path" || echo "000 "
 }
 
-# body PATH / headers PATH: GET with the bypass header.
+# body PATH / headers PATH: GET BASE_URL+PATH.
 body() {
-  local hdr=()
-  [[ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]] && hdr=(-H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET")
-  curl -s ${hdr[@]+"${hdr[@]}"} "$BASE_URL$1" || true
+  curl -s "$BASE_URL$1" || true
 }
 headers() {
-  local hdr=()
-  [[ -n "${VERCEL_AUTOMATION_BYPASS_SECRET:-}" ]] && hdr=(-H "x-vercel-protection-bypass: $VERCEL_AUTOMATION_BYPASS_SECRET")
-  curl -s -D - -o /dev/null ${hdr[@]+"${hdr[@]}"} "$BASE_URL$1" | tr -d '\r' || true
+  curl -s -D - -o /dev/null "$BASE_URL$1" | tr -d '\r' || true
 }
 
 banner "hastcode.com: GitHub, Vercel, Buttondown and domain setup"
@@ -303,7 +297,7 @@ else
   git remote add origin "https://github.com/$GITHUB_REPO.git"
   printf '  %s✓%s remote origin → https://github.com/%s.git\n' "$GREEN" "$RESET" "$GITHUB_REPO"
 fi
-note "Nothing is pushed yet: secrets come first (stage 9 pushes)."
+note "Nothing is pushed yet: secrets come first (stage 8 pushes)."
 pause
 
 # ── 3 ─────────────────────────────────────────────────────────────────────
@@ -367,17 +361,6 @@ step "Check BUTTONDOWN_API_KEY is listed once for Production and once for Previe
 pause
 
 # ── 7 ─────────────────────────────────────────────────────────────────────
-stage "Deployment Protection bypass for CI"
-say "Preview deployments are behind Vercel Authentication. Lighthouse CI and the"
-say "deploy check in stage 10 get through with a Protection Bypass for Automation secret."
-open_url "https://vercel.com/$VERCEL_TEAM/$VERCEL_PROJECT/settings/deployment-protection"
-step "Keep Vercel Authentication on (Standard Protection): previews can hold drafts."
-step "Protection Bypass for Automation → Add a secret (name it 'GitHub Actions') → copy it."
-ask_secret VERCEL_AUTOMATION_BYPASS_SECRET "Bypass secret:"
-write_env VERCEL_AUTOMATION_BYPASS_SECRET "$VERCEL_AUTOMATION_BYPASS_SECRET"
-pause
-
-# ── 8 ─────────────────────────────────────────────────────────────────────
 stage "Vercel token and GitHub Actions secrets"
 open_url "https://vercel.com/account/settings/tokens"
 step "Create Token: name 'hastcode GitHub Actions', scope = the $VERCEL_TEAM team,"
@@ -387,12 +370,11 @@ export GH_REPO="$GITHUB_REPO"   # gh secret/variable target this repo
 set_secret VERCEL_TOKEN "$VERCEL_TOKEN"
 set_secret VERCEL_ORG_ID "$VERCEL_ORG_ID"
 set_secret VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
-set_secret VERCEL_AUTOMATION_BYPASS_SECRET "$VERCEL_AUTOMATION_BYPASS_SECRET"
 set_var INDEXNOW_ENABLED "false"
-note "INDEXNOW_ENABLED stays false until the domain cutover (stage 13)."
+note "INDEXNOW_ENABLED stays false until the domain cutover (stage 12)."
 pause
 
-# ── 9 ─────────────────────────────────────────────────────────────────────
+# ── 8 ─────────────────────────────────────────────────────────────────────
 stage "First push: production on the Vercel domain, then a preview"
 say "main must hold the finished work (merge integration/hastcode-v1 into main first)."
 note "current branch: $(git branch --show-current)   HEAD: $(git log -1 --format='%h %s')"
@@ -413,9 +395,13 @@ step "Wait for 'Production' and 'Preview' to finish (the first run encodes every
 step "Each run's summary page shows the deployment URL."
 pause "Press Enter when both runs have finished…"
 
-# ── 10 ────────────────────────────────────────────────────────────────────
+# ── 9 ─────────────────────────────────────────────────────────────────────
 stage "Check the first preview deployment"
 say "Automated checks against the preview (it carries the TEST Buttondown key)."
+say "Previews are behind Vercel Authentication and this wizard has no bypass secret"
+say "(Lighthouse now runs against Cloudflare Previews), so curl cannot get in as is."
+open_url "https://vercel.com/$VERCEL_TEAM/$VERCEL_PROJECT/settings/deployment-protection"
+step "Turn Vercel Authentication off for the length of these checks; turn it back on right after."
 ask PREVIEW_URL "Preview deployment URL (https://…vercel.app, from the Preview run summary):"
 BASE_URL="${PREVIEW_URL%/}"
 read -r st _ <<<"$(fetch GET /)";                       check "home /" 200 "$st"
@@ -457,13 +443,14 @@ step "Production + Preview: 'vercel build' ran 'make build' (so Node and Go were
 step "Second run on main: 'Cache restored from key: hastcode-build-…' (images not re-encoded)."
 step "The PR shows 'Lighthouse CI' green; its reports are the 'lighthouse-reports' artefact."
 step "https://$VERCEL_PROJECT.vercel.app serves the production build (same checks, no test signup)."
+step "Deployment Protection: turn Vercel Authentication back on (previews can hold drafts)."
 if (( ${#CHECK_FAILS[@]} )); then
   for f in "${CHECK_FAILS[@]}"; do SKIPPED+=("deploy check: $f"); done
   warn "${#CHECK_FAILS[@]} check(s) failed: listed at the end. Fix, redeploy, re-run the wizard."
 fi
 pause
 
-# ── 11 ────────────────────────────────────────────────────────────────────
+# ── 10 ────────────────────────────────────────────────────────────────────
 stage "Domain cutover: the gate"
 say "Cutover is one-way (ADR-0001): hastcode.com stops serving the Genuin community"
 say "and every old /video, /community, /group URL returns 410."
@@ -488,7 +475,7 @@ step "Vercel wants (an A record for the apex, a CNAME for www, maybe a TXT to ve
 step "Keep this tab open for the next stage."
 pause
 
-# ── 12 ────────────────────────────────────────────────────────────────────
+# ── 11 ────────────────────────────────────────────────────────────────────
 stage "Cloudflare DNS (DNS only, grey cloud)"
 say "Cloudflare stays DNS-only: proxying would stack two CDNs (ADR-0002)."
 open_url "https://dash.cloudflare.com/"
@@ -500,7 +487,7 @@ step "If Vercel asked for a TXT (_vercel) verification record, add it too."
 step "SSL/TLS settings do not matter while records are DNS only."
 pause "Press Enter once Vercel's Domains page shows both domains as Valid Configuration…"
 
-# ── 13 ────────────────────────────────────────────────────────────────────
+# ── 12 ────────────────────────────────────────────────────────────────────
 stage "www → apex redirect, live checks, IndexNow on"
 open_url "https://vercel.com/$VERCEL_TEAM/$VERCEL_PROJECT/settings/domains"
 step "www.hastcode.com → Edit → Redirect to hastcode.com, status 301 Moved Permanently. Save."
@@ -508,7 +495,6 @@ step "hastcode.com → Edit → connected to Production (no redirect)."
 pause "Press Enter once saved…"
 BASE_URL="https://hastcode.com"
 CHECK_FAILS=()
-VERCEL_AUTOMATION_BYPASS_SECRET=""
 read -r st _ <<<"$(fetch GET /)";                  check "https://hastcode.com/" 200 "$st"
 check "served by Vercel" "Vercel" "$(grep -i '^server:' <<<"$(headers /)" | cut -d' ' -f2- || true)"
 read -r st loc <<<"$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' 'https://www.hastcode.com/about/?ref=x' || echo '000 ')"

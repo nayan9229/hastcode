@@ -6,10 +6,14 @@
 // configuration.
 //
 //	Vercel (QA Target):            everything except wrangler.json,
-//	                               static/_headers, static/_redirects
+//	                               static/_headers, static/_redirects;
+//	                               static/robots.txt overlaid to disallow all
 //	Cloudflare (Production Target): everything except config.json
 //
-// Everything else (the site under static/) is shared. Deploy steps call
+// Everything else (the site under static/) is shared. An overlay replaces a
+// shared file's bytes for one Target: Vercel is only ever the QA Target, so
+// its robots.txt disallows every crawler (the manifest adds
+// X-Robots-Tag: noindex too). Deploy steps call
 // Apply through cmd/adapt (`make adapt TARGET=…`) once, after the build and
 // before the upload; after that the output belongs to that Target only.
 package deploy
@@ -54,6 +58,20 @@ var own = map[Target][]string{
 	},
 }
 
+// RobotsFile is the site's robots.txt, output-relative.
+const RobotsFile = "static/robots.txt"
+
+// DisallowAllRobots is the QA Target's robots.txt: no crawler may fetch
+// anything.
+const DisallowAllRobots = "User-agent: *\nDisallow: /\n"
+
+// overlays lists, per Target, files (output-relative, slash-separated)
+// whose bytes Apply replaces for that Target. Each path is part of the
+// Target's file set whether or not the build wrote it.
+var overlays = map[Target]map[string]string{
+	Vercel: {RobotsFile: DisallowAllRobots},
+}
+
 // ParseTarget parses a Target name ("cloudflare" or "vercel").
 func ParseTarget(s string) (Target, error) {
 	if t := Target(s); slices.Contains(Targets, t) {
@@ -88,17 +106,24 @@ func Files(outDir string, t Target) ([]string, error) {
 		if err != nil {
 			return err
 		}
-		if rel = filepath.ToSlash(rel); !foreign(t, rel) {
+		if rel = filepath.ToSlash(rel); !foreign(t, rel) && overlays[t][rel] == "" {
 			files = append(files, rel)
 		}
 		return nil
 	})
-	return files, err
+	if err != nil {
+		return nil, err
+	}
+	for rel := range overlays[t] {
+		files = append(files, rel)
+	}
+	slices.Sort(files)
+	return files, nil
 }
 
-// Apply removes from outDir every file only another Target reads, leaving
-// exactly Files(outDir, t). It returns the removed paths. Applying twice is
-// harmless.
+// Apply removes from outDir every file only another Target reads and writes
+// t's overlays, leaving exactly Files(outDir, t). It returns the removed
+// paths. Applying twice is harmless.
 func Apply(outDir string, t Target) (removed []string, err error) {
 	if _, err := ParseTarget(string(t)); err != nil {
 		return nil, err
@@ -121,5 +146,14 @@ func Apply(outDir string, t Target) (removed []string, err error) {
 		}
 	}
 	slices.Sort(removed)
+	for rel, data := range overlays[t] {
+		p := filepath.Join(outDir, filepath.FromSlash(rel))
+		if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+			return removed, err
+		}
+		if err := os.WriteFile(p, []byte(data), 0o644); err != nil {
+			return removed, err
+		}
+	}
 	return removed, nil
 }

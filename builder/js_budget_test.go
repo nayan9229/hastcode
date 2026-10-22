@@ -14,8 +14,8 @@ import (
 
 // Spec story 61: total client JS ≤ 60 KB per page. This test is the
 // authority for that budget, not Lighthouse CI: Lighthouse has to block
-// Plausible on previews (it would otherwise send the Vercel bypass secret
-// to a third party) and its resource-summary counts compressed transfer
+// Plausible on previews (so its runs are never counted as pageviews) and
+// its resource-summary counts compressed transfer
 // bytes. Here every script a page loads initially is summed uncompressed:
 // inline code, same-origin files from the output, and an upper bound for
 // each third-party script. Pagefind loads only on interaction, so it is
