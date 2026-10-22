@@ -12,6 +12,9 @@ func init() {
 	registerStep(phaseRender, 17, "upload images", uploadImages)
 }
 
+// uploadWorkers bounds concurrent HEAD/PUT requests (research §1.5: 8–16).
+const uploadWorkers = 8
+
 // uploadImages sends the images queued by storeImage (hero assets, Author
 // photos, the OG badge) to the Image Store in r2 mode: HEAD each key, PUT
 // only the missing ones. A failure stops the build naming the key.

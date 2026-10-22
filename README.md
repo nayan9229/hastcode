@@ -165,7 +165,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | Path | What lives there |
 |------|------------------|
 | `cmd/builder/` | CLI only: flags, `LoadConfig`, print `Result`, exit code. No logic. |
-| `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`, and `Prune` (the prune command). Everything else unexported. |
+| `builder/` | The single deep module. Public API: `Config`, `Vertical`, `Mode` (`Production`, `Preview`, `ParseMode`), `ImageConfig` + `ImageStoreMode` (`StoreLocal`, `StoreR2`) + `DefaultImageCacheDir`, `LoadConfig`, `Build(cfg, contentDir, outDir) Result`, `Result`/`Problem`, and `Prune`/`PruneOptions`/`PruneReport` (the prune command). Everything else unexported. |
+| `internal/buildflags/` | The flags `cmd/builder` and `cmd/prune` share (`-content`, `-config`, `-tools`, `-cache`, `-image-cache`) and `LoadConfig()`, which applies them. |
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, the "skip failed files" filter `passed` behind `publishedExplainers()`/`publishedBriefs()`/`publishedPages()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …), every fixed page, feed and sitemap path, the asset directories, and the retired paths (`retiredSections`, `homeAliasURL`). |

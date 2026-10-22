@@ -103,7 +103,7 @@ type ImageConfig struct {
 	// photos, the OG badge) go: StoreLocal (default) writes them under
 	// /assets/ in the output; StoreR2 uploads them to the Image Store and
 	// every page references them by absolute URL on BaseURL (ADR-0004).
-	Store ImageStore `yaml:"store"`
+	Store ImageStoreMode `yaml:"store"`
 	// BaseURL is the Image Store's public URL, e.g.
 	// "https://images.hastcode.com/". Required in r2 mode.
 	BaseURL string `yaml:"base_url"`
@@ -111,12 +111,12 @@ type ImageConfig struct {
 	Bucket string `yaml:"bucket"`
 }
 
-// ImageStore is ImageConfig.Store.
-type ImageStore string
+// ImageStoreMode is where encoded images go (ImageConfig.Store).
+type ImageStoreMode string
 
 const (
-	StoreLocal ImageStore = "local"
-	StoreR2    ImageStore = "r2"
+	StoreLocal ImageStoreMode = "local"
+	StoreR2    ImageStoreMode = "r2"
 )
 
 // Problem is one build error or warning, attributed to a content file

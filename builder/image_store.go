@@ -3,7 +3,6 @@ package builder
 import (
 	"fmt"
 	"net/url"
-	"os"
 	"strings"
 
 	"hastcode.com/site/internal/imagestore"
@@ -20,9 +19,6 @@ import (
 // and PUTs it.
 
 const ruleImageStore = "image-store"
-
-// uploadWorkers bounds concurrent HEAD/PUT requests (research §1.5: 8–16).
-const uploadWorkers = 8
 
 // openImageStore checks the image store config and, in r2 mode, reads the
 // credentials and returns the client. It runs before any step, so a
@@ -66,15 +62,14 @@ func (s *site) imageURL(sitePath string) string {
 // it for uploadImages.
 func (s *site) storeImage(sitePath, path string, data []byte, contentType string) error {
 	s.result.ImageKeys = append(s.result.ImageKeys, imageKey(sitePath))
+	obj := imagestore.Object{Key: imageKey(sitePath), ContentType: contentType, Data: data, File: path}
 	if s.store == nil {
-		if data == nil {
-			var err error
-			if data, err = os.ReadFile(path); err != nil {
-				return err
-			}
+		data, err := obj.Bytes()
+		if err != nil {
+			return err
 		}
 		return s.out.WriteStatic(sitePath, data)
 	}
-	s.uploads = append(s.uploads, imagestore.Object{Key: imageKey(sitePath), ContentType: contentType, Data: data, File: path})
+	s.uploads = append(s.uploads, obj)
 	return nil
 }

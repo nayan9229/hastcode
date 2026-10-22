@@ -3,6 +3,7 @@ package builder
 import (
 	"strings"
 
+	"hastcode.com/site/internal/imagestore"
 	"hastcode.com/site/internal/vercel"
 )
 
@@ -11,9 +12,11 @@ func init() {
 }
 
 const (
-	htmlCacheControl      = "public, max-age=0, must-revalidate"
-	htmlCDNCacheControl   = "s-maxage=31536000, stale-while-revalidate=86400"
-	immutableCacheControl = "public, max-age=31536000, immutable"
+	htmlCacheControl    = "public, max-age=0, must-revalidate"
+	htmlCDNCacheControl = "s-maxage=31536000, stale-while-revalidate=86400"
+	// immutableCacheControl is for content-hashed files: the same header
+	// the Image Store sets on every object.
+	immutableCacheControl = imagestore.CacheControl
 )
 
 // writeVercelConfig writes the Build Output API v3 config.json.

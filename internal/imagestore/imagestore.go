@@ -34,7 +34,8 @@ const (
 )
 
 // CacheControl is set on every object: keys are content-hashed, so an
-// object never changes and caches for a year.
+// object never changes and caches for a year. The builder sends the same
+// header for /assets/ on both Targets.
 const CacheControl = "public, max-age=31536000, immutable"
 
 // Credentials are the R2 account and API token (Access Key ID = the
@@ -107,6 +108,14 @@ type Object struct {
 	File        string
 }
 
+// Bytes is the object's content: Data, or File's bytes when Data is nil.
+func (o Object) Bytes() ([]byte, error) {
+	if o.Data != nil {
+		return o.Data, nil
+	}
+	return os.ReadFile(o.File)
+}
+
 // Upload makes every object exist in the bucket: HEAD each key and PUT only
 // on a 404, with ContentType and CacheControl, on at most workers
 // goroutines. Keys are content-hashed, so an existing key already holds
@@ -134,11 +143,9 @@ func (c *Client) ensure(ctx context.Context, o Object) error {
 	if nf := (*types.NotFound)(nil); !errors.As(err, &nf) {
 		return err
 	}
-	data := o.Data
-	if data == nil {
-		if data, err = os.ReadFile(o.File); err != nil {
-			return err
-		}
+	data, err := o.Bytes()
+	if err != nil {
+		return err
 	}
 	_, err = c.s3.PutObject(ctx, &s3.PutObjectInput{
 		Bucket:       &c.bucket,

@@ -30,12 +30,11 @@ func writeHeroAssets(s *site) error {
 	return nil
 }
 
-// mimeOf is the Content-Type of an encoded image, from its extension.
+// mimeOf is the Content-Type of an encoded hero file: heroes are AVIF or
+// JPEG (heroFormats, heroCrops).
 func mimeOf(sitePath string) string {
-	for _, f := range []images.Format{images.AVIF, images.JPEG} {
-		if path.Ext(sitePath) == f.Ext() {
-			return f.MIME()
-		}
+	if path.Ext(sitePath) == images.AVIF.Ext() {
+		return images.AVIF.MIME()
 	}
-	return "image/png" // the OG badge
+	return images.JPEG.MIME()
 }

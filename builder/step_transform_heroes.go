@@ -41,10 +41,13 @@ var heroWidths = []int{480, 800, 1000, 1200, 1472}
 // heroFormats are the responsive formats, in <picture> source order.
 var heroFormats = []images.Format{images.AVIF, images.JPEG}
 
-// heroCrops are the 1200 px wide JPEG crops (width, height), in
-// views.Hero field order: 16:9, 4:3 and 1:1 for Discover and JSON-LD, then
-// 1200x630 for Open Graph and the Twitter card.
-var heroCrops = [][2]int{{1200, 675}, {1200, 900}, {1200, 1200}, {1200, 630}}
+// cropSize is a hero crop's pixel size.
+type cropSize struct{ width, height int }
+
+// heroCrops are the 1200 px wide JPEG crops, in views.Hero field order:
+// 16:9, 4:3 and 1:1 for Discover and JSON-LD, then 1200x630 for Open Graph
+// and the Twitter card.
+var heroCrops = []cropSize{{1200, 675}, {1200, 900}, {1200, 1200}, {1200, 630}}
 
 // heroVariants is every image a hero needs, in this order: the responsive
 // widths (never upscaled past the source) in each of heroFormats, then
@@ -59,7 +62,7 @@ func heroVariants(w, h int) []images.Variant {
 		}
 	}
 	for _, c := range heroCrops {
-		vs = append(vs, images.Variant{Format: images.JPEG, Width: c[0], Height: c[1]})
+		vs = append(vs, images.Variant{Format: images.JPEG, Width: c.width, Height: c.height})
 	}
 	return vs
 }

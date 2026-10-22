@@ -21,26 +21,23 @@ import (
 	"time"
 
 	"hastcode.com/site/builder"
+	"hastcode.com/site/internal/buildflags"
 	"hastcode.com/site/internal/imagestore"
 )
 
 func main() {
-	contentDir := flag.String("content", "content", "content directory")
-	configPath := flag.String("config", "site.yaml", "site config YAML")
+	shared := buildflags.Register(flag.CommandLine)
 	outDir := flag.String("out", ".vercel/output", "Build Output API directory")
 	mode := flag.String("mode", string(builder.Production), "production or preview")
-	toolsDir := flag.String("tools", ".", "directory with package.json and node_modules (run npm ci there)")
-	cacheDir := flag.String("cache", "", "build cache directory (default <tools>/node_modules/.cache/hastcode)")
-	imageCache := flag.String("image-cache", "", "hero image cache dir (overrides images.cache_dir; default "+builder.DefaultImageCacheDir+")")
 	imageStore := flag.String("image-store", "", "image store: local or r2 (overrides images.store; r2 reads "+imagestore.EnvAccountID+", "+imagestore.EnvAccessKeyID+", "+imagestore.EnvSecretAccessKey+" from the environment)")
 	skipSearch := flag.Bool("skip-search-index", false, "do not run Pagefind (preview mode only; a production build fails without the index)")
 	flag.Parse()
 
-	os.Exit(run(*contentDir, *configPath, *outDir, *mode, *toolsDir, *cacheDir, *imageCache, *imageStore, *skipSearch))
+	os.Exit(run(shared, *outDir, *mode, *imageStore, *skipSearch))
 }
 
-func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCache, imageStore string, skipSearch bool) int {
-	cfg, err := builder.LoadConfig(configPath)
+func run(shared *buildflags.Flags, outDir, modeFlag, imageStore string, skipSearch bool) int {
+	cfg, err := shared.LoadConfig()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return 2
@@ -49,17 +46,13 @@ func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCach
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return 2
 	}
-	cfg.ToolsDir, cfg.CacheDir = toolsDir, cacheDir
 	cfg.SkipSearchIndex = skipSearch
-	if imageCache != "" {
-		cfg.Images.CacheDir = imageCache
-	}
 	if imageStore != "" {
-		cfg.Images.Store = builder.ImageStore(imageStore)
+		cfg.Images.Store = builder.ImageStoreMode(imageStore)
 	}
 
 	start := time.Now()
-	res := builder.Build(cfg, contentDir, outDir)
+	res := builder.Build(cfg, shared.Content, outDir)
 	fmt.Fprint(os.Stderr, res.String())
 	if res.Failed() {
 		fmt.Fprintf(os.Stderr, "build failed: %d error(s), %d warning(s)\n", len(res.Errors), len(res.Warnings))
