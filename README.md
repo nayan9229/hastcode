@@ -182,7 +182,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/load.go` | `eachMarkdown` and rule `frontmatter`, shared by the `step_load_*.go` steps. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown), and `Repo` (`repo.go`: owner/name, `ParseRepo`, the one check the frontmatter `repo` key and the fetch command's `-repo` share). No config or output knowledge. |
-| `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go`, `step_transform_fact_sections.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning when it has been unchanged upstream for over 30 days: the repository may be dormant), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`), the Signals and Changelog sections inserted into the body at transform 35 (`repoProfileSignals`, `repoProfileChangelog` -> `views.RepoProfileSignals`, `views.RepoProfileChangelog`; `partial_repo_profile_signals.templ`, `partial_repo_profile_changelog.templ`; rule `fact-sections`) and the `SoftwareSourceCode` and `FAQPage` JSON-LD (`softwareSourceCode`, `faqPage`). Tests: `builder/repo_profile_test.go`, `builder/repo_profile_facts_test.go`. |
+| `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go`, `step_transform_fact_sections.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning when it has been unchanged upstream for over 30 days: the repository may be dormant), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`), the Signals and Changelog sections inserted into the body at transform 35 (`repoProfileSignals`, `repoProfileChangelog` -> `views.RepoProfileSignals`, `views.RepoProfileChangelog`; `partial_repo_profile_signals.templ`, `partial_repo_profile_changelog.templ`; rule `fact-sections`) and the `SoftwareSourceCode` JSON-LD (`softwareSourceCode`). Tests: `builder/repo_profile_test.go`, `builder/repo_profile_facts_test.go`. |
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
@@ -209,7 +209,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/page_search.templ`, `search.js` | Search page and its inline lazy loader (Pagefind modular UI on first focus). |
 | `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 1200x630 hero crop + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
-| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`; `SoftwareSourceCode` and `FAQPage` + `Question`/`Answer` for Repo Profiles only). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
+| `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`; `SoftwareSourceCode` for Repo Profiles only). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
 | `internal/buildtest/` | Test support for the Build seam (fixtures, run build, parse output). |
 | `subscribe/` | The subscribe function: `New(Config) http.Handler`, `ConfigFromEnv()`, form contract constants (`Path`, `SubscribedPath`, `HoneypotField`). Buttondown client in `buttondown.go`, per-IP limiter in `ratelimit.go`. Subscribe-seam tests in `subscribe_test.go`. |
@@ -329,10 +329,10 @@ lacks reads "not found" (`views.FactNotFound`); nothing is scored, graded
 or invented. The Fact Pack's `sources` join the Sources section after the
 frontmatter sources, once per URL (`step_transform_sources.go`). The
 page's JSON-LD adds `SoftwareSourceCode` (full name, repository URL, and
-the language, license URL and description the Fact Pack carries) and
-`FAQPage` (one `Question` per `###` under FAQ, in order, answered by the
-HTML under it) beside the Article graph (`repo_profile.go`:
-`softwareSourceCode`, `faqPage`). Rule `fact-sections` fails a published
+the language, license URL and description the Fact Pack carries) beside
+the Article graph (`repo_profile.go`: `softwareSourceCode`). The FAQ is
+visible prose only: no `FAQPage` (dropped 2026-10-22, Google retired FAQ
+results). Rule `fact-sections` fails a published
 Profile lacking the section a fact section follows: a safety net the
 skeleton rule makes unreachable. Both components paint with the brand
 tokens only, so the dark theme applies (`repo_profile_facts_test.go`
@@ -395,8 +395,8 @@ Author `url` is `/authors/<slug>/`; `sameAs` comes from the Author file's
 `same_as` list. `s.author` emits `@type` `Person`, or `Organization` when the
 Author's `kind` is `organization` (unknown kinds fail with `author-kind`;
 organizations get no `author-photo` warning). Article bylines use `@Byline(views.Link{Name, URL: authorURL(slug)})`
-(`partial_byline.templ`), which links the Author page. No `HowTo`, `Speakable` or `TechArticle`
-anywhere; `FAQPage` and `SoftwareSourceCode` only on a Repo Profile (see
+(`partial_byline.templ`), which links the Author page. No `HowTo`, `Speakable`, `TechArticle` or `FAQPage`
+anywhere; `SoftwareSourceCode` only on a Repo Profile (see
 "Repo Profiles"), never on another kind (`TestExplainerJSONLD_NoUnsupportedTypes`).
 `writePage` fails an indexable page with no `application/ld+json` block
 (rule `jsonld-missing`; the page is not written), so a new page type needs
@@ -674,11 +674,13 @@ vl`, then `cf`; ADR-0004). The workflow never tags.
 
 **Rate limit.** The repository token allows 1,000 requests an hour, and a
 Refresh makes about 9 per Profile (ten at most), so one run covers about
-110 Profiles. Past that, switch the workflow's `GITHUB_TOKEN` to a GitHub
-App installation token (5,000 an hour and up) or a fine-grained personal
-access token (5,000 an hour; read access to public repositories only)
-stored as a repository secret; the push and pull request can keep the
-repository token.
+110 Profiles. For now Repo Profiles are capped at ten (Author decision,
+2026-10-22; `docs/editorial/repo-profile-selection.md`), so the
+repository token is enough. Raising the cap well past that means switching
+the workflow's `GITHUB_TOKEN` to a GitHub App installation token (5,000 an
+hour and up) or a fine-grained personal access token (5,000 an hour; read
+access to public repositories only) stored as a repository secret; the push
+and pull request can keep the repository token.
 
 Locally, `make refresh` with a `GITHUB_TOKEN` does the same re-fetch
 without the commit or the pull request.

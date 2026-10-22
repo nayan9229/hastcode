@@ -1,16 +1,14 @@
 // Package schema holds the schema.org JSON-LD node types the site emits
 // (spec "Structured data and head"): Article/NewsArticle, Person,
-// Organization, BreadcrumbList and WebSite, plus SoftwareSourceCode and
-// FAQPage on Repo Profiles only (content plan, "Page composition and
-// gates"). They are plain data: the builder fills them with absolute URLs
+// Organization, BreadcrumbList and WebSite, plus SoftwareSourceCode on
+// Repo Profiles only (content plan, "Page composition and gates"). They are plain data: the builder fills them with absolute URLs
 // and formatted dates, and the views marshal each top-level node into its
 // own <script type="application/ld+json"> block.
 //
 // Deliberately absent: HowTo, Speakable and TechArticle (spec: removed,
-// deprecated, no evidence, unlisted by Google). FAQPage earns no Google
-// rich result any more; a Repo Profile carries it as a machine-readable
-// answer set for answer engines, built from its FAQ, and no other page
-// emits it.
+// deprecated, no evidence, unlisted by Google) and FAQPage (Google retired
+// FAQ results in 2026; dropped by the Author 2026-10-22, the FAQ stays
+// visible prose on Repo Profiles).
 package schema
 
 // Context is the @context of every top-level block.
@@ -151,27 +149,6 @@ type SoftwareSourceCode struct {
 	ProgrammingLanguage string `json:"programmingLanguage,omitempty"`
 	License             string `json:"license,omitempty"`
 	Description         string `json:"description,omitempty"`
-}
-
-// FAQPage is a Repo Profile's FAQ section as questions and answers: one
-// Question per FAQ H3, in page order, answered by the HTML under it.
-type FAQPage struct {
-	Context    string     `json:"@context"`
-	Type       string     `json:"@type"` // "FAQPage"
-	MainEntity []Question `json:"mainEntity"`
-}
-
-// Question is one FAQ entry: the question (Name) and its answer.
-type Question struct {
-	Type           string `json:"@type"` // "Question"
-	Name           string `json:"name"`
-	AcceptedAnswer Answer `json:"acceptedAnswer"`
-}
-
-// Answer is a Question's answer; Text may carry HTML.
-type Answer struct {
-	Type string `json:"@type"` // "Answer"
-	Text string `json:"text"`
 }
 
 // Crumb is a breadcrumb's name and absolute URL, for NewBreadcrumbList.

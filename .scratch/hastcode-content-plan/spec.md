@@ -93,7 +93,7 @@ The content plan around it: three to five Repo Profiles a week beside five other
 - The builder composes the page: header card, then the body with the Signals section inserted after Architecture and the Changelog section inserted after Alternatives. FAQ questions are H3 headings under FAQ; the rule requires five to eight.
 - Signals shows facts only: last commit date, releases in the last 12 months and latest release date, contributor count and the lead contributor's share of the listed top-ten contributions, open issues, security policy present, license, stars, forks, watchers, and which documentation files and directories exist. No score, no colour grading.
 - The Architecture section's first Mermaid fence is the stable diagram slot (rendered as today). A later diagram or video replaces that slot without changing the surrounding markup.
-- JSON-LD: the page keeps the Article graph every Explainer emits and adds `SoftwareSourceCode` (name, code repository URL, programming language, license URL, description) and `FAQPage` built from the FAQ H3s and their answers. The allowed-types test is extended accordingly.
+- JSON-LD: the page keeps the Article graph every Explainer emits and adds `SoftwareSourceCode` (name, code repository URL, programming language, license URL, description). No `FAQPage`: the FAQ is visible prose only (Author, 2026-10-22; Google retired FAQ results). The allowed-types test is extended accordingly.
 - Kind page and badge: "Repo Profile" / "Repo Profiles", described with the glossary sentence.
 - Generated hero: a 1600×900 PNG rendered in Go with the bundled Go font family already in the module graph, showing the wordmark, repository full name, description (truncated), language, stars and license on the brand palette, light theme (the hero pipeline then produces the usual variants and the 1200×630 Open Graph crop). It enters the existing hero pipeline as if it were a sourced file, so every hero rule still holds. Alt text is generated ("{repo}: {description}").
 
@@ -155,3 +155,8 @@ Spec text changed by the review fixes on `cp/review-fixes` (2026-10-22):
 - **"Content model", Fact Pack fields**: `sources` lists the github.com pages a Reader can open to check what was fetched (repository, README blob, releases, contributors graph, `.github` tree), each once, never an API endpoint; an Author's citation of the same page merges with it.
 - **"Content model", stale warning**: `fact-pack-stale` means the Fact Pack has been unchanged upstream for over 30 days (a Refresh keeps an unchanged Fact Pack's fetched-at), so the repository may be dormant and the Author checks it at the next Review; it no longer advises a Refresh.
 - **"Refresh workflow"**: after the check target the job runs a production build of the real content tree (the Publish build with the Image Store local, no secret), so a changed Fact Pack that breaks the build fails the job before the pull request; and there is one open Refresh pull request at a time: any open pull request from a `refresh/` branch is reused (branch reset onto `main`, force-pushed with a lease, title and body edited) instead of opening a second.
+
+Author decisions after the review (2026-10-22):
+
+- FAQPage JSON-LD removed; the FAQ section and its five-to-eight rule stay.
+- Repo Profiles capped at ten in total until the day-28 checkpoint, so the Refresh stays on the repository token (about 110 Profiles' worth).

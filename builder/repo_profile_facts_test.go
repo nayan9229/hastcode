@@ -184,7 +184,7 @@ func TestRepoProfile_FactPackSourcesJoinTheSourcesSectionOncePerURL(t *testing.T
 	}
 }
 
-func TestRepoProfileJSONLD_AddsSoftwareSourceCodeAndFAQPageBesideTheArticle(t *testing.T) {
+func TestRepoProfileJSONLD_AddsSoftwareSourceCodeBesideTheArticleAndNoFAQPage(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), repoProfileTree())
 	doc := buildtest.Page(t, out, repoProfilePath)
 
@@ -208,33 +208,11 @@ func TestRepoProfileJSONLD_AddsSoftwareSourceCodeAndFAQPageBesideTheArticle(t *t
 		}
 	}
 
-	faq := buildtest.JSONLDOfType(t, doc, "FAQPage")
-	if faq == nil {
-		t.Fatal("no FAQPage JSON-LD block")
+	if faq := buildtest.JSONLDOfType(t, doc, "FAQPage"); faq != nil {
+		t.Errorf("FAQPage JSON-LD = %#v; the Author dropped it (Google retired FAQ results); the FAQ stays visible prose only", faq)
 	}
-	questions, _ := faq["mainEntity"].([]any)
-	var h3s []string
-	doc.Find("article .e-content h3").Each(func(_ int, h *goquery.Selection) { h3s = append(h3s, strings.TrimSpace(h.Text())) })
-	if len(h3s) != 5 || len(questions) != len(h3s) {
-		t.Fatalf("FAQPage has %d questions for %d FAQ H3s: %v", len(questions), len(h3s), h3s)
-	}
-	answers := []string{
-		"Not for multi-node deployments yet.",
-		"No; it has its own protocol and SDKs.",
-		"QUIC, TCP and HTTP.",
-		"Yes, it entered the Apache Incubator in 2025.",
-		"Apache 2.0.",
-	}
-	for i, q := range questions {
-		question, _ := q.(map[string]any)
-		if question["@type"] != "Question" || question["name"] != h3s[i] {
-			t.Errorf("question %d = %#v, want Question %q (the H3, in order)", i, question, h3s[i])
-		}
-		answer, _ := question["acceptedAnswer"].(map[string]any)
-		text, _ := answer["text"].(string)
-		if answer["@type"] != "Answer" || !strings.Contains(text, answers[i]) {
-			t.Errorf("answer %d = %#v, want Answer containing %q", i, answer, answers[i])
-		}
+	if n := doc.Find("article .e-content h3").Length(); n != 5 {
+		t.Errorf("FAQ renders %d questions on the page, want the fixture's 5", n)
 	}
 }
 

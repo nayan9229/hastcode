@@ -30,11 +30,7 @@ func renderExplainers(s *site) error {
 			s.fail(e.File, ruleMarkdown, "%v", err)
 			continue
 		}
-		page, err := explainerPage(s, e, leadHTML, body)
-		if err != nil {
-			s.fail(e.File, ruleMarkdown, "%v", err)
-			continue
-		}
+		page := explainerPage(s, e, leadHTML, body)
 		page.SourcesHTML = sourcesHTML
 		if err := s.writePage(explainerURL(e), views.ExplainerArticle(page)); err != nil {
 			return err
@@ -46,9 +42,9 @@ func renderExplainers(s *site) error {
 // explainerPage maps an Explainer to its view model. lead is the intro and
 // TL;DR (the first ad slot follows it), body the rest. A Repo Profile adds
 // its header card and, beside the Article graph, the repository as
-// SoftwareSourceCode and its FAQ as FAQPage. The error is a Markdown
-// rendering failure (the FAQ answers).
-func explainerPage(s *site, e *content.Explainer, lead, body string) (views.ExplainerPage, error) {
+// SoftwareSourceCode. Its FAQ is visible prose only: no FAQPage JSON-LD
+// (dropped 2026-10-22; Google retired FAQ results).
+func explainerPage(s *site, e *content.Explainer, lead, body string) views.ExplainerPage {
 	hero := s.heroView(e.File)
 	author := s.authors[e.Author]
 	vertical := s.verticals[e.Vertical]
@@ -89,13 +85,6 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) (views.Expl
 		fp := s.factPacks[e.File]
 		ep.RepoProfile = repoProfileCard(e, fp)
 		ep.Page.StructuredData = append(ep.Page.StructuredData, softwareSourceCode(fp))
-		faq, err := faqPage(e)
-		if err != nil {
-			return ep, err
-		}
-		if faq != nil {
-			ep.Page.StructuredData = append(ep.Page.StructuredData, faq)
-		}
 	}
-	return ep, nil
+	return ep
 }

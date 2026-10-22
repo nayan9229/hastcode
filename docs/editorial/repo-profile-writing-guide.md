@@ -32,7 +32,7 @@ The build fails unless the nine H2s appear exactly as in the template, in that o
 - **Architecture.** How it is built: the components, how data moves, where state lives. The first Mermaid fence is the diagram slot; walk it in order and link the code or docs behind each claim. *Signals renders after this section: do not write it.*
 - **Use it if / Don't use it if.** Two to four bullets each. Take a position and ground it in a fact from above. Each "Don't" says what to use instead.
 - **Alternatives.** Three to five, one line each on how it differs. Link our Comparison or Profile where one exists, as a full `/{vertical}/{slug}/` path; otherwise the alternative's own repository or site. *Changelog renders after this section: do not write it.*
-- **FAQ.** Five to eight `###` questions phrased the way the Reader types them into a search box: "Is {repo} production ready?", "Does {repo} support {feature}?", "What are the alternatives to {repo}?". Each answer is one to three sentences that stand alone: name the repository, never write "as above". Answers become the page's FAQPage data and get quoted out of context.
+- **FAQ.** Five to eight `###` questions phrased the way the Reader types them into a search box: "Is {repo} production ready?", "Does {repo} support {feature}?", "What are the alternatives to {repo}?". Each answer is one to three sentences that stand alone: name the repository, never write "as above". Answers get quoted out of context by search and answer engines.
 - **Verdict.** One paragraph: the recommendation, who it is for, and what would change it.
 - **Sources.** Last, with at least one link.
 

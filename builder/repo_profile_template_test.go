@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/PuerkitoBio/goquery"
+
 	"hastcode.com/site/internal/buildtest"
 )
 
@@ -126,15 +128,11 @@ func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule
 
 	doc := buildtest.Page(t, out, repoProfilePath)
 	var questions []string
-	faq := buildtest.JSONLDOfType(t, doc, "FAQPage")
-	entities, _ := faq["mainEntity"].([]any)
-	for _, e := range entities {
-		q, _ := e.(map[string]any)
-		name, _ := q["name"].(string)
-		questions = append(questions, name)
-	}
+	doc.Find("article .e-content h3").Each(func(_ int, h *goquery.Selection) {
+		questions = append(questions, strings.TrimSpace(h.Text()))
+	})
 	if len(questions) != 5 || questions[0] != "Is Iggy production ready?" {
-		t.Errorf("FAQPage questions = %q, want the template's five, starting with the production-ready search", questions)
+		t.Errorf("FAQ questions = %q, want the template's five, starting with the production-ready search", questions)
 	}
 	if got := doc.Find("article blockquote").Text(); !strings.Contains(got, "Drafted with AI assistance") {
 		t.Errorf("the page does not carry the AI-assistance note; blockquote = %q", got)

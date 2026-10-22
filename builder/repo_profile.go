@@ -4,7 +4,6 @@ import (
 	"math"
 	"slices"
 	"strconv"
-	"strings"
 
 	"github.com/yuin/goldmark/ast"
 
@@ -116,41 +115,14 @@ func softwareSourceCode(fp *content.FactPack) schema.SoftwareSourceCode {
 	return code
 }
 
-// faqPage is the Profile's FAQ as JSON-LD: one Question per H3 under ##
-// FAQ (headingFAQ, whose count the skeleton rule checks), in order,
-// answered by the blocks between it and the next H3 (as HTML). nil when
-// the body has no FAQ questions.
-func faqPage(e *content.Explainer) (*schema.FAQPage, error) {
-	questions, _ := faqQuestions(e.Body)
-	if len(questions) == 0 {
-		return nil, nil
-	}
-	faq := &schema.FAQPage{Context: schema.Context, Type: "FAQPage"}
-	for _, q := range questions {
-		html, err := markdown.RenderBlocks(e.Body, q.answer)
-		if err != nil {
-			return nil, err
-		}
-		faq.MainEntity = append(faq.MainEntity, schema.Question{
-			Type:           "Question",
-			Name:           e.Body.Text(q.heading),
-			AcceptedAnswer: schema.Answer{Type: "Answer", Text: strings.TrimSpace(html)},
-		})
-	}
-	return faq, nil
-}
-
-// faqQuestion is one ### question under a Repo Profile's ## FAQ and the
-// blocks up to the next question, which answer it.
+// faqQuestion is one ### question under a Repo Profile's ## FAQ.
 type faqQuestion struct {
 	heading *ast.Heading
-	answer  []ast.Node
 }
 
 // faqQuestions walks the ## FAQ section: one faqQuestion per ### heading,
-// in order (anything before the first is no question's answer). ok is false
-// when the body has no ## FAQ. The skeleton rule counts them; the FAQPage
-// JSON-LD is built from them.
+// in order. ok is false when the body has no ## FAQ. The skeleton rule
+// counts them.
 func faqQuestions(body *markdown.Document) (questions []faqQuestion, ok bool) {
 	_, sections := body.Sections()
 	i := slices.IndexFunc(sections, func(sec markdown.Section) bool { return sec.Heading == headingFAQ })
@@ -160,10 +132,6 @@ func faqQuestions(body *markdown.Document) (questions []faqQuestion, ok bool) {
 	for _, b := range sections[i].Blocks {
 		if h, isHeading := b.(*ast.Heading); isHeading && h.Level == 3 {
 			questions = append(questions, faqQuestion{heading: h})
-			continue
-		}
-		if n := len(questions); n > 0 {
-			questions[n-1].answer = append(questions[n-1].answer, b)
 		}
 	}
 	return questions, true

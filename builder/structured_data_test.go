@@ -181,21 +181,19 @@ func TestExplainerJSONLD_BreadcrumbListRunsHomeVerticalExplainer(t *testing.T) {
 	}
 }
 
-// The allowed types: HowTo, Speakable and TechArticle appear nowhere;
-// FAQPage and SoftwareSourceCode only on a Repo Profile (spec "Page
+// The allowed types: HowTo, Speakable, TechArticle and FAQPage appear
+// nowhere (FAQPage dropped by the Author 2026-10-22: Google retired its
+// results); SoftwareSourceCode only on a Repo Profile (spec "Page
 // composition and gates"), never on another kind of Explainer.
 func TestExplainerJSONLD_NoUnsupportedTypes(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree().WithRepoProfile(buildtest.ValidRepoProfile()))
-	for _, typ := range []string{"HowTo", "Speakable", "TechArticle"} {
+	for _, typ := range []string{"HowTo", "Speakable", "TechArticle", "FAQPage"} {
 		if hits := buildtest.FilesContaining(t, out, `"`+typ+`"`); len(hits) > 0 {
 			t.Errorf("%s appears in %v; the spec rules it out", typ, hits)
 		}
 	}
 	profile := buildtest.StaticPath("", "/distributed-systems/apache-iggy/")
-	for _, typ := range []string{"FAQPage", "SoftwareSourceCode"} {
-		hits := buildtest.FilesContaining(t, out, `"@type":"`+typ+`"`)
-		if len(hits) != 1 || hits[0] != profile {
-			t.Errorf("%s appears in %v; want only the Repo Profile page %s", typ, hits, profile)
-		}
+	if hits := buildtest.FilesContaining(t, out, `"@type":"SoftwareSourceCode"`); len(hits) != 1 || hits[0] != profile {
+		t.Errorf("SoftwareSourceCode appears in %v; want only the Repo Profile page %s", hits, profile)
 	}
 }

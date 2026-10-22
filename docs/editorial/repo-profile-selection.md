@@ -16,6 +16,7 @@ A repository qualifies only if every line holds. If one is in doubt, skip it; th
 ## Cadence and mix
 
 - Three to five Profiles a week, alongside five Explainers of other kinds and five Briefs.
+- **Cap: ten Repo Profiles in total for now** (Author decision, 2026-10-22). The weekly Refresh runs on the repository token, which covers about 110 Profiles; the cap holds until the day-28 checkpoint says Profiles earn their place. Raising it is a decision, not a drift.
 - Spread across Verticals over a month rather than chasing one hot area.
 - Mix rising repositories (traffic now) with evergreen anchors (search intent that lasts: "X vs Y", "is X production ready", "X alternatives"). Roughly three rising to two anchors.
 - Prefer repositories whose users are platform and backend teams. Our ad-network target (Raptive) needs half the site's readers in the US, UK, Canada, Australia and New Zealand; GitHub's own population is about a quarter Tier-1, so audience shape is part of the choice.
