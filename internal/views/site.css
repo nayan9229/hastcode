@@ -161,38 +161,36 @@ article > header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1
   a { color: inherit; }
 }
 
-/* Repo Profile header card (partial_repo_profile_card.templ): a fixed-height box (--repo-profile-card-height, smaller once the facts fit on two columns) so nothing below it moves; the two text rows clamp, the five facts are dt/dd rows */
+/* Repo Profile fact lists (partial_repo_profile_card.templ, partial_repo_profile_signals.templ): the header card and Signals share one dt/dd grid, one column on phones and two from 48rem, each fact a row with a small-caps label; facts only, so nothing is coloured by value */
+.repo-profile-card dl, .signals dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem 1.5rem; font-size: .9375rem; line-height: 1.5; }
+.repo-profile-card dl > div, .signals dl > div { margin: 0; min-width: 0; display: flex; gap: .5rem; }
+.repo-profile-card dt, .signals dt { flex: 0 0 7.5rem; color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.875; }
+.repo-profile-card dd, .signals dd { margin: 0; min-width: 0; }
+.repo-profile-card [data-fact="latest-release"] time, .signals [data-signal="latest-release"] time { margin-left: .25rem; color: var(--muted); }
+@media (min-width: 48rem) {
+  .repo-profile-card dl, .signals dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Repo Profile header card (partial_repo_profile_card.templ): a fixed-height box (--repo-profile-card-height, smaller once the facts fit on two columns) so nothing below it moves; the two text rows span the grid, stack and clamp */
 .repo-profile-card { height: var(--repo-profile-card-height); overflow: hidden; margin-block: 1rem 1.25rem; font-size: .9375rem; line-height: 1.5; }
 .repo-profile-repo { margin: 0 0 .75rem; font-weight: 600; }
-.repo-profile-card dl { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem 1.5rem; }
-.repo-profile-card dl > div { margin: 0; min-width: 0; }
-.repo-profile-card dl > div:not(.repo-profile-text) { display: flex; gap: .5rem; }
-.repo-profile-card dt { flex: 0 0 7.5rem; color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.875; }
-.repo-profile-card dd { margin: 0; min-width: 0; }
+.repo-profile-card .repo-profile-text { display: block; }
 .repo-profile-card .p-summary { color: var(--fg); font-size: inherit; line-height: inherit; }
 .repo-profile-card .repo-profile-text dd { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; }
 .repo-profile-card [data-fact="what"] dd { -webkit-line-clamp: 3; }
 .repo-profile-card [data-fact="who-for"] dd { -webkit-line-clamp: 2; }
-.repo-profile-card [data-fact="latest-release"] time { margin-left: .25rem; color: var(--muted); }
 @media (min-width: 48rem) {
   :root { --repo-profile-card-height: 300px; }
-  .repo-profile-card dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .repo-profile-card .repo-profile-text { grid-column: 1 / -1; }
 }
 
-/* Repo Profile fact sections (partial_repo_profile_signals.templ, partial_repo_profile_changelog.templ): Signals is a dt/dd grid like the header card, Changelog a plain list; facts only, so nothing is coloured by value and a pre-release is marked in text */
-.signals dl { margin: 0 0 1.25rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .5rem 1.5rem; font-size: .9375rem; line-height: 1.5; }
-.signals dl > div { margin: 0; min-width: 0; display: flex; gap: .5rem; }
-.signals dt { flex: 0 0 11rem; color: var(--muted); font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; line-height: 1.875; }
-.signals dd { margin: 0; min-width: 0; }
-.signals [data-signal="latest-release"] time { margin-left: .25rem; color: var(--muted); }
+/* Repo Profile fact sections (partial_repo_profile_signals.templ, partial_repo_profile_changelog.templ): Signals is the fact grid above with wider labels, Changelog a plain list; a pre-release is marked in text */
+.signals dl { margin-bottom: 1.25rem; }
+.signals dt { flex-basis: 11rem; }
 .changelog ul { list-style: none; padding: 0; }
 .changelog li { display: flex; flex-wrap: wrap; gap: .25rem .75rem; align-items: baseline; padding-block: .4rem; border-bottom: 1px solid var(--border); }
 .changelog time, .changelog-prerelease { color: var(--muted); font-size: .875rem; }
 .changelog-prerelease { font-size: .75rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
-@media (min-width: 48rem) {
-  .signals dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-}
 
 /* partial_ad_slot: only rendered with ads on; fixed height so the AdSense unit filling in never shifts layout */
 .ad-slot { display: block; height: var(--ad-slot-height); margin-block: 2rem; overflow: hidden; background: var(--surface); border-radius: var(--radius); }
