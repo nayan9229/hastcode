@@ -2,6 +2,7 @@ package builder_test
 
 import (
 	"fmt"
+	"image/color"
 	"strings"
 	"testing"
 
@@ -136,6 +137,26 @@ func TestAuthorPage_MissingPhotoFileIsABuildError(t *testing.T) {
 	buildtest.RequireErrorRule(t, res, "authors/ada.md", "author-photo", "ada.png")
 	if buildtest.Exists(out, adaURL) {
 		t.Error("Author page was written with a missing photo")
+	}
+}
+
+// WebP photos fail like WebP heroes (sniffed from the bytes, whatever the
+// name), with an error that says what to do instead.
+func TestAuthorPage_WebPPhotoIsABuildErrorAskingForPNGOrJPEG(t *testing.T) {
+	for name, file := range map[string]string{"webp extension": "ada.webp", "png extension": "ada.png"} {
+		t.Run(name, func(t *testing.T) {
+			a := authorWithPhoto()
+			a.Photo = file
+			a.PhotoImage = buildtest.HeroWebP(900, 600, color.RGBA{R: 0x0D, G: 0x94, B: 0x88, A: 0xFF})
+
+			out, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithAuthor(a))
+
+			buildtest.RequireErrorRule(t, res, "authors/ada.md", "author-photo", "WebP")
+			buildtest.RequireErrorRule(t, res, "authors/ada.md", "author-photo", "PNG or JPEG")
+			if buildtest.Exists(out, adaURL) {
+				t.Error("Author page was written with a WebP photo")
+			}
+		})
 	}
 }
 

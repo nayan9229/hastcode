@@ -103,20 +103,6 @@ type Result struct {
 	Err   error
 }
 
-// Probe reads just enough of a source raster to report its size and format.
-func Probe(path string) (width, height int, format string, err error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return 0, 0, "", err
-	}
-	defer f.Close()
-	cfg, format, err := image.DecodeConfig(f)
-	if err != nil {
-		return 0, 0, "", fmt.Errorf("not a supported raster image (PNG, JPEG, WebP, AVIF): %w", err)
-	}
-	return cfg.Width, cfg.Height, format, nil
-}
-
 // Encoder runs jobs through a worker pool, reusing cached variants.
 type Encoder struct {
 	// CacheDir holds encoded variants between builds; it is created if

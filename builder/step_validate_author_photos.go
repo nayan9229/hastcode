@@ -37,7 +37,7 @@ type authorPhoto struct {
 }
 
 // validateAuthorPhotos warns on Authors without a photo and fails an
-// Author whose photo is missing or does not decode.
+// Author whose photo is missing, is not a PNG or JPEG, or does not decode.
 func validateAuthorPhotos(s *site) error {
 	s.authorPhotos = map[string]*authorPhoto{}
 	for _, a := range s.sortedAuthors() {
@@ -54,7 +54,9 @@ func validateAuthorPhotos(s *site) error {
 			s.fail(a.File, ruleAuthorPhoto, "photo %s not found", rel)
 			continue
 		}
-		if _, _, _, err := images.Probe(src); err != nil {
+		// The hero source rules: PNG or JPEG, sniffed from the bytes (WebP is
+		// refused whatever the file is called).
+		if _, err := images.Inspect(src); err != nil {
 			s.fail(a.File, ruleAuthorPhoto, "photo %s: %v", rel, err)
 			continue
 		}

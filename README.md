@@ -127,7 +127,7 @@ and the JPEG covers the rest. Encoder settings
 (`docs/research/image-optimisation-targets.md`): AVIF 4:4:4 chroma, speed
 8, quality 60 below 1200 px and 55 at 1200 px and above (`heroQuality`;
 the 1200 px file is the mobile LCP image); stdlib JPEG quality 82. When a
-hero's 1200 px AVIF is over 150 KB the build warns (rule `hero-weight`,
+hero's 1200 px AVIF is over 150 KB (150,000 bytes, decimal: `heroWeightBudget`) the build warns (rule `hero-weight`,
 naming the piece): re-export a lighter hero. Encoded variants are cached in
 `images.cache_dir` (default `node_modules/.cache/hastcode/images`, which CI
 persists between deploys), keyed on the source bytes, the encoder settings
@@ -151,6 +151,9 @@ the build reads its bytes, not its name.
 - **At least 1200 px wide** once upright (`hero-too-narrow`).
 - **EXIF orientation is honoured**: a sideways-stored phone photo is
   rotated upright before resizing; no need to pre-rotate.
+
+Author photos follow the same format rule: PNG or JPEG, sniffed from the
+bytes; a WebP photo fails with `author-photo`.
 
 On the page the hero `<img>` carries `fetchpriority="high"` and no
 `loading` attribute (it is the LCP image), and `<head>` keeps one AVIF

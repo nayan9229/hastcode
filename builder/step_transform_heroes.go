@@ -27,7 +27,8 @@ const (
 	heroAVIFLargeFrom    = 1200
 
 	// heroWeightBudget is the most the 1200 px AVIF (the mobile LCP
-	// image) should weigh; over it the build warns (rule hero-weight).
+	// image) should weigh, in bytes (decimal KB: 150 KB); over it the build
+	// warns (rule hero-weight).
 	heroWeightBudget = 150_000
 	heroWeightWidth  = 1200
 )
