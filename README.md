@@ -123,6 +123,25 @@ immutable). Encoded variants are cached in `images.cache_dir` (default
 keyed on the source bytes and encoder settings; an unchanged hero is never
 re-encoded. `images.fast: true` trades file size for encode speed (tests).
 
+Hero source rules: drop the file straight from a phone or an export tool;
+the build reads its bytes, not its name.
+
+- **PNG or JPEG only.** Anything else, including a WebP (even one renamed
+  `.png`), fails with `hero-format`: Go's WebP decoders return the wrong
+  colour range, so a WebP source would ship washed out.
+- **sRGB.** Profiles are never converted and the outputs are untagged
+  (read as sRGB), so a source carrying a non-sRGB ICC profile (Display P3
+  from an iPhone, Adobe RGB) would look desaturated. The build warns with
+  `hero-colour`, naming the piece and the profile: re-export it as sRGB.
+  Untagged, sRGB-tagged and grey sources are fine.
+- **At least 1200 px wide** once upright (`hero-too-narrow`).
+- **EXIF orientation is honoured**: a sideways-stored phone photo is
+  rotated upright before resizing; no need to pre-rotate.
+
+On the page the hero `<img>` carries `fetchpriority="high"` and no
+`loading` attribute (it is the LCP image), and `<head>` keeps one AVIF
+preload with the same `imagesrcset`/`imagesizes`.
+
 ## Codebase map
 
 | Path | What lives there |
@@ -141,6 +160,8 @@ re-encoded. `images.fast: true` trades file size for encode speed (tests).
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, WebP, JPEG) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
+| `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
+| `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |

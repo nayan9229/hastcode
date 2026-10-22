@@ -6,10 +6,10 @@ Spec: `../spec.md` ("Images package"). Research: `docs/research/image-optimisati
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test: a JPEG fixture with EXIF orientation 6 produces variants whose decoded dimensions and pixel layout are upright
-- [ ] A PNG/JPEG fixture with an embedded non-sRGB ICC profile raises `hero-colour` as a warning; an sRGB or profile-less fixture raises nothing
-- [ ] A `.webp` hero (and a WebP file with a `.png` name) fails with `hero-format` naming the piece
-- [ ] The hero `<img>` has `fetchpriority="high"` and no `loading` attribute on Explainer and Brief pages; the preload link is still present
-- [ ] `make test` green; README documents the source rules (PNG/JPEG, sRGB, ≥1200 px)
+- [x] Build-seam test: a JPEG fixture with EXIF orientation 6 produces variants whose decoded dimensions and pixel layout are upright
+- [x] A PNG/JPEG fixture with an embedded non-sRGB ICC profile raises `hero-colour` as a warning; an sRGB or profile-less fixture raises nothing
+- [x] A `.webp` hero (and a WebP file with a `.png` name) fails with `hero-format` naming the piece
+- [x] The hero `<img>` has `fetchpriority="high"` and no `loading` attribute on Explainer and Brief pages; the preload link is still present
+- [x] `make test` green; README documents the source rules (PNG/JPEG, sRGB, ≥1200 px)

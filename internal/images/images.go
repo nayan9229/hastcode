@@ -33,7 +33,8 @@ import (
 
 // cacheVersion is part of every cache key. Bump it when resizing or
 // encoding changes in a way the settings below do not capture.
-const cacheVersion = "1"
+// 2: EXIF orientation is applied before resizing.
+const cacheVersion = "2"
 
 // Format is an output encoding.
 type Format string
@@ -249,7 +250,7 @@ func openSource(path string, set settings, cacheRoot string) (*source, error) {
 		if err != nil {
 			return nil, fmt.Errorf("decode %s: %w", filepath.Base(path), err)
 		}
-		return img, nil
+		return upright(img, orientationOf(data)), nil
 	})
 	return s, nil
 }

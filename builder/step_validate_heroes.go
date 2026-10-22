@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"fmt"
 	"os"
 	"path"
 	"path/filepath"
@@ -23,7 +24,17 @@ const (
 	ruleHeroMissing   = "hero-missing"
 	ruleHeroFormat    = "hero-format"
 	ruleHeroTooNarrow = "hero-too-narrow"
+	// ruleHeroColour warns on a non-sRGB ICC profile (nothing is converted).
+	ruleHeroColour = "hero-colour"
 )
+
+// profileName quotes an ICC profile description for a message.
+func profileName(desc string) string {
+	if desc == "" {
+		return "an unnamed"
+	}
+	return fmt.Sprintf("%q", desc)
+}
 
 // heroMinWidth is Google Discover's minimum for large images.
 const heroMinWidth = 1200
@@ -86,10 +97,14 @@ func validateHeroes(s *site) error {
 			s.fail(ref.file, ruleHeroMissing, "hero %s not found", rel)
 			continue
 		}
-		w, h, _, err := images.Probe(src)
+		info, err := images.Inspect(src)
 		if err != nil {
 			s.fail(ref.file, ruleHeroFormat, "hero %s: %v", rel, err)
 			continue
+		}
+		w, h := info.Width, info.Height
+		if !info.SRGB {
+			s.warn(ref.file, ruleHeroColour, "hero %s carries the %s colour profile, not sRGB; the build ignores profiles, so it will look desaturated or hue-shifted: export it as sRGB", rel, profileName(info.Profile))
 		}
 		if w < heroMinWidth {
 			s.fail(ref.file, ruleHeroTooNarrow, "hero %s is %d px wide; heroes must be at least %d px wide", rel, w, heroMinWidth)
