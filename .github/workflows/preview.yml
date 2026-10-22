@@ -1,42 +1,34 @@
-# Preview deployment for every branch (spec user story 25), then Lighthouse
-# CI against it.
+# Preview for every branch push but main (spec "Publishing", user story 11):
+# `make test`, then a preview-mode build (drafts included, images to R2),
+# uploaded as a new version of the Cloudflare Worker with
+# `wrangler versions upload`. That never touches what hastcode.com serves:
+# the upload is not deployed, it only gets its own Version Preview URL
+# (`<version prefix>-hastcode.<subdomain>.workers.dev`, enabled by
+# `preview_urls: true` in the builder's wrangler.json; `*.workers.dev`
+# hosts send X-Robots-Tag: noindex). Lighthouse CI then runs against that
+# URL with v1's budgets (lighthouserc.json).
 #
-# Triggers: a push to any branch but main (main is production.yml) runs the
-# whole workflow, so a branch gets its preview whether or not it has a pull
-# request, and a same-repo pull request is not built twice (its pushes
-# already run here). pull_request runs only `make test`, and only for pull
-# requests from forks, which get no secrets to deploy with.
+# The v1 Vercel preview is gone (ticket 08): Vercel is only the QA Target,
+# deployed by Publish tags (publish.yml).
 #
-# Deploys go through the Vercel CLI from this runner (`vercel build` +
-# `vercel deploy --prebuilt`), not Vercel's Git integration, which
-# vercel.json turns off: Vercel's build image has no Go toolchain on PATH for
-# the build command, and production needs the build machine afterwards for
-# the IndexNow ping (see production.yml and README "Deploying").
-#
-# Secrets (names only; values come from scripts/setup-deploy.sh):
-#   VERCEL_TOKEN, VERCEL_ORG_ID, VERCEL_PROJECT_ID
-# (No protection bypass secret: Lighthouse moves to Cloudflare Previews,
-# ticket 08; Vercel is only the QA Target, ADR-0004.)
+# Secrets (names only): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
+# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY.
 name: Preview
 
 on:
   push:
     branches-ignore: [main]
-  pull_request:
 
 permissions:
   contents: read
 
 concurrency:
-  group: preview-${{ github.event.pull_request.number || github.ref }}
+  group: preview-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
   test:
     name: make test
-    # Pushes (any branch but main), and pull requests from forks only: a
-    # same-repo pull request's commits are already tested by their push.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -45,56 +37,73 @@ jobs:
 
   deploy:
     name: Deploy preview
-    # Branch pushes only: pull requests from forks get no secrets (nothing
-    # to deploy with), and same-repo pull requests deploy on push.
-    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
-      url: ${{ steps.deploy.outputs.url }}
+      url: ${{ steps.url.outputs.url }}
       lighthouse-urls: ${{ steps.urls.outputs.list }}
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-      VERCEL_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-        with:
-          vercel-cli: "true"
-      # After npm ci (which wipes node_modules/). Hero image variants,
-      # rendered diagrams and the per-mode page manifests. A branch restores its
-      # own latest cache, else main's.
+      # After npm ci (which wipes node_modules/). This branch's own latest
+      # cache, else the last Production Publish's (saved on main, which
+      # every branch can restore): encoded images and rendered diagrams.
       - uses: actions/cache/restore@v6
         with:
           path: node_modules/.cache/hastcode
-          key: hastcode-build-${{ github.run_id }}
-          restore-keys: hastcode-build-
-      - run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
-      # vercel.json: no install step (done above), build command `make
-      # build`, which reads MODE from the environment. Preview mode
-      # includes drafts, so a draft PR can be read on its preview URL.
-      - run: vercel build --token="$VERCEL_TOKEN"
+          key: hastcode-preview-${{ github.run_id }}
+          restore-keys: |
+            hastcode-preview-
+            hastcode-cloudflare-
+      # Same bucket as Production (content-hashed keys, so a draft's images
+      # are simply new objects; `prune` cleans up abandoned ones).
+      - name: Build (preview mode, images to R2)
         env:
-          MODE: preview
-      # Previews never ping IndexNow; keep the artefact out of the upload.
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: make build MODE=preview FLAGS=-image-store=r2
+      # Previews never ping IndexNow; the adapter removes config.json.
       - run: rm -f .vercel/output/indexnow.json
-      - id: deploy
+      - run: make adapt TARGET=cloudflare
+      # `versions upload` creates a Worker version without deploying it
+      # (Production keeps serving the last `wrangler deploy`).
+      - id: upload
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.149.0"
+          command: versions upload --config .vercel/output/wrangler.json --message preview-${{ github.sha }}
+      # The action's deployment-url output carries the Version Preview URL;
+      # fall back to Wrangler's "Version Preview URL: …" line.
+      - id: url
+        env:
+          ACTION_URL: ${{ steps.upload.outputs.deployment-url }}
+          OUTPUT: ${{ steps.upload.outputs.command-output }}
         run: |
-          url=$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")
+          url="$ACTION_URL"
+          if [ -z "$url" ]; then
+            url=$(grep -oE 'Version Preview URL: https://[^[:space:]]+' <<<"$OUTPUT" | head -n1 | sed 's/^Version Preview URL: //' || true)
+          fi
+          if [ -z "$url" ]; then
+            echo "::error::no Version Preview URL in the wrangler output (is preview_urls on and the workers.dev subdomain enabled?)"
+            exit 1
+          fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "Preview: $url" >> "$GITHUB_STEP_SUMMARY"
       - id: urls
+        env:
+          URL: ${{ steps.url.outputs.url }}
         run: |
           {
             echo 'list<<EOF'
-            scripts/lighthouse-urls.sh "${{ steps.deploy.outputs.url }}" .vercel/output
+            scripts/lighthouse-urls.sh "$URL" .vercel/output
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
       - uses: actions/cache/save@v6
         with:
           path: node_modules/.cache/hastcode
-          key: hastcode-build-${{ github.run_id }}-${{ github.run_attempt }}
+          key: hastcode-preview-${{ github.run_id }}-${{ github.run_attempt }}
 
   lighthouse:
     name: Lighthouse CI

@@ -6,10 +6,17 @@ Spec: `../spec.md` ("Publishing"). Research: `docs/research/cloudflare-r2-and-de
 
 **Blocked by:** 03 (Image Store: R2 mode), 05 (Cloudflare manifest), 06 (Signup Worker), 07 (QA Target hardening)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `publish.sh` tested by hand: refuses dirty tree, refuses off-`main`, creates and pushes a correctly named tag (push step may be dry-run locally)
-- [ ] `tests.yml` triggers only on `main` pushes; `preview.yml` only on non-`main` branch pushes; `publish.yml` only on the two tag patterns; secrets referenced by name only
-- [ ] Publish workflow: ancestor-of-`main` gate with a clear failure; Target chosen from the tag; IndexNow step guarded by Target and variable; concurrency groups per Target
-- [ ] Cloudflare deploy step uses the adapter's file set; Vercel deploy step uses its file set with the `robots.txt` overlay
-- [ ] actionlint clean; README "Deploying" rewritten around tags, with the list of secrets and variables
+- [x] `publish.sh` tested by hand: refuses dirty tree, refuses off-`main`, creates and pushes a correctly named tag (push step may be dry-run locally)
+- [x] `tests.yml` triggers only on `main` pushes; `preview.yml` only on non-`main` branch pushes; `publish.yml` only on the two tag patterns; secrets referenced by name only
+- [x] Publish workflow: ancestor-of-`main` gate with a clear failure; Target chosen from the tag; IndexNow step guarded by Target and variable; concurrency groups per Target
+- [x] Cloudflare deploy step uses the adapter's file set; Vercel deploy step uses its file set with the `robots.txt` overlay
+- [x] actionlint clean; README "Deploying" rewritten around tags, with the list of secrets and variables
+
+## Resolution
+
+- `scripts/publish.sh cf|vl [--dry-run]` and `scripts/publish-gate.sh TAG [MAIN_REF]` (name check, peel, `merge-base --is-ancestor`, prints `tag`/`target`/`commit` for `$GITHUB_OUTPUT`). Hand-tested in a throwaway clone with a local bare `origin`: dirty (modified and untracked), off-`main`, detached, unpushed `HEAD`, bad args all refused; `--dry-run` leaves no tag; real `vl` and `cf` pushed lightweight `PUBVL-…`/`PUBCF-…` tags; the gate accepted them (plus an annotated tag and an older ancestor) and refused a branch-only commit, a malformed name, a lowercase name, a missing tag and a missing main ref.
+- `tests.yml` (push `main`), `preview.yml` (push to non-`main` branches; `wrangler versions upload`, Version Preview URL from the action's `deployment-url` output with a fallback to Wrangler's "Version Preview URL:" line; Lighthouse CI unchanged), `publish.yml` (tags `PUBCF-*`/`PUBVL-*`); `production.yml` deleted. actionlint 1.7.12 clean. `wrangler versions upload … --message … --dry-run` and `wrangler deploy … --message … --dry-run` pass against a real build after `make adapt TARGET=cloudflare`.
+- **Deliberate deviation:** `publish.yml` also has a `workflow_dispatch` trigger (input `tag`). GitHub scopes caches by ref ("Workflow runs also cannot restore caches created for different tag names"), so a tag-triggered run could never restore the previous Publish's cache (images, diagrams, the IndexNow manifest). The tag run is the gate and hands off with `gh workflow run publish.yml --ref main -f tag=…`; the dispatched run (on `main`, so caches persist in `main`'s scope, keys per Target) re-runs the gate and deploys. Still three workflows; the dispatch doubles as "re-deploy this tag" by hand.
+- `make test` runs in each publish job before the build (a commit inside a multi-commit push to `main` is never tested on its own).
