@@ -4,9 +4,9 @@
 # three only once the build wrote them), taken from the build's own
 # sitemap so the list follows the content.
 #
-#   scripts/lighthouse-urls.sh https://hastcode-abc.vercel.app [.vercel/output]
+#   scripts/lighthouse-urls.sh https://abc12345-hastcode.example.workers.dev [.vercel/output]
 #
-# Used by .github/workflows/preview.yml; runs anywhere with bash + grep/sed.
+# Used by .github/workflows/preview.yml (Cloudflare Version Preview URL); runs anywhere with bash + grep/sed.
 set -euo pipefail
 
 base="${1:?usage: lighthouse-urls.sh BASE_URL [BUILD_OUTPUT_DIR]}"

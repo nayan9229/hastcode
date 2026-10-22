@@ -29,8 +29,7 @@ test ./...`, about a minute; `go test -short ./...` skips the slow
 1,000-entry news-sitemap case). Build-seam tests skip, with the reason,
 when Node or the npm packages are missing, so run `npm ci` first or most
 of them will not run. `make vet` before committing. CI runs `make test`
-on every push to a branch other than `main` (and on pull requests from
-forks) and before every production deploy.
+on every push (to `main`: that is all it runs) and before every Publish.
 
 **Check pages locally.** `make dev` builds in **preview mode** (drafts
 included) and serves `.vercel/output` plus the subscribe function on
@@ -46,18 +45,20 @@ To try the form without Buttondown, point it at any fake that answers
 
 **Draft and preview flow.** Write the piece with `draft: true` in its
 frontmatter on a branch. `make dev` shows it locally; push the branch
-(a pull request is optional), and the Preview workflow deploys a preview build
-(drafts included, behind Vercel Authentication) and posts its URL in the
-run summary, then runs Lighthouse CI against it. Production builds never
+(a pull request is optional), and the Preview workflow uploads a preview build
+(drafts included) to a Cloudflare preview URL, posts it in the run
+summary, then runs Lighthouse CI against it. Production builds never
 contain drafts.
 
-**Publish flow.** Remove `draft: true`, merge the pull request to `main`.
-The Production workflow runs `make test`, builds in production mode,
-deploys with `vercel deploy --prebuilt --prod`, then pings IndexNow with
-the pages that changed (after the domain cutover). Feeds, sitemaps and the
-news sitemap update in the same build. A build error (failed editorial
-gate, broken link, oversized page, a page without JSON-LD, a leftover
-`TODO(author)`) fails the workflow and nothing deploys. The shipped
+**Publish flow.** Remove `draft: true`, merge the pull request to `main`
+(that only runs the tests). Then, on an up-to-date, clean `main`:
+`scripts/publish.sh vl` deploys that commit to the QA Target
+(https://qa.hastcode.com/); check it; `scripts/publish.sh cf` deploys the
+same commit to Production (hastcode.com) and pings IndexNow with the pages
+that changed. Feeds, sitemaps and the news sitemap update in the same
+build. A build error (failed editorial gate, broken link, oversized page,
+a page without JSON-LD, a leftover `TODO(author)`, missing R2
+credentials) fails the workflow and nothing deploys. See "Deploying". The shipped
 `content/` still has `TODO(author)` placeholders, so production builds
 fail until the Author fills them (see "Content layout"); `make dev` and
 previews work meanwhile.
@@ -72,10 +73,11 @@ The slug is a top-level URL forever: pick it once.
 subscribe function reads two (Vercel project settings, see "Subscribe
 function"): `BUTTONDOWN_API_KEY` (required, Sensitive; production list in
 Production, test list in Preview) and `BUTTONDOWN_BASE_URL` (optional,
-default `https://api.buttondown.com`). CI uses GitHub secrets
-`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` and the repository
-variable `INDEXNOW_ENABLED`. `make build` itself also reads `MODE`, `FLAGS`, `OUT`
-from the environment (the preview job sets `MODE=preview`).
+default `https://api.buttondown.com`); the Worker reads the same names.
+An `images.store: r2` build reads the R2 credentials (see "Image Store").
+CI's GitHub secrets and variables are listed under "Deploying". `make build`
+itself also reads `MODE`, `FLAGS`, `OUT` from the environment (the QA
+publish sets `MODE=production FLAGS=-image-store=r2` for `vercel build`).
 
 **Deploy.** See "Deploying" below; first-time setup is
 `scripts/setup-deploy.sh`.
@@ -615,9 +617,9 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   but is never deployed (or whose ping fails) does, so those changes are
   not re-listed.
 
-Post-deploy ping: the Production workflow moves the artefact out of
-`.vercel/output` before `vercel deploy --prebuilt --prod` (so it is never
-uploaded) and, once the deploy is live and the repository variable
+Post-deploy ping: only a Production Publish (`PUBCF-*`) pings. The
+Cloudflare publish job moves the artefact out of `.vercel/output` before
+`wrangler deploy` and, once the deploy is live and the repository variable
 `INDEXNOW_ENABLED` is `true`, runs the equivalent of
 
 ```sh
@@ -626,11 +628,14 @@ curl -fsS -X POST https://api.indexnow.org/indexnow \
 ```
 
 200/202 are success; 403 means the key file is not live yet; 422 means a
-URL is not on `host`. Only production builds of `site_url` ping, so
-`INDEXNOW_ENABLED` stays `false` until hastcode.com points at Vercel (the
-setup wizard flips it at cutover and clears the Actions cache, so the
-first build after cutover lists every page). A failed ping fails the job
-before the build cache is saved, so the next build lists those URLs again.
+URL is not on `host`. Only Production Publishes ping, so
+`INDEXNOW_ENABLED` stays `false` until hastcode.com is served by Cloudflare
+(the setup wizard flips it at cutover and deletes the `hastcode-cloudflare-*`
+Actions caches, so the first Publish after cutover lists every page). The
+manifest the artefact is diffed against is Production's own (cache key
+per Target), so a QA Publish never hides a change from the next Production
+ping. A failed ping fails the job before the build cache is saved, so the
+next Production Publish lists those URLs again.
 
 ## Routes and caching
 
@@ -759,7 +764,8 @@ with inline SVG and a `<figcaption>` from the fence's first line
   version (`cacheVersion` in `internal/mermaid`; bump it when changing render
   options or post-processing). The default cache dir is
   `node_modules/.cache/hastcode/`, which CI persists between deploys with
-  `actions/cache` (restored after `npm ci`, which deletes `node_modules/`).
+  `actions/cache`, per Target (restored after `npm ci`, which deletes
+  `node_modules/`; see "Deploying").
   Fully cached builds never start Node.
 - **CI build:** `npm ci` runs before `make build` from the repo root, with
   Node 24 (Node 22+ works).
@@ -840,69 +846,152 @@ Tag prefix to Target: `PUBCF-*` -> `cloudflare`, `PUBVL-*` -> `vercel`. A
 new per-Target file or overlay (like the QA `robots.txt`) goes in
 `internal/deploy`, never in a workflow.
 
-### Vercel (v1 flow, until the publish workflows replace it)
+### Publishing: a tag per Target
 
-Production is `git push` to `main` (ADR-0002); every other branch gets a
-preview on each push. Both run in GitHub Actions with the Vercel CLI, not in Vercel's
-Git integration, which `vercel.json` turns off (`git.deploymentEnabled:
-false`):
+Pushing `main` runs the tests and nothing else. Going live is a tag on a
+`main` commit, created and pushed by one command:
 
-- `vercel.json`: `framework: null` ("Other"), `installCommand: ""` (CI
-  installs; an empty string skips Vercel's install step), `buildCommand:
-  "make build"`. No `outputDirectory`: the build writes Build Output API v3
-  to `.vercel/output` directly, which `vercel build` detects and keeps.
-  `api/subscribe.go` is picked up by zero-config detection and compiled by
-  `@vercel/go` with the Go version from `go.mod`.
-- **Why CI and not Vercel's own builds.** (1) The build command needs Go on
-  `PATH`; Vercel's build image lists Node, Python and Ruby for builds and
-  provides Go only to the `@vercel/go` function builder. (2) The IndexNow
-  artefact exists only on the build machine and must be POSTed after the
-  deploy is live (ticket 09). (3) The build cache (heroes, diagrams, page
-  manifest) persists in `actions/cache` under our control.
-- `.github/workflows/production.yml` (push to `main`, or run by hand):
-  `make test`, then `vercel pull` -> `vercel build --prod` -> `vercel deploy
-  --prebuilt --prod` -> IndexNow ping (when `INDEXNOW_ENABLED`) -> save the
-  build cache. One run at a time, in order.
-- `.github/workflows/preview.yml` (push to any branch but `main`; a
-  same-repo pull request is covered by its pushes, so it is not built
-  twice; a fork's pull request only runs `make test`): `make test`; `vercel build` with `MODE=preview` -> `vercel deploy --prebuilt`
-  (URL in the run summary); then **Lighthouse CI** (`lighthouserc.json`)
-  against home, `/search/`, `/briefs/`, a Vertical hub, an Explainer and a
-  Brief (`scripts/lighthouse-urls.sh` picks them from the build's sitemap).
-  Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
-  (median of 3 runs), CLS 0 (worst run), first-party script transfer
-  (compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
-  (uncompressed, analytics included) is enforced by `make test`. A miss
-  fails the check; reports are the `lighthouse-reports` artefact (never
-  public storage: previews hold drafts). Lighthouse blocks Plausible and
-  ad hosts so runs are not counted as pageviews (third-party JS sizes are
-  covered by `TestJSBudget_EveryPageStaysWithin60KB` instead). There is no
-  protection bypass secret any more (ticket 07): Lighthouse moves to
-  Cloudflare Previews (ticket 08), and a Vercel deployment stays behind
-  Vercel Authentication.
-- Shared setup: `.github/actions/setup` (Go from `go.mod`, Node 24, `npm
-  ci`, `vercel@65.0.0`).
+```sh
+git switch main && git pull     # clean tree, HEAD on origin/main
+scripts/publish.sh vl           # QA Target: tag PUBVL-<yyyymmdd>-<HHMMSS> (UTC)
+# check https://qa.hastcode.com/ (Vercel Authentication), then the same commit:
+scripts/publish.sh cf           # Production Target: tag PUBCF-<yyyymmdd>-<HHMMSS>
+scripts/publish.sh vl --dry-run # every check, then `git push --dry-run`; no tag kept
+```
+
+`publish.sh` refuses with uncommitted changes or untracked files, on any
+branch but `main`, and when `HEAD` is not on `origin/main` (push first).
+It creates a lightweight tag on `HEAD`, pushes it, prints the workflow
+link, and after `vl` prints the QA URL and the reminder to run `cf` while
+`HEAD` is still the same commit. Never type a tag by hand: the workflow
+only accepts the exact `PUB(CF|VL)-<8 digits>-<6 digits>` shape.
+
+`.github/workflows/publish.yml` (tags `PUBCF-*`, `PUBVL-*`) runs in two
+hops:
+
+1. **Gate** (the tag-push run): `scripts/publish-gate.sh` reads the Target
+   from the prefix (`PUBCF` -> `cloudflare`, `PUBVL` -> `vercel`), peels
+   the tag to its commit and fails, with the reason in the run's
+   annotations, unless that commit is `origin/main` or an ancestor of it
+   (`git merge-base --is-ancestor`, checkout with `fetch-depth: 0`). It
+   then starts the same workflow on `main` with the tag as input
+   (`gh workflow run publish.yml --ref main -f tag=…`).
+2. **Deploy** (the "Publish PUB…" run on `main`): the gate again, then the
+   Target's job checks out the gated commit and runs `make test`, one
+   production-mode build with images to R2, the Target's adapter and the
+   upload:
+   - **Cloudflare** (`production` environment): `make build MODE=production
+     FLAGS=-image-store=r2` -> set `indexnow.json` aside -> `make adapt
+     TARGET=cloudflare` -> `cloudflare/wrangler-action@v4` running `wrangler
+     deploy --config .vercel/output/wrangler.json --message <tag>` (Wrangler
+     4.149.0, as in `package.json`) -> IndexNow ping when
+     `INDEXNOW_ENABLED` is `true` -> save the cache.
+   - **Vercel** (`qa` environment): `vercel pull --environment=production`
+     -> `vercel build --prod` (runs `make build` with `MODE=production
+     FLAGS=-image-store=r2`; `@vercel/go` adds the subscribe function) ->
+     delete `indexnow.json` -> `make adapt TARGET=vercel` (QA's disallow-all
+     `robots.txt`) -> `vercel deploy --prebuilt --prod` -> save the cache.
+     QA never pings IndexNow.
+
+Why two hops: the build cache (`node_modules/.cache/hastcode`: encoded
+images, rendered diagrams, the IndexNow page manifest) must carry from one
+Publish to the next, and GitHub scopes caches by ref ("Workflow runs also
+cannot restore caches created for different tag names"). A run on `main`
+saves into `main`'s scope, which every later Publish and every branch can
+restore. Keys are per Target (`hastcode-cloudflare-*`,
+`hastcode-vercel-*`), so Production's IndexNow diff is always against the
+previous Production build. Running "Publish" by hand from the Actions tab
+(ref `main`, input `tag`) re-deploys an existing tag through the same gate.
+
+Concurrency: one group per Target (`publish-cloudflare`,
+`publish-vercel`), never cancelled, so Production deploys run one at a
+time and QA never waits on Production or the reverse. While one runs,
+GitHub keeps one pending run per group; a newer Publish of the same Target
+supersedes a pending (not running) one. A failed build or test deploys
+nothing to either Target.
+
+### Previews and Lighthouse
+
+`.github/workflows/preview.yml` (push to any branch but `main`): `make
+test`, and in parallel a preview-mode build (drafts included, images to
+R2, cache restored from the branch's own or else the last Production
+Publish's) -> `make adapt TARGET=cloudflare` -> `wrangler versions upload
+--config .vercel/output/wrangler.json`. A version upload is not a deploy:
+hastcode.com keeps serving the last `wrangler deploy`, and the upload gets
+its own Version Preview URL (`<version prefix>-hastcode.<subdomain>.workers.dev`;
+`preview_urls: true` in `wrangler.json`; `*.workers.dev` hosts send
+`X-Robots-Tag: noindex`), posted in the run summary. The v1 Vercel preview
+is gone: Vercel is only the QA Target.
+
+Then **Lighthouse CI** (`lighthouserc.json`) runs against that URL: home,
+`/search/`, `/briefs/`, a Vertical hub, an Explainer and a Brief
+(`scripts/lighthouse-urls.sh` picks them from the build's sitemap).
+Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
+(median of 3 runs), CLS 0 (worst run), first-party script transfer
+(compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
+(uncompressed, analytics included) is enforced by `make test`. A miss
+fails the check; reports are the `lighthouse-reports` artefact (never
+public storage: previews hold drafts). Lighthouse blocks Plausible and
+ad hosts so runs are not counted as pageviews.
+
+`.github/workflows/tests.yml` (push to `main`): `make test`, nothing else.
+
+### Secrets, variables and settings
+
+GitHub repository secrets (workflows reference names only):
+
+| Secret | Used by | Value |
+|---|---|---|
+| `CLOUDFLARE_API_TOKEN` | publish (Cloudflare), preview | Account API token from the "Edit Cloudflare Workers" template, scoped to this account (and zone). |
+| `CLOUDFLARE_ACCOUNT_ID` | publish (both), preview | Cloudflare account id; also the R2 endpoint's account. |
+| `R2_ACCESS_KEY_ID` | publish (both), preview | R2 API token's access key id (Object Read & Write on `hastcode-images`). |
+| `R2_SECRET_ACCESS_KEY` | publish (both), preview | That token's secret access key. |
+| `VERCEL_TOKEN` | publish (Vercel) | Vercel account token. |
+| `VERCEL_ORG_ID` | publish (Vercel) | From `.vercel/project.json` after `vercel link`. |
+| `VERCEL_PROJECT_ID` | publish (Vercel) | Same file. |
+
+Repository variable `INDEXNOW_ENABLED`: `false` until hastcode.com is
+served by Cloudflare, then `true`. GitHub environments `production` and
+`qa` are created on first use (protection rules optional). The publish
+workflow's hand-off job needs `actions: write`, which it requests itself.
+
+Outside GitHub: the Cloudflare Worker `hastcode` (first `wrangler deploy`
+creates it; version uploads need it to exist), its workers.dev subdomain
+and Preview URLs on, its secret `BUTTONDOWN_API_KEY`, hastcode.com
+attached as its custom domain at cutover; the R2 bucket `hastcode-images`
+with `images.hastcode.com` connected; the Vercel project (Hobby, Vercel
+Authentication on, `qa.hastcode.com` on Production, env
+`BUTTONDOWN_API_KEY`). `vercel.json` keeps Vercel's Git deployments off:
+`framework: null`, `installCommand: ""` (CI installs), `buildCommand:
+"make build"`; `api/subscribe.go` is picked up by zero-config detection.
+
+Why CI and not the hosts' own builds: the build needs Go on `PATH` (Vercel
+gives Go only to `@vercel/go`), the IndexNow artefact exists only on the
+build machine and is POSTed after the deploy is live, and the build cache
+persists in `actions/cache` under our control. Shared setup:
+`.github/actions/setup` (Go from `go.mod`, Node 24, `npm ci`, optionally
+`vercel@65.0.0`).
 
 **First-time setup** is a script that walks you through every account
-step and writes the values where they belong:
+step and writes the values where they belong (being rewritten for
+Cloudflare in ticket 09; the stages below are v1's):
 
 ```sh
 scripts/setup-deploy.sh
 ```
 
 Stages: tools and logins; GitHub repo (private, remote `origin`); Vercel
-team on Pro; Vercel project + `vercel link` + Node 24.x; Buttondown
+team; Vercel project + `vercel link` + Node 24.x; Buttondown
 production and test newsletter keys; Vercel env vars
 (`BUTTONDOWN_API_KEY`, Sensitive, Production and Preview); Vercel token
 and GitHub secrets (`VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`,
 variable `INDEXNOW_ENABLED=false`); first push and a draft PR; an
-automated check of the first preview (every route, cache header and
-subscribe POST that could not be checked without a real deploy; Vercel
-Authentication is switched off for the check and back on after); then the **domain cutover**, behind a
+automated check of the first deployment; then the **domain cutover**, behind a
 confirmation that ADR-0001's threshold is met (≥ 30 Explainers across all
-six Verticals and ≥ 20 Briefs): `vercel domains add`, Cloudflare records
-DNS only, `www` -> apex 301 at Vercel, live checks, `INDEXNOW_ENABLED=true`.
-It is safe to re-run; values are kept in `.env` (gitignored).
+six Verticals and ≥ 20 Briefs). It is safe to re-run; values are kept in
+`.env` (gitignored).
 
-Local equivalent of a CI build, for debugging: `npm ci`, `vercel pull`,
-`vercel build` (needs the project linked). For page checks use `make dev`.
+Local equivalent of a CI build, for debugging: `npm ci`, `make build`,
+`make adapt TARGET=cloudflare`, `npx wrangler deploy --dry-run --config
+.vercel/output/wrangler.json` (or `vercel pull` + `vercel build` with the
+project linked). For page checks use `make dev`.

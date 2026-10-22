@@ -1,0 +1,244 @@
+# Publish: deploy a tagged main commit to one Target (spec "Publishing",
+# ADR-0004). Tags come from scripts/publish.sh:
+#   PUBVL-<yyyymmdd>-<HHMMSS>  -> QA Target (Vercel, qa.hastcode.com)
+#   PUBCF-<yyyymmdd>-<HHMMSS>  -> Production Target (Cloudflare, hastcode.com)
+# Both tags on one commit run independently.
+#
+# Two hops, one workflow:
+#   1. Tag push: `gate` checks the tag (name, commit is on main; see
+#      scripts/publish-gate.sh) and `hand-off` starts this workflow again
+#      on main with the tag as input (workflow_dispatch).
+#   2. That run re-checks the tag, builds the tagged commit once in
+#      production mode (images to R2), applies the Target's deploy adapter
+#      and deploys; Cloudflare then pings IndexNow.
+# Why the hop: the build cache (encoded images, rendered diagrams, the
+# IndexNow page manifest) must persist from one Publish to the next, and
+# GitHub's cache is scoped by ref: "Workflow runs also cannot restore caches
+# created for different tag names." A run on main saves to main's scope,
+# which the next Publish of the same Target restores (keys are per Target)
+# and which branch Previews can also restore.
+# Running "Publish" by hand (Actions tab, ref main, input tag) re-deploys an
+# existing tag through the same gate.
+#
+# Secrets (names only; values from scripts/setup-deploy.sh, see README
+# "Deploying"): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
+# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, VERCEL_TOKEN, VERCEL_ORG_ID,
+# VERCEL_PROJECT_ID. Variable: INDEXNOW_ENABLED ("true" once hastcode.com
+# is served by Cloudflare).
+name: Publish
+run-name: >-
+  ${{ github.event_name == 'push' && format('Publish {0}: gate', github.ref_name) || format('Publish {0}', inputs.tag) }}
+
+on:
+  push:
+    tags:
+      - PUBCF-*
+      - PUBVL-*
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Publish tag to deploy (PUBCF-… or PUBVL-…); its commit must be on main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+# One deploy per Target at a time, never cancelled: each Production build
+# diffs its pages against the manifest the previous one saved. A Cloudflare
+# and a Vercel deploy never wait on each other. Gate runs only share a group
+# with themselves. (While one deploy runs, GitHub keeps one pending run per
+# group; a newer one supersedes it.)
+concurrency:
+  group: >-
+    ${{ github.event_name == 'push' && format('publish-gate-{0}', github.ref_name) || (startsWith(inputs.tag, 'PUBCF-') && 'publish-cloudflare' || 'publish-vercel') }}
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Check the tag
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.gate.outputs.tag }}
+      target: ${{ steps.gate.outputs.target }}
+      commit: ${{ steps.gate.outputs.commit }}
+    steps:
+      # fetch-depth 0: every branch and tag, so origin/main and the tag are
+      # both here for the ancestor check.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: gate
+        name: Tag must name a Target and point at a commit on main
+        env:
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          TAG: ${{ github.event_name == 'push' && github.ref_name || inputs.tag }}
+        run: |
+          if [ "$EVENT" = workflow_dispatch ] && [ "$REF" != refs/heads/main ]; then
+            echo "::error title=Publish refused::run Publish from main (got $REF); deploys run on main so the build cache persists"
+            exit 1
+          fi
+          # Not piped: the default shell has no pipefail, so a refusal
+          # would be masked.
+          out=$(scripts/publish-gate.sh "$TAG" origin/main)
+          echo "$out" >> "$GITHUB_OUTPUT"
+          echo "$out"
+
+  hand-off:
+    name: Start the deploy on main
+    needs: gate
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+    steps:
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ needs.gate.outputs.tag }}
+          TARGET: ${{ needs.gate.outputs.target }}
+        run: |
+          gh workflow run publish.yml --ref main -f tag="$TAG"
+          echo "Started the $TARGET deploy of $TAG: see the \"Publish $TAG\" run." >> "$GITHUB_STEP_SUMMARY"
+
+  cloudflare:
+    name: Deploy to Cloudflare (Production)
+    needs: gate
+    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'cloudflare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: production
+      url: https://hastcode.com/
+    steps:
+      # The gated commit, not the tag name: a tag moved after the gate
+      # cannot change what is deployed.
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.commit }}
+      - uses: ./.github/actions/setup
+      - run: make test
+      # After npm ci (which wipes node_modules/). Production's own cache:
+      # its pages/production.json is the manifest of the last live build.
+      - uses: actions/cache/restore@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-cloudflare-${{ github.run_id }}
+          restore-keys: hastcode-cloudflare-
+      # Production mode; every image HEAD/PUT to R2 and referenced on
+      # images.hastcode.com. Missing credentials fail here (rule
+      # image-store), before anything is encoded or deployed.
+      - name: Build (production mode, images to R2)
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: make build MODE=production FLAGS=-image-store=r2
+      # Not part of the site (it sits beside static/, so it would not be
+      # served anyway): keep it for the ping after the deploy.
+      - name: Set aside the IndexNow artefact
+        run: |
+          if [ -f .vercel/output/indexnow.json ]; then
+            mv .vercel/output/indexnow.json "$RUNNER_TEMP/indexnow.json"
+            jq -r '"\(.urlList | length) changed URL(s)"' "$RUNNER_TEMP/indexnow.json"
+          else
+            echo "nothing changed since the last Production build"
+          fi
+      # Deploy-adapter rule: removes config.json (Vercel's manifest).
+      - run: make adapt TARGET=cloudflare
+      # Wrangler pinned to package.json's version (already installed by npm
+      # ci); deploys from the repo root with the builder's Workers config.
+      # The tag name passed the gate's strict pattern.
+      - id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.149.0"
+          command: deploy --config .vercel/output/wrangler.json --message ${{ needs.gate.outputs.tag }}
+      - name: Summary
+        env:
+          TAG: ${{ needs.gate.outputs.tag }}
+          URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          echo "Published $TAG to Production (Cloudflare): https://hastcode.com/ (Worker URL: ${URL:-see the deploy log})" >> "$GITHUB_STEP_SUMMARY"
+      # Production only (this job), after the deploy is live, when the
+      # gating variable is on. 200/202 accepted; 403 key file not live on
+      # the host yet; 422 a URL not on the host. A failed ping fails the
+      # job before the cache is saved, so the next build lists these URLs
+      # again.
+      - name: Ping IndexNow
+        if: vars.INDEXNOW_ENABLED == 'true'
+        run: |
+          if [ ! -f "$RUNNER_TEMP/indexnow.json" ]; then
+            echo "no artefact: nothing to ping"
+            exit 0
+          fi
+          curl -fsS -X POST https://api.indexnow.org/indexnow \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            --data-binary @"$RUNNER_TEMP/indexnow.json" -w '%{http_code}\n'
+      - uses: actions/cache/save@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-cloudflare-${{ github.run_id }}-${{ github.run_attempt }}
+
+  vercel:
+    name: Deploy to Vercel (QA)
+    needs: gate
+    if: github.event_name == 'workflow_dispatch' && needs.gate.outputs.target == 'vercel'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    environment:
+      name: qa
+      url: https://qa.hastcode.com/
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.gate.outputs.commit }}
+      - uses: ./.github/actions/setup
+        with:
+          vercel-cli: "true"
+      - run: make test
+      - uses: actions/cache/restore@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-vercel-${{ github.run_id }}
+          restore-keys: hastcode-vercel-
+      - run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+      # vercel.json's build command is `make build`, which reads MODE and
+      # FLAGS from the environment; @vercel/go then adds the subscribe
+      # function. Production mode: QA ships Production's exact bytes.
+      - name: Build (production mode, images to R2)
+        env:
+          MODE: production
+          FLAGS: -image-store=r2
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: vercel build --prod --token="$VERCEL_TOKEN"
+      # QA never pings IndexNow; keep the artefact out of the upload.
+      - run: rm -f .vercel/output/indexnow.json
+      # Deploy-adapter rule: removes wrangler.json, static/_headers and
+      # static/_redirects; overlays the disallow-all static/robots.txt.
+      # Must run before the upload, or QA serves Production's robots.txt.
+      - run: make adapt TARGET=vercel
+      - id: deploy
+        env:
+          TAG: ${{ needs.gate.outputs.tag }}
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token="$VERCEL_TOKEN")
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          {
+            echo "Published $TAG to QA (Vercel): https://qa.hastcode.com/ (deployment $url)."
+            echo "When QA looks right: \`scripts/publish.sh cf\` on the same commit."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/cache/save@v6
+        with:
+          path: node_modules/.cache/hastcode
+          key: hastcode-vercel-${{ github.run_id }}-${{ github.run_attempt }}

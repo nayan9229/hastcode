@@ -1,0 +1,24 @@
+# Tests on every push to main, and nothing else (spec "Publishing", user
+# story 1): merging never changes what Readers see. Deploys happen only
+# from Publish tags (publish.yml); branch Previews are preview.yml.
+name: Tests
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-main
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: make test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: make test
