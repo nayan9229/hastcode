@@ -1,0 +1,18 @@
+{
+  "type": "file",
+  "encoding": "base64",
+  "size": 132,
+  "name": "README.md",
+  "path": "README.md",
+  "content": "IyBJZ2d5CgpQZXJzaXN0ZW50IG1lc3NhZ2Ugc3RyZWFtaW5nIHBsYXRmb3Jt\nIHdyaXR0ZW4gaW4gUnVzdC4KCiMjIFF1aWNrc3RhcnQKCmBgYHNoCmRvY2tl\nciBydW4gLXAgODA5MDo4MDkwIGFwYWNoZS9pZ2d5OmxhdGVzdApgYGAK\n",
+  "sha": "7c6b2a0f9e8d4c3b1a0f9e8d7c6b5a4f3e2d1c0b",
+  "url": "https://api.github.com/repos/apache/iggy/contents/README.md?ref=main",
+  "git_url": "https://api.github.com/repos/apache/iggy/git/blobs/7c6b2a0f9e8d4c3b1a0f9e8d7c6b5a4f3e2d1c0b",
+  "html_url": "https://github.com/apache/iggy/blob/main/README.md",
+  "download_url": "https://raw.githubusercontent.com/apache/iggy/main/README.md",
+  "_links": {
+    "git": "https://api.github.com/repos/apache/iggy/git/blobs/7c6b2a0f9e8d4c3b1a0f9e8d7c6b5a4f3e2d1c0b",
+    "self": "https://api.github.com/repos/apache/iggy/contents/README.md?ref=main",
+    "html": "https://github.com/apache/iggy/blob/main/README.md"
+  }
+}

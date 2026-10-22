@@ -1,0 +1,38 @@
+{
+  "sha": "0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d",
+  "url": "https://api.github.com/repos/nats-io/nats-server/git/trees/0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d",
+  "tree": [
+    {
+      "path": ".travis.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e",
+      "size": 400,
+      "url": "https://api.github.com/repos/nats-io/nats-server/git/blobs/1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f",
+      "size": 11357,
+      "url": "https://api.github.com/repos/nats-io/nats-server/git/blobs/2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f"
+    },
+    {
+      "path": "go.mod",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a",
+      "size": 530,
+      "url": "https://api.github.com/repos/nats-io/nats-server/git/blobs/3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+    },
+    {
+      "path": "server",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b",
+      "url": "https://api.github.com/repos/nats-io/nats-server/git/trees/4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b"
+    }
+  ],
+  "truncated": false
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "name": "SECURITY.md",
+    "path": ".github/SECURITY.md",
+    "sha": "c13c8d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2",
+    "size": 812,
+    "url": "https://api.github.com/repos/apache/iggy/contents/.github/SECURITY.md?ref=main",
+    "html_url": "https://github.com/apache/iggy/blob/main/.github/SECURITY.md",
+    "git_url": "https://api.github.com/repos/apache/iggy/git/blobs/c13c8d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2",
+    "download_url": "https://raw.githubusercontent.com/apache/iggy/main/.github/SECURITY.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/apache/iggy/contents/.github/SECURITY.md?ref=main",
+      "git": "https://api.github.com/repos/apache/iggy/git/blobs/c13c8d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2",
+      "html": "https://github.com/apache/iggy/blob/main/.github/SECURITY.md"
+    }
+  },
+  {
+    "name": "dependabot.yml",
+    "path": ".github/dependabot.yml",
+    "sha": "d24d9e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3",
+    "size": 240,
+    "url": "https://api.github.com/repos/apache/iggy/contents/.github/dependabot.yml?ref=main",
+    "html_url": "https://github.com/apache/iggy/blob/main/.github/dependabot.yml",
+    "git_url": "https://api.github.com/repos/apache/iggy/git/blobs/d24d9e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3",
+    "download_url": "https://raw.githubusercontent.com/apache/iggy/main/.github/dependabot.yml",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/apache/iggy/contents/.github/dependabot.yml?ref=main",
+      "git": "https://api.github.com/repos/apache/iggy/git/blobs/d24d9e5f6a7b8c9d0e1f2a3b4c5d6e7f8091a2b3",
+      "html": "https://github.com/apache/iggy/blob/main/.github/dependabot.yml"
+    }
+  },
+  {
+    "name": "workflows",
+    "path": ".github/workflows",
+    "sha": "e35ea06a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4",
+    "size": 0,
+    "url": "https://api.github.com/repos/apache/iggy/contents/.github/workflows?ref=main",
+    "html_url": "https://github.com/apache/iggy/tree/main/.github/workflows",
+    "git_url": "https://api.github.com/repos/apache/iggy/git/trees/e35ea06a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/apache/iggy/contents/.github/workflows?ref=main",
+      "git": "https://api.github.com/repos/apache/iggy/git/trees/e35ea06a7b8c9d0e1f2a3b4c5d6e7f8091a2b3c4",
+      "html": "https://github.com/apache/iggy/tree/main/.github/workflows"
+    }
+  }
+]

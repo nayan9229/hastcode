@@ -1,0 +1,42 @@
+[
+  {
+    "login": "spetz",
+    "id": 1001,
+    "node_id": "MDQ6VXNlcjEwMDE=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1001?v=4",
+    "html_url": "https://github.com/spetz",
+    "type": "User",
+    "site_admin": false,
+    "contributions": 1800
+  },
+  {
+    "login": "hubcio",
+    "id": 1002,
+    "node_id": "MDQ6VXNlcjEwMDI=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1002?v=4",
+    "html_url": "https://github.com/hubcio",
+    "type": "User",
+    "site_admin": false,
+    "contributions": 420
+  },
+  {
+    "login": "numinnex",
+    "id": 1003,
+    "node_id": "MDQ6VXNlcjEwMDM=",
+    "avatar_url": "https://avatars.githubusercontent.com/u/1003?v=4",
+    "html_url": "https://github.com/numinnex",
+    "type": "User",
+    "site_admin": false,
+    "contributions": 210
+  },
+  {
+    "login": "dependabot[bot]",
+    "id": 49699333,
+    "node_id": "MDM6Qm90NDk2OTkzMzM=",
+    "avatar_url": "https://avatars.githubusercontent.com/in/29110?v=4",
+    "html_url": "https://github.com/apps/dependabot",
+    "type": "Bot",
+    "site_admin": false,
+    "contributions": 95
+  }
+]

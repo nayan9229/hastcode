@@ -79,6 +79,8 @@ the real newsletter's key at the DNS flip and the test newsletter's key
 before it; the Vercel project (QA) and `.env` (`make dev`) get the test
 newsletter's key.
 An `images.store: r2` build reads the R2 credentials (see "Image Store").
+The fetch command reads `GITHUB_TOKEN` (see "Repo Profiles: fetching a
+Fact Pack").
 CI's GitHub secrets and variables are listed under "Deploying". `make build`
 itself also reads `MODE`, `FLAGS`, `OUT` from the environment (the QA
 publish sets `MODE=production FLAGS=-image-store=r2` for `vercel build`).
@@ -175,6 +177,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown). No config or output knowledge. |
 | `builder/repo_profile.go`, `step_load_fact_packs.go`, `step_validate_fact_packs.go` | Repo Profiles (ADR-0005): each Profile's Fact Pack is loaded beside its Markdown (rule `fact-pack`: missing or unparsable), checked against its `repo` (`fact-pack-repo`) and the build clock (`fact-pack-stale`, a warning past 30 days), and mapped to the header card (`repoProfileCard` -> `views.RepoProfileCard`, `partial_repo_profile_card.templ`). Tests: `builder/repo_profile_test.go`. |
+| `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
+| `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML. |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -449,6 +453,91 @@ Subscribe-seam tests live in `subscribe/subscribe_test.go` (package
 `subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,
 BaseURL: fake.URL})`, send form posts through `ServeHTTP`, and assert status,
 `Location`/JSON body and what the `httptest` fake Buttondown received.
+
+Fetch-seam tests live in `internal/factpack/*_test.go` (package
+`factpack_test`): `newHarness(t)` starts the fake GitHub (`fake_test.go`),
+a `Fetcher` against it with a fixed clock and the log captured, and a
+temporary content tree and cache directory; `h.gh.serveRepo("apache-iggy")`
+loads `testdata/github/apache-iggy/*.json` (one recorded answer per
+endpoint; a missing file is a 404, a `.headers` file adds headers);
+`h.gh.answer(path, …)` / `answerSequence` override one endpoint (403s,
+202s); `h.gh.requestsTo(prefix)` and `h.gh.sleptFor()` show what the
+client did. The golden Fact Pack is `testdata/apache-iggy.json`.
+
+## Repo Profiles: fetching a Fact Pack
+
+A Repo Profile (ADR-0005) renders its fact sections from a Fact Pack: the
+JSON beside its Markdown, named after it (`apache-iggy.md` ->
+`apache-iggy.json`). The fetch command writes it; nothing writes it by
+hand, and a Refresh rewrites it.
+
+```sh
+export GITHUB_TOKEN=github_pat_…   # one token; the command refuses without it
+make fetch REPO=apache/iggy MD=content/explainers/distributed-systems/apache-iggy.md
+make refresh                       # every Profile; exit 3 when anything changed
+# same as: go run ./cmd/fetch -repo apache/iggy -markdown content/explainers/distributed-systems/apache-iggy.md
+#          go run ./cmd/fetch -refresh -content content   (go run turns exit 3 into 1)
+```
+
+- **Token.** `GITHUB_TOKEN`: the variable GitHub Actions provides to every
+  job (1,000 requests an hour per repository). Locally, a fine-grained
+  personal access token with read access to public repositories and no
+  other permission. Unset, the command refuses with a message naming the
+  variable (exit 2): unauthenticated GitHub allows 60 requests an hour.
+  One token only; GitHub's terms forbid pooling tokens or accounts, and
+  the command never scrapes github.com.
+- **What it writes.** The Fact Pack beside the Markdown (`-markdown`;
+  the file need not exist yet, and when it does it must be a Repo Profile
+  of that repository), with keys in a fixed order, two-space indentation
+  and every list present, so a Refresh diff shows values and never shape.
+  The README text goes to `<cache>/readmes/<owner>/<name>/<README file>`
+  for drafting (`-cache`, default `node_modules/.cache/hastcode`, the
+  builder's build cache), never into the content tree: the Fact Pack
+  carries only the README's URL and blob SHA. It prints each file written
+  and every note (a `NOASSERTION` license, a fallback).
+- **Calls.** At most ten GET requests per repository, serially, each
+  recorded in the Fact Pack's `sources`: the repository; `languages`;
+  `releases?per_page=10` (`latest_release` is the newest non-prerelease
+  among them, drafts skipped); `contributors?per_page=10` (the top ten)
+  and `contributors?per_page=1`, whose `Link` header's last page is the
+  total (contributors with a GitHub account); `git/trees/<default
+  branch>` (root files) and, when the root has `.github`,
+  `contents/.github?ref=<branch>` (its URL is stable, a tree SHA is not);
+  `readme` (page URL, blob SHA and the text, base64 in the same answer);
+  `stargazers/count`. A `readme` 404 means no README; a
+  `stargazers/count` 404, or an answer without a `count`, falls back to
+  the repository's `stargazers_count` with a note, and the endpoint is not
+  listed as a source. `watchers` is GitHub's `subscribers_count`
+  (`watchers_count` is stars). A license URL is its spdx.org page;
+  `NOASSERTION` (GitHub could not classify it) sets `needs_review: true`
+  and prints a note telling the Author to read the LICENSE file by hand;
+  it is never an error. File flags come from the root and `.github`
+  listings (`internal/factpack/files.go` holds the CI and manifest names).
+- **Rate limits.** Every request carries `User-Agent: hastcode-fetch/1
+  (+https://hastcode.com; Repo Profile Fact Packs)`. A 403 or 429 with
+  `Retry-After` waits that long; with `X-RateLimit-Remaining: 0` it waits
+  until `X-RateLimit-Reset`; a secondary limit without either waits a
+  minute. Any wait over two minutes, or a fourth retry, stops the command
+  with `GitHub rate limit reached: GET … ; stopping instead of waiting.`
+  (exit 1): run it again after the reset. A 202 (GitHub still computing
+  the answer) is retried three times after 2, 4 and 8 seconds, a 5xx
+  three times; both then fail with exit 1.
+- **Refresh.** `-refresh` walks `content/explainers/` for every
+  `kind: repo-profile`, re-fetches each Fact Pack and rewrites only those
+  whose facts changed, `fetched_at` aside: an unchanged file keeps its
+  bytes and its `fetched_at` (so a dormant repository's `fact-pack-stale`
+  warning means "nothing has changed in 30 days"). A Profile without a
+  Fact Pack gets one. It prints one line per changed repository saying
+  what changed, `apache/iggy: stars 2468 -> 2600, latest release
+  server-0.5.0 -> server-0.6.0 (explainers/distributed-systems/apache-iggy.json)`,
+  then `refresh: N Repo Profiles checked, M changed`. Prose is never
+  touched. A fetch that fails stops the Refresh (exit 1); the Fact Packs
+  rewritten before it stand.
+- **Exit codes.** 0 done (refresh: nothing changed); 1 a fetch or write
+  failed (rate limit reached, network, I/O); 2 usage (bad flags,
+  `GITHUB_TOKEN` unset); 3 refresh rewrote at least one Fact Pack.
+  `make refresh` builds the binary first because `go run` reports every
+  non-zero status as 1.
 
 ## Subscribe function
 

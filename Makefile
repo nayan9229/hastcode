@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt prune-images lint-workflows
+.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -67,6 +67,24 @@ adapt:
 PRUNE_FLAGS ?=
 prune-images: generate
 	go run ./cmd/prune -content $(CONTENT) -config $(CONFIG) $(PRUNE_FLAGS)
+
+# `make fetch REPO=owner/name MD=content/explainers/<vertical>/<slug>.md`:
+# write the Repo Profile's Fact Pack beside its Markdown and the README
+# text under the build cache (node_modules/.cache/hastcode/readmes/).
+# `make refresh`: re-fetch every Fact Pack under $(CONTENT), rewrite the
+# changed ones and print one line per changed repository; exit 3 when
+# anything changed, 0 when nothing did. Both read GITHUB_TOKEN and refuse
+# without it. The binary is built first because `go run` would turn exit 3
+# into 1. See README "Repo Profiles: fetching a Fact Pack".
+FETCH_BIN := node_modules/.cache/hastcode/bin/fetch
+REPO ?=
+MD   ?=
+fetch:
+	mkdir -p $(dir $(FETCH_BIN)) && go build -o $(FETCH_BIN) ./cmd/fetch
+	$(FETCH_BIN) -repo "$(REPO)" -markdown "$(MD)"
+refresh:
+	mkdir -p $(dir $(FETCH_BIN)) && go build -o $(FETCH_BIN) ./cmd/fetch
+	$(FETCH_BIN) -refresh -content $(CONTENT)
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)

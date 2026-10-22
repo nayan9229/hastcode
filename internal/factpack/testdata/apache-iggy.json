@@ -1,0 +1,120 @@
+{
+  "fetched_at": "2026-10-19T06:00:00Z",
+  "slug": "apache/iggy",
+  "name": "iggy",
+  "url": "https://github.com/apache/iggy",
+  "description": "Persistent message streaming platform written in Rust",
+  "homepage": "https://iggy.apache.org",
+  "topics": [
+    "streaming",
+    "rust",
+    "message-broker"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Rust",
+  "languages": {
+    "Rust": 2345678,
+    "Shell": 12345
+  },
+  "stars": 2468,
+  "forks": 135,
+  "watchers": 42,
+  "open_issues": 57,
+  "created_at": "2023-07-24T10:00:00Z",
+  "pushed_at": "2026-10-18T14:03:00Z",
+  "latest_release": {
+    "tag": "server-0.5.0",
+    "name": "Server 0.5.0",
+    "date": "2026-10-10T12:00:00Z",
+    "url": "https://github.com/apache/iggy/releases/tag/server-0.5.0",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "server-0.6.0-rc1",
+      "name": "Server 0.6.0 RC1",
+      "date": "2026-10-16T12:00:00Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.6.0-rc1",
+      "prerelease": true
+    },
+    {
+      "tag": "server-0.5.0",
+      "name": "Server 0.5.0",
+      "date": "2026-10-10T12:00:00Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.5.0",
+      "prerelease": false
+    },
+    {
+      "tag": "server-0.4.0",
+      "name": "",
+      "date": "2026-06-02T12:00:00Z",
+      "url": "https://github.com/apache/iggy/releases/tag/server-0.4.0",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 61,
+    "top": [
+      {
+        "login": "spetz",
+        "url": "https://github.com/spetz",
+        "contributions": 1800
+      },
+      {
+        "login": "hubcio",
+        "url": "https://github.com/hubcio",
+        "contributions": 420
+      },
+      {
+        "login": "numinnex",
+        "url": "https://github.com/numinnex",
+        "contributions": 210
+      },
+      {
+        "login": "dependabot[bot]",
+        "url": "https://github.com/apps/dependabot",
+        "contributions": 95
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": ".github/SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "CODE_OF_CONDUCT.md",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "Cargo.toml"
+    ],
+    "dockerfile": "Dockerfile",
+    "docs": "docs",
+    "examples": "examples"
+  },
+  "readme": {
+    "url": "https://github.com/apache/iggy/blob/main/README.md",
+    "sha": "7c6b2a0f9e8d4c3b1a0f9e8d7c6b5a4f3e2d1c0b"
+  },
+  "stargazers": {
+    "count": 2471
+  },
+  "sources": [
+    "https://api.github.com/repos/apache/iggy",
+    "https://api.github.com/repos/apache/iggy/languages",
+    "https://api.github.com/repos/apache/iggy/releases?per_page=10",
+    "https://api.github.com/repos/apache/iggy/contributors?per_page=10",
+    "https://api.github.com/repos/apache/iggy/contributors?per_page=1",
+    "https://api.github.com/repos/apache/iggy/git/trees/main",
+    "https://api.github.com/repos/apache/iggy/contents/.github?ref=main",
+    "https://api.github.com/repos/apache/iggy/readme",
+    "https://api.github.com/repos/apache/iggy/stargazers/count"
+  ]
+}
