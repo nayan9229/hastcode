@@ -1,0 +1,217 @@
+{
+  "fetched_at": "2026-10-22T18:25:38Z",
+  "slug": "agentgateway/agentgateway",
+  "name": "agentgateway",
+  "url": "https://github.com/agentgateway/agentgateway",
+  "description": "Next Generation Agentic Proxy for AI Agents and MCP servers",
+  "homepage": "https://agentgateway.dev",
+  "topics": [
+    "agents",
+    "ai",
+    "ai-gateway",
+    "api-gateway",
+    "gateway-api",
+    "kubernetes",
+    "mcp",
+    "mcp-gateway",
+    "reverse-proxy",
+    "rust",
+    "service-mesh"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Rust",
+  "languages": {
+    "ANTLR": 5191,
+    "CSS": 110636,
+    "Dockerfile": 5051,
+    "Go": 2964845,
+    "Go Template": 21555,
+    "HTML": 1297,
+    "JavaScript": 2658,
+    "Makefile": 42389,
+    "PowerShell": 1388,
+    "Python": 20049,
+    "Rust": 8512627,
+    "Shell": 94688,
+    "Starlark": 7141,
+    "TypeScript": 1202831,
+    "jq": 11623
+  },
+  "stars": 5490,
+  "forks": 977,
+  "watchers": 45,
+  "open_issues": 276,
+  "created_at": "2025-03-18T20:55:22Z",
+  "pushed_at": "2026-10-22T13:39:24Z",
+  "latest_release": {
+    "tag": "v1.6.0",
+    "name": "v1.6.0",
+    "date": "2026-10-02T16:26:26Z",
+    "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.6.0",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "v1.7.0-alpha.1",
+      "name": "v1.7.0-alpha.1",
+      "date": "2026-10-21T21:31:31Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.7.0-alpha.1",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.6.0",
+      "name": "v1.6.0",
+      "date": "2026-10-02T16:26:26Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.6.0",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.6.0-rc.1",
+      "name": "v1.6.0-rc.1",
+      "date": "2026-10-01T22:35:08Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.6.0-rc.1",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.6.0-alpha.2",
+      "name": "v1.6.0-alpha.2",
+      "date": "2026-09-22T21:27:49Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.6.0-alpha.2",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.6.0-alpha.1",
+      "name": "v1.6.0-alpha.1",
+      "date": "2026-09-14T22:03:44Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.6.0-alpha.1",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.5.0",
+      "name": "v1.5.0",
+      "date": "2026-08-27T18:01:08Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.5.0",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.5.0-beta.1",
+      "name": "v1.5.0-beta.1",
+      "date": "2026-08-25T02:31:00Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.5.0-beta.1",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.4.1",
+      "name": "v1.4.1",
+      "date": "2026-07-29T21:48:46Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.4.1",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.4.0",
+      "name": "v1.4.0",
+      "date": "2026-07-27T17:51:00Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.4.0",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.4.0-beta.1",
+      "name": "v1.4.0-beta.1",
+      "date": "2026-07-25T00:30:47Z",
+      "url": "https://github.com/agentgateway/agentgateway/releases/tag/v1.4.0-beta.1",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 278,
+    "top": [
+      {
+        "login": "howardjohn",
+        "url": "https://github.com/howardjohn",
+        "contributions": 1291
+      },
+      {
+        "login": "EItanya",
+        "url": "https://github.com/EItanya",
+        "contributions": 203
+      },
+      {
+        "login": "npolshakova",
+        "url": "https://github.com/npolshakova",
+        "contributions": 111
+      },
+      {
+        "login": "markuskobler",
+        "url": "https://github.com/markuskobler",
+        "contributions": 93
+      },
+      {
+        "login": "dependabot[bot]",
+        "url": "https://github.com/apps/dependabot",
+        "contributions": 79
+      },
+      {
+        "login": "danehans",
+        "url": "https://github.com/danehans",
+        "contributions": 71
+      },
+      {
+        "login": "stevenctl",
+        "url": "https://github.com/stevenctl",
+        "contributions": 67
+      },
+      {
+        "login": "chandler-solo",
+        "url": "https://github.com/chandler-solo",
+        "contributions": 66
+      },
+      {
+        "login": "timflannagan",
+        "url": "https://github.com/timflannagan",
+        "contributions": 65
+      },
+      {
+        "login": "shashankram",
+        "url": "https://github.com/shashankram",
+        "contributions": 54
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "SECURITY.md",
+    "contributing": "",
+    "code_of_conduct": "CODE_OF_CONDUCT.md",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "Cargo.toml",
+      "go.mod"
+    ],
+    "dockerfile": "Dockerfile",
+    "docs": "",
+    "examples": "examples"
+  },
+  "readme": {
+    "url": "https://github.com/agentgateway/agentgateway/blob/main/README.md",
+    "sha": "8a80943a701423c67a708cb7f914497d5a4c6953"
+  },
+  "stargazers": {
+    "count": 5490
+  },
+  "sources": [
+    "https://github.com/agentgateway/agentgateway",
+    "https://github.com/agentgateway/agentgateway/releases",
+    "https://github.com/agentgateway/agentgateway/graphs/contributors",
+    "https://github.com/agentgateway/agentgateway/tree/main/.github",
+    "https://github.com/agentgateway/agentgateway/blob/main/README.md"
+  ]
+}
