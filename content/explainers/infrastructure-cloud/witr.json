@@ -1,0 +1,215 @@
+{
+  "fetched_at": "2026-10-22T18:25:42Z",
+  "slug": "pranshuparmar/witr",
+  "name": "witr",
+  "url": "https://github.com/pranshuparmar/witr",
+  "description": "Why is this running? Trace any process, port, container, or file back to what started it - CLI + TUI. ",
+  "homepage": "https://pranshuparmar.github.io/witr/",
+  "topics": [
+    "cli",
+    "containers",
+    "devops",
+    "docker",
+    "freebsd",
+    "go",
+    "golang",
+    "incident-response",
+    "kubernetes",
+    "linux",
+    "macos",
+    "monitoring",
+    "observability",
+    "process-management",
+    "sysadmin",
+    "systemd",
+    "terminal",
+    "troubleshooting",
+    "tui",
+    "windows"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Go",
+  "languages": {
+    "Go": 902718,
+    "Makefile": 586,
+    "Nix": 2619,
+    "PowerShell": 2903,
+    "Shell": 3047
+  },
+  "stars": 22763,
+  "forks": 798,
+  "watchers": 51,
+  "open_issues": 2,
+  "created_at": "2025-12-20T17:26:59Z",
+  "pushed_at": "2026-10-19T06:30:48Z",
+  "latest_release": {
+    "tag": "v0.3.4",
+    "name": "v0.3.4",
+    "date": "2026-10-04T17:33:12Z",
+    "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.4",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "v0.3.4",
+      "name": "v0.3.4",
+      "date": "2026-10-04T17:33:12Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.4",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.3.3",
+      "name": "v0.3.3",
+      "date": "2026-06-24T06:48:38Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.3",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.3.2",
+      "name": "v0.3.2",
+      "date": "2026-05-16T17:43:07Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.2",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.3.1",
+      "name": "v0.3.1",
+      "date": "2026-03-18T04:19:52Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.1",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.3.0",
+      "name": "v0.3.0",
+      "date": "2026-02-21T17:38:40Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.3.0",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2.7",
+      "name": "v0.2.7",
+      "date": "2026-02-08T18:18:02Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.2.7",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2.6",
+      "name": "v0.2.6",
+      "date": "2026-01-21T14:22:58Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.2.6",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2.5",
+      "name": "v0.2.5",
+      "date": "2026-01-15T18:27:12Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.2.5",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2.4",
+      "name": "v0.2.4",
+      "date": "2026-01-14T18:48:23Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.2.4",
+      "prerelease": false
+    },
+    {
+      "tag": "v0.2.3",
+      "name": "v0.2.3",
+      "date": "2026-01-11T13:48:13Z",
+      "url": "https://github.com/pranshuparmar/witr/releases/tag/v0.2.3",
+      "prerelease": false
+    }
+  ],
+  "contributors": {
+    "total": 45,
+    "top": [
+      {
+        "login": "pranshuparmar",
+        "url": "https://github.com/pranshuparmar",
+        "contributions": 441
+      },
+      {
+        "login": "claude",
+        "url": "https://github.com/claude",
+        "contributions": 25
+      },
+      {
+        "login": "chojs23",
+        "url": "https://github.com/chojs23",
+        "contributions": 18
+      },
+      {
+        "login": "gaod",
+        "url": "https://github.com/gaod",
+        "contributions": 15
+      },
+      {
+        "login": "amerine",
+        "url": "https://github.com/amerine",
+        "contributions": 12
+      },
+      {
+        "login": "github-actions[bot]",
+        "url": "https://github.com/apps/github-actions",
+        "contributions": 12
+      },
+      {
+        "login": "ggmolly",
+        "url": "https://github.com/ggmolly",
+        "contributions": 10
+      },
+      {
+        "login": "RikSmits06",
+        "url": "https://github.com/RikSmits06",
+        "contributions": 8
+      },
+      {
+        "login": "GunniBusch",
+        "url": "https://github.com/GunniBusch",
+        "contributions": 7
+      },
+      {
+        "login": "gaixen",
+        "url": "https://github.com/gaixen",
+        "contributions": 6
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "CODE_OF_CONDUCT.md",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [
+      "go.mod"
+    ],
+    "dockerfile": "",
+    "docs": "docs",
+    "examples": ""
+  },
+  "readme": {
+    "url": "https://github.com/pranshuparmar/witr/blob/main/README.md",
+    "sha": "074673c4064c053122484a8fc5042f5c8bbdc554"
+  },
+  "stargazers": {
+    "count": 22763
+  },
+  "sources": [
+    "https://github.com/pranshuparmar/witr",
+    "https://github.com/pranshuparmar/witr/releases",
+    "https://github.com/pranshuparmar/witr/graphs/contributors",
+    "https://github.com/pranshuparmar/witr/tree/main/.github",
+    "https://github.com/pranshuparmar/witr/blob/main/README.md"
+  ]
+}
