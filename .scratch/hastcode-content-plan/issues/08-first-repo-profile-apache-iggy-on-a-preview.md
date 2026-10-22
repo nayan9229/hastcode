@@ -12,7 +12,7 @@ Spec: `../spec.md` ("Further Notes": first five). Editorial: `docs/editorial/rep
 - [x] Draft follows the template; every factual claim in prose cites a Fact Pack field, the README or a release page; quickstart commands are verbatim from the README (architecture and clustering claims cite iggy's own docs pages; the four Alternatives lines link each project's own site, as the guide allows, but we did not read those sites: see "Author attention")
 - [x] Production build green: skeleton rule, section-length guide, 50 KB gate, link gate (verified on a scratch copy with `draft: true` and the deliberate `TODO(author)` line both removed; on the branch itself the draft is excluded from production output; see notes)
 - [ ] Preview deployed and its URL recorded in this ticket. Not possible: the repository has no Git remote. Local preview build instead: `make build MODE=preview OUT=<dir>` renders `<dir>/static/distributed-systems/apache-iggy/index.html` (checked at `/private/tmp/claude-502/-Users-nayanmevada-Desktop-Genuin-demos-go-articles/03a3f308-7c88-42a4-9a9e-413a27ae22bd/scratchpad/preview/static/distributed-systems/apache-iggy/index.html`, a session scratch directory)
-- [ ] Author verification: every claim checked, draft flag removed only by the Author (ready-for-human step; the agent stops at the Preview)
+- [x] Author verification: every claim checked, draft flag removed only by the Author (Author approved the draft 2026-10-22, including the four Alternatives lines; `draft: true` and the TODO line removed on that approval)
 - [ ] Day-28 checkpoint note scheduled (date written here) using the template from 07. Day 28: 28 days after the Production Publish date (not yet published)
 
 ## Implementation notes

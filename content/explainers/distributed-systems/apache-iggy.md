@@ -9,10 +9,7 @@ tags: ["message-streaming", "rust", "replication"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 Apache Iggy's 0.9.0 release put [Viewstamped Replication](https://iggy.apache.org/blogs/2026/09/21/release-0.9.0) into the same `iggy-server` binary that runs a single node, and one configuration key, [`cluster.enabled`](https://github.com/apache/iggy#clustering), decides which one you get.
 
