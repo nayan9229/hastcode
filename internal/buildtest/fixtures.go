@@ -12,6 +12,7 @@ import (
 	"image"
 	"image/color"
 	"image/png"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"strings"
@@ -292,6 +293,32 @@ func HeroPNGFilled(w, h int, c color.Color) []byte {
 	for y := 0; y < h; y++ {
 		for x := 0; x < w; x++ {
 			img.Set(x, y, c)
+		}
+	}
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		panic(err)
+	}
+	return buf.Bytes()
+}
+
+// HeroPNGTextured returns a photo-like PNG: a smooth colour gradient with
+// deterministic per-pixel noise of up to ±noise on each channel. Encoded
+// sizes grow with noise, so fixtures can probe encoder quality and weight
+// (noise 255 is incompressible static).
+func HeroPNGTextured(w, h int, noise uint8) []byte {
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	rng := rand.New(rand.NewPCG(uint64(w), uint64(h)))
+	ch := func(base int) uint8 {
+		v := base
+		if noise > 0 {
+			v += rng.IntN(2*int(noise)+1) - int(noise)
+		}
+		return uint8(max(0, min(255, v)))
+	}
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			img.Set(x, y, color.RGBA{R: ch(255 * x / w), G: ch(255 * y / h), B: ch(128 + 127*(x-y)/(w+h)), A: 0xFF})
 		}
 	}
 	var buf bytes.Buffer

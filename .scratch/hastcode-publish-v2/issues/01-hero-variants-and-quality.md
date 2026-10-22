@@ -6,11 +6,11 @@ Spec: `../spec.md` ("Images package"). Research with measurements: `docs/researc
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests decode the output and assert the five widths (and fewer when the source is narrower), AVIF + JPEG only, no WebP files or `<source type="image/webp">` anywhere
-- [ ] AVIF chroma is 4:4:4 and quality tiers apply at the 1200-px boundary (assert via the encoder options the build reports, or by measuring bytes against a Q60 encode of the same fixture)
-- [ ] `og:image` and `twitter:image` point at a 1200×630 JPEG; JSON-LD `image` still lists the three ratio crops
-- [ ] A fixture hero whose 1200-px AVIF exceeds 150 KB raises `hero-weight` as a warning, not an error; a normal fixture raises nothing
-- [ ] Changing the settings version invalidates the cache (second build re-encodes once, third build is cached)
-- [ ] `make test` green; `make build MODE=preview` on real content passes; README image section updated
+- [x] Build-seam tests decode the output and assert the five widths (and fewer when the source is narrower), AVIF + JPEG only, no WebP files or `<source type="image/webp">` anywhere
+- [x] AVIF chroma is 4:4:4 and quality tiers apply at the 1200-px boundary (assert via the encoder options the build reports, or by measuring bytes against a Q60 encode of the same fixture)
+- [x] `og:image` and `twitter:image` point at a 1200×630 JPEG; JSON-LD `image` still lists the three ratio crops
+- [x] A fixture hero whose 1200-px AVIF exceeds 150 KB raises `hero-weight` as a warning, not an error; a normal fixture raises nothing
+- [x] Changing the settings version invalidates the cache (second build re-encodes once, third build is cached)
+- [x] `make test` green; `make build MODE=preview` on real content passes; README image section updated
