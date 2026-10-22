@@ -1,6 +1,6 @@
 # Spec: hastcode.com content plan v1 — Repo Profiles as an Explainer kind
 
-Status: ready-for-agent
+Status: implemented on integration/content-plan-v1 (2026-10-22); tickets 06 and 08 ready-for-human
 Created: 2026-10-22
 Glossary: ../../GLOSSARY.md (Content section: Explainer, Repo Profile, Fact Pack, Refresh, Review, Brief, Vertical, Reader)
 ADRs: ../../docs/adr/0005-repo-profiles-as-an-explainer-kind-with-a-fetched-fact-pack.md (governs), ../../docs/adr/0004-cloudflare-production-vercel-qa-publish-by-tag-images-in-r2.md (deploy shape, unchanged), ../../docs/adr/0002-static-first-go-build-on-vercel.md (build half still stands), ../../docs/adr/0001-replace-genuin-community-with-static-publication.md (cutover threshold)
