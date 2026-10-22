@@ -13,7 +13,7 @@ A Repo Profile (`GLOSSARY.md`, ADR-0005) tells the Reader, a mid-to-senior backe
 7. **Publish.** Remove `draft: true`, merge, then tag (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 8. **Day 28.** Fill in a [checkpoint note](checkpoint-note-template.md).
 
-After that, the Monday Refresh keeps the facts current through a pull request a human merges, and the 90-day Review re-reads the prose. Neither rewrites the other.
+After that, a weekly `make refresh`, run by the Author locally and committed, keeps the facts current, and the 90-day Review re-reads the prose. Neither rewrites the other.
 
 ## Ground every claim
 

@@ -630,64 +630,31 @@ make refresh                       # every Profile; the command exits 3 when any
 
 ### Refresh
 
-`.github/workflows/refresh.yml` runs a Refresh every Monday at 06:00 UTC
-and whenever it is started by hand (Actions tab, "Refresh", "Run
-workflow"; it always checks out `main`). Two runs never overlap: a second
-one waits for the first. It builds the fetch command, runs it with
-`-refresh` and acts on its exit status (it runs the binary itself: `go
-run` reports 3 as 1 and `make refresh` as 2):
+A Refresh is manual (Author decision, 2026-10-22; it replaced a scheduled
+GitHub Actions workflow). From the repository root, with a `GITHUB_TOKEN`
+in the environment (`gh auth token` works):
 
-- **0, nothing changed.** The run ends green with a one-line summary; no
-  branch, no pull request.
-- **1 or 2, failed.** A fetch or write failed (rate limit, network) or the
-  command was misused; the run fails and nothing is pushed. Start it
-  again by hand after the reset.
-- **3, Fact Packs changed.** The job runs `make check`, then the
-  Publish build over the real content tree (`make build MODE=production
-  FLAGS=-image-store=local`: images stay local, so no R2 secret), so a
-  changed Fact Pack that breaks a page fails the job; then
-  `scripts/refresh-pr.sh` commits the changed Fact Packs (and nothing
-  else: any other changed file stops it, since a Refresh never touches
-  prose) as the github-actions bot to `refresh/<UTC date>` and opens the
-  pull request `Refresh: Fact Packs <date>`, whose body lists each
-  changed repository and what changed, plus any `note:` lines for the
-  Author. There is one open Refresh pull request at a time: while any
-  pull request whose branch starts with `refresh/` is open (a re-run, a
-  manual run, or next Monday's run before you merged last week's), the
-  script resets that branch onto `main`, commits the new Fact Packs,
-  pushes with `--force-with-lease` and edits the pull request's title and
-  body instead of opening another. The branch belongs to the workflow: do
-  not push to it.
+```sh
+GITHUB_TOKEN=$(gh auth token) make refresh
+```
 
-The only token is the repository token (`github.token`, with `contents:
-write` and `pull-requests: write`), used for the GitHub API reads and for
-the push and pull request; no secret to set. One repository setting:
-Settings → Actions → General → "Allow GitHub Actions to create and
-approve pull requests" must be on, or `gh pr create` is refused. Pushes and pull requests
-made with that token trigger no workflows, so `tests.yml` and
-`preview.yml` never run on the Refresh branch: that is why the job runs
-`make check` and the production build itself, before the pull request exists. Review the facts in
-the pull request (and the Profile's prose against them; the fetch notes
-flag a `NOASSERTION` license) and merge it. **Merging does not publish**:
-Readers see the new facts after the next Publish tag (`scripts/publish.sh
-vl`, then `cf`; ADR-0004). The workflow never tags.
+It re-fetches every Repo Profile's Fact Pack under `content/`, rewrites
+only the changed ones (an unchanged Fact Pack keeps its `fetched_at`) and
+prints one line per changed repository plus any `note:` lines for the
+Author (a `NOASSERTION` license, for instance). The fetch binary exits 3
+when anything changed and 0 when nothing did; make reports 3 as `Error 3`,
+which is the "something changed" signal, not a failure. Then review the
+diff (facts only: a Refresh never touches prose; re-read the Profile's
+prose against the new facts when a release or license changed), run
+`make check`, commit and push. Readers see the new facts after the next
+Publish tag (`scripts/publish.sh vl`, then `cf`; ADR-0004). GitHub Actions
+only tests, builds Previews and publishes to the Targets; nothing in CI
+fetches from GitHub.
 
-**Rate limit.** The repository token allows 1,000 requests an hour, and a
-Refresh makes about 9 per Profile (ten at most), so one run covers about
-110 Profiles. For now Repo Profiles are capped at ten (Author decision,
-2026-10-22; `docs/editorial/repo-profile-selection.md`), so the
-repository token is enough. Raising the cap well past that means switching
-the workflow's `GITHUB_TOKEN` to a GitHub App installation token (5,000 an
-hour and up) or a fine-grained personal access token (5,000 an hour; read
-access to public repositories only) stored as a repository secret; the push
-and pull request can keep the repository token.
-
-Locally, `make refresh` with a `GITHUB_TOKEN` does the same re-fetch
-without the commit or the pull request.
-
-First run: not yet performed (the repository has no GitHub remote yet).
-After pushing, start "Refresh" by hand once and record the date and
-outcome (exit status, pull request or "nothing changed") here.
+Rate limit: a personal token allows 5,000 requests an hour and a Refresh
+makes about 9 per Profile, so hundreds of Profiles fit in one run. Cadence:
+weekly, Monday, so the Changelog stays fresh; the 90-day Review re-reads
+the prose.
 
 ## Subscribe function
 

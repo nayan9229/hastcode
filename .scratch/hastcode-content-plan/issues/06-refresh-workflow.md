@@ -6,7 +6,7 @@ Spec: `../spec.md` ("Refresh workflow", User Stories 31–35). Glossary: Refresh
 
 **Blocked by:** 05 (Fetch command)
 
-**Status:** ready-for-human
+**Status:** wontfix (superseded: Refresh is manual, Author decision 2026-10-22)
 
 - [x] Workflow has the Monday schedule and a manual trigger; workflow lint passes
 - [ ] Unchanged tree: job ends green with no branch, no pull request
@@ -31,3 +31,7 @@ Criteria 2–4 are unticked on purpose: the script's commit, push and pull-reque
 1. Push the repository to GitHub (the Refresh needs a remote, `main` and Actions; Settings → Actions → General → Workflow permissions must allow GitHub Actions to create pull requests, or `gh pr create` is refused).
 2. Run "Refresh" by hand once (Actions tab → Refresh → Run workflow).
 3. Record the date and the result (exit status; the pull request, or "nothing changed") in README "Refresh" → "First run", then tick the last criterion.
+
+## Comments
+
+- 2026-10-22, Author: GitHub Actions must only test, build Previews and publish to the Targets; fact fetching is done locally and committed. `.github/workflows/refresh.yml` and `scripts/refresh-pr.sh` removed; `make refresh` stays as the local command (README "Refresh"). The remaining human steps above are withdrawn. ADR-0005, GLOSSARY, spec and CLAUDE.md amended.

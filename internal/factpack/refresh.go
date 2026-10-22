@@ -22,7 +22,7 @@ type RefreshReport struct {
 }
 
 // The fetch command's exit statuses for a Refresh that ran to the end
-// (cmd/fetch; .github/workflows/refresh.yml acts on them).
+// (cmd/fetch; the Author acts on them: review, commit, push).
 const (
 	// ExitNothingChanged: no Fact Pack was rewritten.
 	ExitNothingChanged = 0

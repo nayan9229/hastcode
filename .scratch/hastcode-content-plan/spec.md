@@ -104,10 +104,10 @@ The content plan around it: three to five Repo Profiles a week beside five other
 - The GitHub client is a small interface over `net/http`; the command is built against it so tests can serve recorded JSON from an in-process server.
 - Output JSON is written with stable key order and indentation so Refresh diffs are readable.
 
-### Refresh workflow
+### Refresh
 
-- A scheduled GitHub Actions workflow (Monday 06:00 UTC, plus manual trigger) checks out `main`, runs the fetch command in refresh mode, and stops if nothing changed. If something changed it runs the full check target and a production build of the content tree (the Publish build with the Image Store local, so no secret is needed), then commits to a `refresh/<date>` branch and opens a pull request titled with the date, listing the changed repositories. There is one open Refresh pull request at a time: when any open pull request's branch starts with `refresh/`, the job resets that branch onto `main`, commits, force-pushes it with a lease and edits the pull request's title and body instead of opening a second. The job uses the repository token; because pull requests opened by that token do not trigger the test workflow, the job runs the tests itself before opening it, and the README says so.
-- Publish stays by tag (ADR-0004). The workflow never tags.
+- A Refresh is manual (Author decision, 2026-10-22, replacing the scheduled workflow first specified): the Author runs the fetch command in refresh mode locally, reviews the diff (facts only), runs the check target, commits and pushes. GitHub Actions stays deploy-only: tests, Previews, Publish by tag. No workflow fetches from GitHub, opens pull requests or tags.
+- Publish stays by tag (ADR-0004).
 
 ### Editorial docs
 
@@ -126,7 +126,7 @@ The content plan around it: three to five Repo Profiles a week beside five other
 - **Builder seam (existing).** Every page behaviour above is tested through the build-fixture harness: a content tree with a valid Repo Profile fixture and a valid Fact Pack fixture goes in; the output directory and build result come out; assertions use the page, JSON-LD and rule helpers that Explainer and Brief tests already use. Prior art: the Explainer, Brief gate, hero, diagram, JSON-LD, listing and kind-page tests in the builder package. The fixture helpers gain a valid Repo Profile and a valid Fact Pack.
 - **Fetch seam (new).** The fetch command is tested against an in-process HTTP server serving recorded GitHub JSON: the written Fact Pack matches a golden file; a second run on the same responses is byte-identical except fetched-at; refresh mode reports exactly the changed repositories and the right exit code; `NOASSERTION` sets the review flag; a 403 with rate-limit headers stops with the documented message; missing token is refused. The command's main stays thin and untested.
 - **Generated hero.** Tested through the builder seam: a Profile without a hero produces the five widths, the Open Graph crop and the preload the hero tests already require; a Profile with a hero uses it; the card's alt text is set.
-- **Refresh workflow.** Not unit-tested. The workflow lint job already in CI covers syntax; the first run is a manual trigger checked by hand and recorded in the README.
+- **Refresh.** Manual. Refresh mode (which Fact Packs are rewritten, the exit status) is tested at the fetch seam.
 - **Editorial docs and the roundup Brief.** A roundup Brief fixture passes the existing Brief gates in the builder tests, proving no new piece type is needed.
 
 ## Out of Scope
@@ -160,3 +160,4 @@ Author decisions after the review (2026-10-22):
 
 - FAQPage JSON-LD removed; the FAQ section and its five-to-eight rule stay.
 - Repo Profiles capped at ten in total until the day-28 checkpoint, so the Refresh stays on the repository token (about 110 Profiles' worth).
+- Refresh is manual (2026-10-22, after the review fixes): the scheduled workflow and its pull-request script were removed; User Stories 31–34 are withdrawn, 35–36 stand. The Author runs `make refresh` locally, commits and pushes. GitHub Actions is deploy-only.

@@ -31,7 +31,7 @@ The machine-fetched facts about a repository (description, stars, license, langu
 _Avoid_: Metadata, data file, facts.json, scrape
 
 **Refresh**:
-A scheduled re-fetch of every Repo Profile's Fact Pack that proposes the changed facts for the Author to merge. Touches facts only, never prose; a Review is the prose counterpart.
+A re-fetch of every Repo Profile's Fact Pack, run by the Author, that rewrites only the facts that changed upstream. Touches facts only, never prose; a Review is the prose counterpart.
 _Avoid_: Sync, update, auto-update, crawl
 
 **Brief**:
