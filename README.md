@@ -169,6 +169,9 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
+| `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
+| `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool). Shared with the prune command. |
+| `internal/buildtest/image_store.go` | `NewImageStore(t)`: the fake Image Store (httptest S3: HEAD, PUT, ListObjectsV2, DeleteObjects). |
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
@@ -192,7 +195,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
 | `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
 | `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
-| `site.yaml` | Site config: `site_url`, `verticals`, `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
+| `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
@@ -216,8 +219,8 @@ unique slugs 20, static page paths 25, Explainer skeleton 30, Brief skeleton
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30,
 encode heroes 50, encode author photos 55;
-render reset 0, write site assets 10, write hero assets 15, write author
-photos 16, render explainers 20, render briefs 30, render author pages 40,
+render reset 0, write site assets 10 (and the OG badge), write hero assets 15,
+write author photos 16, upload images 17 (r2 mode), render explainers 20, render briefs 30, render author pages 40,
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
 render search page 62, render 404 page 65, check internal links 1000
@@ -410,6 +413,14 @@ parsed output. Helpers in `internal/buildtest`:
   `RequireErrorRule(t, res, file, rule, substring)`, `RequireWarningRule(...)`,
   `RequireNoProblemRule(t, res, file, rule)`, `FilesContaining(t, outDir, s)`
   (prove a piece appears in no output file).
+- Image Store: `store := NewImageStore(t)` starts the fake (one bucket,
+  path-style, in memory); `store.Configure(cfg)` switches a config to r2
+  against it (`ConfigureEnv(cfg, env)` with a variable deleted from
+  `store.Env()` tests missing credentials); `store.Seed(key, StoredObject{…})`
+  pre-loads an object; `store.Fail(method, key, status)` makes that request
+  fail; inspect with `store.Requests(method)` / `RequestKeys(method)`
+  (each `StoreRequest` has `Op`, `Key`, `Header`, `Body`), `store.Object(key)`,
+  `store.Keys()`, and `ResetRequests()` between builds.
 
 Subscribe-seam tests live in `subscribe/subscribe_test.go` (package
 `subscribe_test`): they build the handler with `subscribe.New(Config{APIKey,
@@ -517,6 +528,51 @@ with no upstream call; non-signup paths served from assets (200, trailing-slash
 307, 404 page); the key absent from every response. Exit status is the number
 of failed cases. `STUB_PORT`/`WORKER_PORT` (default 18790/18791, plus 18792
 for the missing-key instance) move the ports.
+
+## Image Store
+
+Every encoded image (hero variants and crops, Author photos, the OG badge)
+goes through one seam (`builder/image_store.go`, ADR-0004). `site.yaml`:
+
+```yaml
+images:
+  store: local          # local (default) | r2
+  base_url: https://images.hastcode.com/   # public URL of the bucket (r2)
+  bucket: hastcode-images                  # R2 bucket (r2)
+  cache_dir: node_modules/.cache/hastcode/images
+```
+
+- **`local`** (default; `make dev`, tests): images are written under
+  `/assets/` in the output and pages use site paths, exactly as before R2.
+  Needs no credentials.
+- **`r2`** (CI: `go run ./cmd/builder -image-store r2`, or
+  `make build FLAGS=-image-store=r2`): nothing image-shaped is written to the
+  output; every image URL in HTML, JSON-LD, Open Graph and feeds is
+  absolute on `base_url` (`s.absURL` passes absolute URLs through, so
+  nothing is double-prefixed). For each key the build sends `HEAD` and,
+  only on 404, `PUT` with `Content-Type` (`image/avif`, `image/jpeg`,
+  `image/png`) and `Cache-Control: public, max-age=31536000, immutable`, on
+  8 workers. A non-2xx answer fails the build naming the key.
+- **Credentials come from the environment only**: `CLOUDFLARE_ACCOUNT_ID`,
+  `R2_ACCESS_KEY_ID` (the R2 API token's id), `R2_SECRET_ACCESS_KEY`
+  (SHA-256 of the token value); token permission Object Read & Write on the
+  bucket. Optional `R2_ENDPOINT` overrides
+  `https://<account id>.r2.cloudflarestorage.com` (a jurisdiction endpoint,
+  or a test fake). An r2 build missing any of them, or `base_url`/`bucket`,
+  fails before loading or encoding anything (rule `image-store`, naming the
+  variable).
+- **Client** (`internal/imagestore`): aws-sdk-go-v2 built from explicit
+  options (nothing read from `~/.aws` or `AWS_*`), region `auto`,
+  `BaseEndpoint`, path-style requests, request checksum calculation and
+  response checksum validation `WhenRequired` (R2 does not document the
+  SDK's default CRC32 on single PUTs; research §1.3).
+- **Key layout**: the v1 asset path without `/assets/`:
+  `heroes/<source name>-<w>x<h>.<hash10>.{avif,jpg}`,
+  `authors/<photo name>-400x400.<hash10>.jpg`, `og-badge.<hash12>.png`. The
+  hash is of the encoded bytes, so an existing key never needs re-uploading
+  and changing `base_url` means a full rebuild and republish.
+- **Keys a build references**: `Result.ImageKeys` (sorted, unique; the same
+  in both modes), which the prune command diffs against the bucket.
 
 ## Feeds, sitemaps, robots and IndexNow
 

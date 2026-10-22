@@ -50,12 +50,12 @@ func markSVG() []byte {
 		PublicationName, lightPalette.accent, lightPalette.bg, darkPalette.accent, darkPalette.bg)
 }
 
-// StaticAssets are the non-page files every build writes, by site path.
+// StaticAssets are the non-page files every build writes into the static
+// tree, by site path. The OG badge is an image, so it goes through the
+// Image Store instead (OGBadgePNG).
 func StaticAssets() map[string][]byte {
-	badge := ogBadgeFile()
 	return map[string][]byte{
 		MarkPath:       markSVG(),
 		stylesheetPath: stylesheet,
-		badge.path:     badge.png,
 	}
 }

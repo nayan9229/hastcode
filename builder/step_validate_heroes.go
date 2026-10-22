@@ -14,8 +14,9 @@ import (
 // Hero pipeline (spec "Images and diagrams"). The Author drops one raster
 // beside the Markdown and names it in `hero`. The build validates it (this
 // step), encodes every variant the page, Discover, Open Graph and JSON-LD
-// need into the image cache (step_transform_heroes.go), and copies them to
-// content-hashed paths under heroAssetDir (step_render_hero_assets.go).
+// need into the image cache (step_transform_heroes.go), and publishes them
+// at content-hashed paths under heroAssetDir through the Image Store
+// (step_render_hero_assets.go, image_store.go).
 func init() {
 	registerStep(phaseValidate, 50, "validate heroes", validateHeroes)
 }

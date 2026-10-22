@@ -6,11 +6,11 @@ Spec: `../spec.md` ("Image Store"). Research: `docs/research/cloudflare-r2-and-d
 
 **Blocked by:** 01 (Hero variants and quality retune)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests with the fake store: `r2` mode PUTs exactly the expected keys with the expected `Content-Type` and `Cache-Control`; a second build HEADs every key and PUTs nothing; no file under the assets path exists in the output
-- [ ] HTML `<picture>`/`<img>`, JSON-LD `image`, `og:image`, author `Person`/`Organization` image, the OG badge and feed images all use absolute `base_url` URLs; nothing is double-prefixed with `site_url`
-- [ ] `local` mode output is byte-identical to before this ticket (existing tests untouched and green)
-- [ ] `r2` mode with any credential missing fails before encoding, naming the missing variable; `make dev` needs nothing
-- [ ] Upload failures (non-2xx) fail the build naming the key
-- [ ] README documents store modes, config keys, environment variables and the key layout
+- [x] Build-seam tests with the fake store: `r2` mode PUTs exactly the expected keys with the expected `Content-Type` and `Cache-Control`; a second build HEADs every key and PUTs nothing; no file under the assets path exists in the output
+- [x] HTML `<picture>`/`<img>`, JSON-LD `image`, `og:image`, author `Person`/`Organization` image, the OG badge and feed images all use absolute `base_url` URLs; nothing is double-prefixed with `site_url`
+- [x] `local` mode output is byte-identical to before this ticket (existing tests untouched and green)
+- [x] `r2` mode with any credential missing fails before encoding, naming the missing variable; `make dev` needs nothing
+- [x] Upload failures (non-2xx) fail the build naming the key
+- [x] README documents store modes, config keys, environment variables and the key layout

@@ -14,10 +14,17 @@ adsense_client: ""
 indexnow_key: 465f05c90b9917457c1ad83b8df48051
 # The publication's own profiles elsewhere (home Organization sameAs).
 same_as: []
-# Hero image cache (encoded variants keyed on source bytes). Default
-# node_modules/.cache/hastcode/images, which CI persists between deploys.
-# images:
-#   cache_dir: node_modules/.cache/hastcode/images
+# Images (hero variants and crops, Author photos, the OG badge).
+# store: local (default; make dev, tests) writes them under /assets/ in the
+# output. store: r2 (CI passes -image-store r2) uploads them to the R2
+# bucket and references them by absolute URL on base_url; it needs
+# CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in the
+# environment and fails without them. cache_dir (encoded variants keyed on
+# source bytes) defaults to node_modules/.cache/hastcode/images, which CI
+# persists between deploys.
+images:
+  base_url: https://images.hastcode.com/
+  bucket: hastcode-images
 # Verticals: slug (hub at /<slug>/), name, description (shown on the home
 # page and the hub), order (header nav and home order). Adding an entry
 # adds its hub, nav link and home entry; no code change.

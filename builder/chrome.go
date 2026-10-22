@@ -14,7 +14,7 @@ import (
 // canonical and chrome are never missing.
 func (s *site) page(urlPath, title, description string) views.Page {
 	badge := views.OGBadge()
-	badge.URL = s.absURL(badge.URL)
+	badge.URL = s.absURL(s.imageURL(badge.URL))
 	return views.Page{
 		Title:           title,
 		Description:     description,

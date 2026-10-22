@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"hastcode.com/site/internal/content"
+	"hastcode.com/site/internal/imagestore"
 	"hastcode.com/site/internal/vercel"
 )
 
@@ -61,13 +62,19 @@ type site struct {
 	// the write phase; see step_write_page_index.go.
 	index *pageIndex
 
+	// store is the Image Store client in r2 mode, nil in local mode;
+	// uploads are the images storeImage queued for it (image_store.go).
+	store   *imagestore.Client
+	uploads []imagestore.Object
+
 	failed map[string]bool // content-relative files that produced an error
 	result Result
 }
 
-func newSite(cfg Config, contentDir, outDir string) *site {
+func newSite(cfg Config, contentDir, outDir string, store *imagestore.Client) *site {
 	s := &site{
 		cfg:        cfg,
+		store:      store,
 		contentDir: contentDir,
 		out:        vercel.NewOutput(outDir),
 		verticals:  map[string]Vertical{},

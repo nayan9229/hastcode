@@ -30,10 +30,14 @@ const (
 )
 
 // OGBadge is the badge's view model; URL is site-relative and
-// content-hashed under /assets/ (cached immutably).
+// content-hashed under /assets/ (cached immutably). The builder maps it to
+// the Image Store.
 func OGBadge() Image {
 	return Image{URL: ogBadgeFile().path, Width: ogBadgeWidth, Height: ogBadgeHeight}
 }
+
+// OGBadgePNG is the badge's bytes, served at OGBadge().URL.
+func OGBadgePNG() []byte { return ogBadgeFile().png }
 
 type badgeFile struct {
 	path string

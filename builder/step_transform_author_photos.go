@@ -42,7 +42,8 @@ func encodeAuthorPhotos(s *site) error {
 		f := res.Files[0]
 		ph := s.authorPhotos[a.Slug]
 		ph.cached = f.Path
-		ph.view = views.Image{URL: encodedImageURL(authorPhotoDir, a.Photo, f), Width: f.Width, Height: f.Height}
+		ph.sitePath = encodedImageURL(authorPhotoDir, a.Photo, f)
+		ph.view = views.Image{URL: s.imageURL(ph.sitePath), Width: f.Width, Height: f.Height}
 	}
 	return nil
 }

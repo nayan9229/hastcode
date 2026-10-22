@@ -10,6 +10,8 @@
 // before building from a fresh checkout. The build ends by indexing the
 // output with Pagefind (static/pagefind/); a production build fails
 // without that index, and -skip-search-index is for preview builds only.
+// With -image-store r2 (CI) every image is uploaded to R2 and referenced
+// on images.base_url; the R2 credentials come from the environment.
 package main
 
 import (
@@ -19,6 +21,7 @@ import (
 	"time"
 
 	"hastcode.com/site/builder"
+	"hastcode.com/site/internal/imagestore"
 )
 
 func main() {
@@ -29,13 +32,14 @@ func main() {
 	toolsDir := flag.String("tools", ".", "directory with package.json and node_modules (run npm ci there)")
 	cacheDir := flag.String("cache", "", "build cache directory (default <tools>/node_modules/.cache/hastcode)")
 	imageCache := flag.String("image-cache", "", "hero image cache dir (overrides images.cache_dir; default "+builder.DefaultImageCacheDir+")")
+	imageStore := flag.String("image-store", "", "image store: local or r2 (overrides images.store; r2 reads "+imagestore.EnvAccountID+", "+imagestore.EnvAccessKeyID+", "+imagestore.EnvSecretAccessKey+" from the environment)")
 	skipSearch := flag.Bool("skip-search-index", false, "do not run Pagefind (preview mode only; a production build fails without the index)")
 	flag.Parse()
 
-	os.Exit(run(*contentDir, *configPath, *outDir, *mode, *toolsDir, *cacheDir, *imageCache, *skipSearch))
+	os.Exit(run(*contentDir, *configPath, *outDir, *mode, *toolsDir, *cacheDir, *imageCache, *imageStore, *skipSearch))
 }
 
-func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCache string, skipSearch bool) int {
+func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCache, imageStore string, skipSearch bool) int {
 	cfg, err := builder.LoadConfig(configPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
@@ -49,6 +53,9 @@ func run(contentDir, configPath, outDir, modeFlag, toolsDir, cacheDir, imageCach
 	cfg.SkipSearchIndex = skipSearch
 	if imageCache != "" {
 		cfg.Images.CacheDir = imageCache
+	}
+	if imageStore != "" {
+		cfg.Images.Store = builder.ImageStore(imageStore)
 	}
 
 	start := time.Now()

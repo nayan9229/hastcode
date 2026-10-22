@@ -9,7 +9,9 @@ package builder
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"time"
 )
@@ -76,6 +78,9 @@ type Config struct {
 	// /pagefind/). Allowed in preview builds only, for quick local runs;
 	// a production build that skips it fails (rule search-index).
 	SkipSearchIndex bool `yaml:"-"`
+	// Getenv reads the Image Store credentials (imagestore.Env*) in r2
+	// mode. Default os.Getenv; tests pass a fake environment.
+	Getenv func(key string) string `yaml:"-"`
 }
 
 // DefaultImageCacheDir is where encoded hero variants are cached between
@@ -93,7 +98,25 @@ type ImageConfig struct {
 	// Fast uses low-effort encoder settings (bigger files, much quicker
 	// encodes) for tests and local previews. Never set it for production.
 	Fast bool `yaml:"fast"`
+	// Store is where encoded images (hero variants and crops, Author
+	// photos, the OG badge) go: StoreLocal (default) writes them under
+	// /assets/ in the output; StoreR2 uploads them to the Image Store and
+	// every page references them by absolute URL on BaseURL (ADR-0004).
+	Store ImageStore `yaml:"store"`
+	// BaseURL is the Image Store's public URL, e.g.
+	// "https://images.hastcode.com/". Required in r2 mode.
+	BaseURL string `yaml:"base_url"`
+	// Bucket is the R2 bucket. Required in r2 mode.
+	Bucket string `yaml:"bucket"`
 }
+
+// ImageStore is ImageConfig.Store.
+type ImageStore string
+
+const (
+	StoreLocal ImageStore = "local"
+	StoreR2    ImageStore = "r2"
+)
 
 // Problem is one build error or warning, attributed to a content file
 // (relative to the content directory) and the rule it broke.
@@ -115,6 +138,10 @@ func (p Problem) Error() string {
 type Result struct {
 	Errors   []Problem
 	Warnings []Problem
+	// ImageKeys are the Image Store keys of every image the build
+	// published (sorted, unique), the same in local and r2 mode: the set
+	// the prune command keeps.
+	ImageKeys []string
 }
 
 // Failed reports whether the build produced any error.
@@ -152,7 +179,19 @@ func Build(cfg Config, contentDir, outDir string) Result {
 	if cfg.CacheDir == "" {
 		cfg.CacheDir = filepath.Join(cfg.ToolsDir, "node_modules", ".cache", "hastcode")
 	}
-	s := newSite(cfg, contentDir, outDir)
+	if cfg.Images.Store == "" {
+		cfg.Images.Store = StoreLocal
+	}
+	if cfg.Getenv == nil {
+		cfg.Getenv = os.Getenv
+	}
+	store, err := openImageStore(cfg)
+	if err != nil {
+		return Result{Errors: []Problem{{Rule: ruleImageStore, Message: err.Error()}}}
+	}
+	s := newSite(cfg, contentDir, outDir, store)
 	s.run()
+	slices.Sort(s.result.ImageKeys)
+	s.result.ImageKeys = slices.Compact(s.result.ImageKeys)
 	return s.result
 }

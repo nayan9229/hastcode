@@ -7,7 +7,8 @@ import (
 
 // encodeHeroes is the hero pipeline's encode step: validateHeroes
 // (step_validate_heroes.go) finds the sources, writeHeroAssets
-// (step_render_hero_assets.go) copies the encoded files to the output.
+// (step_render_hero_assets.go) publishes the encoded files through the
+// Image Store.
 func init() {
 	registerStep(phaseTransform, 50, "encode heroes", encodeHeroes)
 }
@@ -134,9 +135,9 @@ func encodeHeroes(s *site) error {
 		hr.files = map[string]string{}
 		imgs := make([]views.Image, len(res.Files))
 		for j, f := range res.Files {
-			url := encodedImageURL(heroAssetDir, ref.hero, f)
-			hr.files[url] = f.Path
-			imgs[j] = views.Image{URL: url, Width: f.Width, Height: f.Height}
+			sitePath := encodedImageURL(heroAssetDir, ref.hero, f)
+			hr.files[sitePath] = f.Path
+			imgs[j] = views.Image{URL: s.imageURL(sitePath), Width: f.Width, Height: f.Height}
 		}
 		hr.view = heroViewOf(ref.alt, imgs)
 		for _, f := range res.Files {

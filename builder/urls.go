@@ -62,9 +62,10 @@ var retiredSections = []string{"video", "community", "group"}
 
 const homeAliasURL = "/home"
 
-// encodedImageURL is where an encoded image variant is served:
+// encodedImageURL is the site path of an encoded image variant:
 // <dir><source name>-<w>x<h>.<hash>.<ext>, named by a hash of its bytes so
-// it can be cached immutably (heroes, Author photos).
+// it can be cached immutably (heroes, Author photos). Pages use
+// s.imageURL(path), which maps it onto the Image Store in r2 mode.
 func encodedImageURL(dir, source string, f images.File) string {
 	base := strings.TrimSuffix(path.Base(source), path.Ext(source))
 	return fmt.Sprintf("%s%s-%dx%d.%s%s", dir, base, f.Width, f.Height, f.Hash[:10], f.Format.Ext())

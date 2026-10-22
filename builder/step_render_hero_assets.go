@@ -1,20 +1,28 @@
 package builder
 
-import "os"
+import (
+	"maps"
+	"path"
+	"slices"
+
+	"hastcode.com/site/internal/images"
+)
 
 func init() {
 	registerStep(phaseRender, 15, "write hero assets", writeHeroAssets)
 }
 
-// writeHeroAssets copies encoded hero files from the cache into the output.
+// writeHeroAssets publishes the encoded hero files of published pieces
+// through the Image Store (image_store.go): written to the output in local
+// mode, queued for upload in r2 mode.
 func writeHeroAssets(s *site) error {
 	for _, ref := range s.publishedHeroRefs() {
 		hr := s.heroes[ref.file]
 		if hr == nil {
 			continue
 		}
-		for url, cached := range hr.files {
-			if err := s.copyCachedFile(url, cached); err != nil {
+		for _, sitePath := range slices.Sorted(maps.Keys(hr.files)) {
+			if err := s.storeImage(sitePath, hr.files[sitePath], nil, mimeOf(sitePath)); err != nil {
 				return err
 			}
 		}
@@ -22,11 +30,12 @@ func writeHeroAssets(s *site) error {
 	return nil
 }
 
-// copyCachedFile writes an encoded image from the image cache to urlPath.
-func (s *site) copyCachedFile(urlPath, cached string) error {
-	data, err := os.ReadFile(cached)
-	if err != nil {
-		return err
+// mimeOf is the Content-Type of an encoded image, from its extension.
+func mimeOf(sitePath string) string {
+	for _, f := range []images.Format{images.AVIF, images.JPEG} {
+		if path.Ext(sitePath) == f.Ext() {
+			return f.MIME()
+		}
 	}
-	return s.out.WriteStatic(urlPath, data)
+	return "image/png" // the OG badge
 }

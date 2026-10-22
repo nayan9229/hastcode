@@ -16,8 +16,12 @@ import (
 // The schema builders (s.person, s.organization, s.breadcrumbs) are the
 // pieces Author, home and listing pages reuse.
 
-// absURL turns a site-relative path into an absolute URL on SiteURL.
+// absURL turns a site-relative path into an absolute URL on SiteURL. An
+// already-absolute URL (an Image Store image in r2 mode) passes through.
 func (s *site) absURL(path string) string {
+	if strings.HasPrefix(path, "https://") || strings.HasPrefix(path, "http://") {
+		return path
+	}
 	return strings.TrimSuffix(s.cfg.SiteURL, "/") + path
 }
 

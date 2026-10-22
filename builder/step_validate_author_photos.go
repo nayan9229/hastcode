@@ -31,6 +31,9 @@ type authorPhoto struct {
 	source string
 	view   views.Image
 	cached string
+	// sitePath is where the encoded photo is served in local mode (its
+	// Image Store key in r2 mode); view.URL is what pages use.
+	sitePath string
 }
 
 // validateAuthorPhotos warns on Authors without a photo and fails an
