@@ -22,8 +22,8 @@ FLAGS   ?=
 # BUTTONDOWN_API_KEY / BUTTONDOWN_BASE_URL come from the shell, else from
 # .env (scripts/setup-deploy.sh writes the test newsletter's key there),
 # else stay unset (every subscribe POST then answers 502).
-# MODE is also read from the environment: the CI preview job sets
-# MODE=preview for `vercel build`, which runs `make build` (vercel.json).
+# MODE and FLAGS are also read from the environment: the QA Publish sets
+# MODE=production FLAGS=-image-store=r2 for `vercel build`, which runs `make build` (vercel.json).
 DEV_MODE ?= preview
 PORT     ?= 3000
 

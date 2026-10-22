@@ -682,7 +682,7 @@ open_url "https://vercel.com/$VERCEL_SCOPE/$VERCEL_PROJECT/settings/build-and-de
 step "Node.js Version: 24.x. Save. Leave Framework, Build and Install alone (vercel.json sets them)."
 note "Do NOT connect the Git repository: Publish tags deploy QA from GitHub Actions."
 say "QA's Go subscribe function reads BUTTONDOWN_API_KEY at runtime (Production"
-say "environment: QA deploys are Vercel production deploys). Test newsletter key:"
+say "environment, which every QA deploy uses). Test newsletter key:"
 printf '%s' "$BUTTONDOWN_TEST_API_KEY" | vercel env add BUTTONDOWN_API_KEY --environment production --sensitive --force --yes ||
   SKIPPED+=("Vercel env BUTTONDOWN_API_KEY (Production, test key): vercel env add BUTTONDOWN_API_KEY --environment production --sensitive")
 note "BUTTONDOWN_BASE_URL stays unset (default https://api.buttondown.com)."
