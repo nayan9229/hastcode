@@ -1,0 +1,218 @@
+{
+  "fetched_at": "2026-10-22T18:26:09Z",
+  "slug": "xerj-org/xerj",
+  "name": "xerj",
+  "url": "https://github.com/xerj-org/xerj",
+  "description": "Local-first search engine and MCP server for AI agents. One Rust binary indexes code, docs, logs, JSONL/CSV and PDFs for BM25 full-text, vector and hybrid search, code search without grep, agent memory and RAG. Elasticsearch-compatible API; Corpus Hub serves hundreds of reference memory corpora.",
+  "homepage": "https://xerj.org",
+  "topics": [
+    "agent-memory",
+    "ai-agents",
+    "bm25",
+    "claude-code",
+    "cli",
+    "code-search",
+    "cursor",
+    "elasticsearch",
+    "elasticsearch-alternative",
+    "full-text-search",
+    "hybrid-search",
+    "jsonl",
+    "local-first",
+    "mcp",
+    "mcp-server",
+    "model-context-protocol",
+    "rag",
+    "rust",
+    "search-engine",
+    "vector-search"
+  ],
+  "license": {
+    "spdx_id": "Apache-2.0",
+    "name": "Apache License 2.0",
+    "url": "https://spdx.org/licenses/Apache-2.0.html",
+    "needs_review": false
+  },
+  "default_branch": "main",
+  "language": "Rust",
+  "languages": {
+    "CSS": 234620,
+    "Dockerfile": 1639,
+    "Go Template": 1054,
+    "HTML": 8097435,
+    "JavaScript": 1800864,
+    "Jinja": 2661,
+    "PowerShell": 12087,
+    "Python": 1421683,
+    "Rust": 23765268,
+    "Shell": 382347
+  },
+  "stars": 13059,
+  "forks": 919,
+  "watchers": 141,
+  "open_issues": 180,
+  "created_at": "2026-06-30T04:32:45Z",
+  "pushed_at": "2026-10-22T17:48:22Z",
+  "latest_release": {
+    "tag": "v1.0.0-rc.98",
+    "name": "xerj v1.0.0-rc.98",
+    "date": "2026-10-22T03:56:24Z",
+    "url": "https://github.com/xerj-org/xerj/releases/tag/v1.0.0-rc.98",
+    "prerelease": false
+  },
+  "releases": [
+    {
+      "tag": "v1.0.0-rc.98",
+      "name": "xerj v1.0.0-rc.98",
+      "date": "2026-10-22T03:56:24Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/v1.0.0-rc.98",
+      "prerelease": false
+    },
+    {
+      "tag": "pack-zlib-ng-a7f51090",
+      "name": "hub pack: zlib-ng @ a7f51090",
+      "date": "2026-10-22T05:35:21Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-zlib-ng-a7f51090",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-zalando-restful-api-guidelines-88cdfdb1",
+      "name": "hub pack: zalando-restful-api-guidelines @ 88cdfdb1",
+      "date": "2026-10-22T05:34:30Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-zalando-restful-api-guidelines-88cdfdb1",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-xz-b355a311",
+      "name": "hub pack: xz @ b355a311",
+      "date": "2026-10-22T05:34:36Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-xz-b355a311",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-xerj-vector-74f3e85b",
+      "name": "hub pack: xerj-vector @ 74f3e85b",
+      "date": "2026-10-22T05:30:34Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-xerj-vector-74f3e85b",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-xerj-search-3a55bc98",
+      "name": "hub pack: xerj-search @ 3a55bc98",
+      "date": "2026-10-22T07:02:17Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-xerj-search-3a55bc98",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-rust-vulns-6aa7f818",
+      "name": "hub pack: rust-vulns @ 6aa7f818",
+      "date": "2026-10-22T09:42:09Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-rust-vulns-6aa7f818",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-rust-vulns-2026-10-22",
+      "name": "rust-vulns corpus pack (pack-rust-vulns-2026-10-22)",
+      "date": "2026-10-22T09:44:17Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-rust-vulns-2026-10-22",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-agent-session-trajectories-2026-10-22",
+      "name": "agent-session-trajectories corpus pack (pack-agent-session-trajectories-2026-10-22)",
+      "date": "2026-10-22T09:45:26Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-agent-session-trajectories-2026-10-22",
+      "prerelease": true
+    },
+    {
+      "tag": "pack-agent-session-trajectories-13d0fbe1-r3",
+      "name": "hub pack: agent-session-trajectories @ 13d0fbe1",
+      "date": "2026-10-22T09:43:33Z",
+      "url": "https://github.com/xerj-org/xerj/releases/tag/pack-agent-session-trajectories-13d0fbe1-r3",
+      "prerelease": true
+    }
+  ],
+  "contributors": {
+    "total": 70,
+    "top": [
+      {
+        "login": "xerj-org",
+        "url": "https://github.com/xerj-org",
+        "contributions": 3017
+      },
+      {
+        "login": "Vinz2168",
+        "url": "https://github.com/Vinz2168",
+        "contributions": 130
+      },
+      {
+        "login": "buger",
+        "url": "https://github.com/buger",
+        "contributions": 109
+      },
+      {
+        "login": "thomas-villani",
+        "url": "https://github.com/thomas-villani",
+        "contributions": 38
+      },
+      {
+        "login": "Tong-bit-art",
+        "url": "https://github.com/Tong-bit-art",
+        "contributions": 18
+      },
+      {
+        "login": "todie",
+        "url": "https://github.com/todie",
+        "contributions": 16
+      },
+      {
+        "login": "xerj-team",
+        "url": "https://github.com/xerj-team",
+        "contributions": 16
+      },
+      {
+        "login": "amartya1523",
+        "url": "https://github.com/amartya1523",
+        "contributions": 11
+      },
+      {
+        "login": "MavenRain",
+        "url": "https://github.com/MavenRain",
+        "contributions": 8
+      },
+      {
+        "login": "Jarvis636431",
+        "url": "https://github.com/Jarvis636431",
+        "contributions": 7
+      }
+    ]
+  },
+  "files": {
+    "readme": "README.md",
+    "license": "LICENSE",
+    "security": "SECURITY.md",
+    "contributing": "CONTRIBUTING.md",
+    "code_of_conduct": "CODE_OF_CONDUCT.md",
+    "ci": [
+      ".github/workflows"
+    ],
+    "manifests": [],
+    "dockerfile": "",
+    "docs": "docs",
+    "examples": ""
+  },
+  "readme": {
+    "url": "https://github.com/xerj-org/xerj/blob/main/README.md",
+    "sha": "e5ab2dfe9f467e9af7da24b6d9baabcccb4ae232"
+  },
+  "stargazers": {
+    "count": 13059
+  },
+  "sources": [
+    "https://github.com/xerj-org/xerj",
+    "https://github.com/xerj-org/xerj/releases",
+    "https://github.com/xerj-org/xerj/graphs/contributors",
+    "https://github.com/xerj-org/xerj/tree/main/.github",
+    "https://github.com/xerj-org/xerj/blob/main/README.md"
+  ]
+}
