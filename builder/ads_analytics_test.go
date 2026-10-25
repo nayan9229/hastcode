@@ -144,6 +144,20 @@ func TestAnalytics_PlausibleScriptWhenDomainConfigured(t *testing.T) {
 	}
 }
 
+// Previews (and make dev) never carry analytics: their visits are not
+// Readers', and Lighthouse CI, which only ever tests Previews, then measures
+// the page's own code (ADR-0006).
+func TestAnalytics_OmittedFromPreviewBuilds(t *testing.T) {
+	cfg := buildtest.Config()
+	cfg.PlausibleDomain = "hastcode.com"
+	cfg.Mode = builder.Preview
+	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
+
+	if hits := buildtest.FilesContaining(t, out, "plausible"); len(hits) != 0 {
+		t.Errorf("Plausible appears in %v in a preview build", hits)
+	}
+}
+
 func TestAnalytics_OmittedWhenDomainBlank(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
 

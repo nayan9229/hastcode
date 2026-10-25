@@ -9,17 +9,21 @@ import (
 	"strings"
 )
 
-// CSS delivery (ADR-0003): one external stylesheet whose file name carries
-// a content hash, so it is cached immutably and costs nothing against the
-// 50 KB per-page HTML gate.
+// CSS delivery (ADR-0006, superseding ADR-0003): the stylesheet is inlined
+// once in every page's <head>, so text paints without a second request. The
+// 50 KB per-page HTML gate does not count it (InlineStyle).
 
 //go:embed site.css
 var baseCSS string
 
 var (
-	stylesheet     = buildStylesheet()
-	stylesheetPath = "/assets/site." + contentHash(stylesheet) + ".css"
+	stylesheet  = buildStylesheet()
+	inlineStyle = []byte("<style>" + string(stylesheet) + "</style>")
 )
+
+// InlineStyle is the exact <style> element every page's <head> carries. The
+// size gate subtracts it once, so the gate measures content, not design.
+func InlineStyle() []byte { return inlineStyle }
 
 // buildStylesheet is the palette tokens (from brand.go) followed by
 // site.css, lightly minified.

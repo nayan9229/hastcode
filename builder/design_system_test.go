@@ -2,7 +2,9 @@ package builder_test
 
 import (
 	"encoding/xml"
+	"net/url"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -58,10 +60,19 @@ func TestHead_FaviconIsTheGeneratedSVGMark(t *testing.T) {
 	if got := icon.AttrOr("type", ""); got != "image/svg+xml" {
 		t.Errorf("favicon type = %q, want image/svg+xml", got)
 	}
+	// Embedded as a data: URI (ADR-0006): no request before first paint.
 	href := icon.AttrOr("href", "")
-	data, err := os.ReadFile(buildtest.StaticPath(out, href))
+	const prefix = "data:image/svg+xml,"
+	if !strings.HasPrefix(href, prefix) {
+		t.Fatalf("favicon href = %.60q…, want an embedded %s URI", href, prefix)
+	}
+	unescaped, err := url.PathUnescape(strings.TrimPrefix(href, prefix))
 	if err != nil {
-		t.Fatalf("favicon %q not in output: %v", href, err)
+		t.Fatalf("favicon data URI does not unescape: %v", err)
+	}
+	data := []byte(unescaped)
+	if file, err := os.ReadFile(buildtest.StaticPath(out, "/mark.svg")); err != nil || string(file) != unescaped {
+		t.Errorf("embedded favicon differs from /mark.svg (the Organization logo file): %v", err)
 	}
 	var svg struct {
 		XMLName xml.Name
@@ -93,32 +104,34 @@ func TestHead_ThemeColorForBothColourSchemes(t *testing.T) {
 	}
 }
 
-func TestStylesheet_IsOneHashedFileWithSystemFontsOnly(t *testing.T) {
+// ADR-0006: the stylesheet is inlined once in every page's <head>, so text
+// paints without waiting for a second request.
+func TestStylesheet_IsInlinedOnceInTheHeadWithSystemFontsOnly(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
 	doc := buildtest.Page(t, out, explainerPath)
 
-	links := doc.Find(`link[rel="stylesheet"]`)
-	if links.Length() != 1 {
-		t.Fatalf("found %d stylesheet links, want 1", links.Length())
+	if n := doc.Find(`link[rel="stylesheet"]`).Length(); n != 0 {
+		t.Errorf("found %d stylesheet links, want none (CSS is inlined)", n)
 	}
-	href := links.AttrOr("href", "")
-	if !regexp.MustCompile(`^/assets/site\.[0-9a-f]{10,}\.css$`).MatchString(href) {
-		t.Errorf("stylesheet href = %q, want /assets/site.<content hash>.css", href)
-	}
-	if n := doc.Find("style").Length(); n != 0 {
-		t.Errorf("found %d inline <style> elements, want none (CSS is one external file)", n)
+	if n := doc.Find("head style").Length(); n != 1 {
+		t.Fatalf("found %d <style> elements in <head>, want exactly 1", n)
 	}
 	css := stylesheet(t, out, doc)
+	if len(css) < 1000 {
+		t.Fatalf("inline stylesheet is %d bytes; want the whole site stylesheet", len(css))
+	}
 	for _, banned := range []string{"@font-face", "@import", "fonts.googleapis", "url("} {
 		if strings.Contains(css, banned) {
 			t.Errorf("stylesheet contains %q; want system fonts and no external resources", banned)
 		}
 	}
-
-	// Rebuilding the same tree yields the same file name (stable hash).
-	again := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
-	if got := buildtest.Page(t, again, explainerPath).Find(`link[rel="stylesheet"]`).AttrOr("href", ""); got != href {
-		t.Errorf("stylesheet href changed between identical builds: %q then %q", href, got)
+	// Every page carries the same stylesheet.
+	if home := stylesheet(t, out, buildtest.Page(t, out, "/")); home != css {
+		t.Errorf("home page stylesheet differs from the Explainer's (%d vs %d bytes)", len(home), len(css))
+	}
+	// No stylesheet file is written any more.
+	if matches, _ := filepath.Glob(buildtest.StaticPath(out, "/assets/site.*.css")); len(matches) != 0 {
+		t.Errorf("found %v; want no external stylesheet in the output", matches)
 	}
 }
 
@@ -252,16 +265,15 @@ func TestThemeToggle_RevealCausesNoLayoutShift(t *testing.T) {
 	}
 }
 
-// stylesheet returns the (lower-cased) text of the page's single linked
-// stylesheet, read from the build output.
-func stylesheet(t *testing.T, outDir string, doc *goquery.Document) string {
+// stylesheet returns the (lower-cased) text of the page's inline
+// stylesheet, the single <style> in its <head> (ADR-0006).
+func stylesheet(t *testing.T, _ string, doc *goquery.Document) string {
 	t.Helper()
-	href := doc.Find(`link[rel="stylesheet"]`).AttrOr("href", "")
-	data, err := os.ReadFile(buildtest.StaticPath(outDir, href))
-	if err != nil {
-		t.Fatalf("stylesheet %q not in output: %v", href, err)
+	style := doc.Find("head style")
+	if style.Length() != 1 {
+		t.Fatalf("found %d <style> elements in <head>, want 1", style.Length())
 	}
-	return strings.ToLower(string(data))
+	return strings.ToLower(style.Text())
 }
 
 // findRule returns the body of the first top-level CSS rule whose prelude

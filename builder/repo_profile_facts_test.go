@@ -274,8 +274,8 @@ func TestRepoProfile_HeaderCardSignalsAndChangelogUseBrandTokensOnly(t *testing.
 
 func TestRepoProfile_FixtureProfileStaysUnderThe50KBGate(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), repoProfileTree()) // MustBuild fails on html-size
-	if size := buildtest.FileSize(t, out, repoProfilePath); size >= 51200 {
-		t.Errorf("the fixture Repo Profile is %d bytes, want under the 51,200-byte gate", size)
+	if size := buildtest.ContentSize(t, out, repoProfilePath); size >= 51200 {
+		t.Errorf("the fixture Repo Profile is %d bytes without the inline stylesheet, want under the 51,200-byte gate", size)
 	}
 }
 

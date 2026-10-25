@@ -22,8 +22,18 @@ func (s *site) page(urlPath, title, description string) views.Page {
 		Social:          views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
 		Chrome:          s.chrome(),
 		Ads:             views.Ads{Enabled: s.cfg.AdsEnabled, Client: s.cfg.AdSenseClient},
-		PlausibleDomain: s.cfg.PlausibleDomain,
+		PlausibleDomain: s.analyticsDomain(),
 	}
+}
+
+// analyticsDomain is the Plausible domain pages carry: none in preview
+// builds (Previews and make dev), whose visits are not Readers' and which
+// Lighthouse CI measures without third-party scripts (ADR-0006).
+func (s *site) analyticsDomain() string {
+	if s.cfg.Mode == Preview {
+		return ""
+	}
+	return s.cfg.PlausibleDomain
 }
 
 // sortedVerticals are the configured Verticals in their configured order.

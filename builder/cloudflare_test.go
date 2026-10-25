@@ -79,7 +79,7 @@ func TestCloudflare_HeadersCacheHashedAssetsForeverAndRevalidateHTML(t *testing.
 		}
 	}
 	if assets < 10 || pages < 10 {
-		t.Errorf("checked %d /assets/ files and %d pages; want the stylesheet, hero variants and every page", assets, pages)
+		t.Errorf("checked %d /assets/ files and %d pages; want hero variants and every page", assets, pages)
 	}
 	// An unknown path is answered with the 404 page; it revalidates too.
 	if cc := buildtest.CloudflareHeaders(t, out, "/no-such-page/").Get("Cache-Control"); cc != "public, max-age=0, must-revalidate" {

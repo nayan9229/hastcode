@@ -198,7 +198,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
-| `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (hashed file, ADR-0003) and the inline theme-toggle script. |
+| `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (inlined in every page's `<head>`, ADR-0006) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
@@ -402,9 +402,10 @@ anywhere; `SoftwareSourceCode` only on a Repo Profile (see
 (rule `jsonld-missing`; the page is not written), so a new page type needs
 at least its BreadcrumbList.
 
-**Design system.** One stylesheet, `internal/views/site.css`, served as
-`/assets/site.<hash>.css` (ADR-0003); no inline `<style>`, no webfonts, no
-framework, no `url()`. Colours exist only as tokens generated from
+**Design system.** One stylesheet, `internal/views/site.css`, inlined once
+as the single `<style>` in every page's `<head>` (ADR-0006, superseding
+ADR-0003: it saves the render-blocking round trip that held mobile LCP
+above 1.5 s); no other `<style>`, no webfonts, no framework, no `url()`. Colours exist only as tokens generated from
 `brand.go`: `--bg`, `--fg`, `--accent` (spec values), `--link` (AA-safe link
 ink), `--muted`, `--border`, `--surface`; dark values apply under
 `prefers-color-scheme: dark` and under `<html data-theme="dark">` (the
@@ -434,8 +435,8 @@ script check is only a secondary guard (it measures compressed transfer
 and must block Plausible on previews).
 
 **Weight, ads, analytics.** Every page written through `s.writePage` is
-checked against the 50 KB uncompressed HTML gate (the stylesheet is external
-and not counted, ADR-0003); an oversized page is a site-wide `html-size`
+checked against the 50 KB uncompressed HTML gate, not counting the shared
+inline stylesheet (ADR-0006; tests measure with `buildtest.ContentSize`); an oversized page is a site-wide `html-size`
 error naming the URL and is not written. Ads come from one component,
 `@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterWhatHappened|views.AdAfterBody)`
 (`partial_ad_slot.templ`), controlled by `ads_enabled`. With ads off it
@@ -448,7 +449,10 @@ render the body in two halves (`Document.SplitAfterSection` +
 `markdown.RenderBlocks`: after "TL;DR" for an Explainer, after "What
 happened" for a Brief) with the first slot between them and the second
 after `.e-content`. Plausible comes
-from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set.
+from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set,
+in production builds only: preview builds (Previews, `make dev`) carry no
+analytics, so their visits are never counted and Lighthouse CI measures the
+page's own code (ADR-0006).
 Everything must work without JS.
 
 **Tests.** Four seams are tested, and only these (spec "Testing
@@ -1038,7 +1042,7 @@ with inline SVG and a `<figcaption>` from the fence's first line
 - **Output:** colours are `currentColor` and CSS variables only; the renderer's
   `<style>` (Google Fonts `@import`, page-global rules) is stripped and its
   rules live once in `internal/views/site.css` (the `.diagram` block), in the
-  hashed site stylesheet (ADR-0003). Each SVG maps its `--bg`/`--fg`/`--accent` to
+  inline site stylesheet (ADR-0006). Each SVG maps its `--bg`/`--fg`/`--accent` to
   `--diagram-bg`/`currentColor`/`--diagram-accent`, which `.diagram` sets from
   the palette tokens, so light, dark and the theme toggle all apply. Feeds
   carry a copy with those variables resolved to light-palette colours,
@@ -1235,8 +1239,12 @@ Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
 (compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
 (uncompressed, analytics included) is enforced by `make test`. A miss
 fails the check; reports are the `lighthouse-reports` artefact (never
-public storage: previews hold drafts). Lighthouse blocks Plausible and
-ad hosts so runs are not counted as pageviews.
+public storage: previews hold drafts). Preview builds carry no analytics
+(ADR-0006); Lighthouse also blocks Plausible and ad hosts as a backstop.
+Found on the first Preview (ADR-0006): Lighthouse's simulation makes LCP
+wait for every request that starts before it, including a deferred
+analytics script and the favicon, so neither may be requested during first
+paint.
 
 `.github/workflows/tests.yml` (push to `main`): `make test` and `make
 lint-workflows` (pinned actionlint, plus shellcheck on `run:` scripts),

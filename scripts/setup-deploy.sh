@@ -396,9 +396,9 @@ cf_checks() {
     else check "robots.txt is Production's (no Disallow: /)" yes yes; fi
   fi
   check "HTML Cache-Control revalidates (story 23)" "public, max-age=0, must-revalidate" "$(header cache-control "$h")"
-  css=$(body / | grep -o '/assets/site\.[0-9a-f]*\.css' | head -n1 || true)
-  check "hashed CSS immutable (story 23)" "public, max-age=31536000, immutable" \
-    "$(header cache-control "$(headers "${css:-/assets/missing.css}")")"
+  asset=$(body / | grep -o '/assets/[^"]*\.[0-9a-f]\{10,\}\.[a-z]*' | head -n1 || true)
+  check "hashed /assets/ file immutable (story 23)" "public, max-age=31536000, immutable" \
+    "$(header cache-control "$(headers "${asset:-/assets/missing.0000000000.png}")")"
   if [[ "$IMAGE_STORE" == r2 ]]; then
     if body / | grep -q "$IMAGES_BASE/"; then check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes yes
     else check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes no; fi

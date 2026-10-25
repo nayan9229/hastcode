@@ -139,7 +139,7 @@ func TestRoutes_HashedAssetsAreImmutableAndNothingElseIs(t *testing.T) {
 		}
 	}
 	if assets < 10 {
-		t.Errorf("only %d /assets/ files checked; want the stylesheet and hero variants", assets)
+		t.Errorf("only %d /assets/ files checked; want the hero variants", assets)
 	}
 }
 

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0006 (inline CSS, embedded favicon, no analytics in Previews)
 date: 2026-10-21
 ---
 

@@ -4,7 +4,7 @@ package views
 // description, robots (max-image-preview:large for Discover, or noindex),
 // canonical, Open Graph/Twitter card, both theme-colors, the inline theme
 // script (before the stylesheet so a stored override applies before first
-// paint), the hashed stylesheet, the SVG mark as favicon, the hero preload
+// paint), the inline stylesheet (ADR-0006), the SVG mark as an embedded favicon, the hero preload
 // on article pages, JSON-LD and (when configured) analytics.
 templ Head(p Page) {
 	<meta charset="utf-8"/>
@@ -24,8 +24,8 @@ templ Head(p Page) {
 	<meta name="theme-color" media="(prefers-color-scheme: light)" content={ lightPalette.bg }/>
 	<meta name="theme-color" media="(prefers-color-scheme: dark)" content={ darkPalette.bg }/>
 	@templ.Raw("<script>" + themeScript + "</script>")
-	<link rel="stylesheet" href={ stylesheetPath }/>
-	<link rel="icon" type="image/svg+xml" href={ MarkPath }/>
+	@templ.Raw(string(inlineStyle))
+	<link rel="icon" type="image/svg+xml" href={ templ.SafeURL(markDataURI) }/>
 	if p.HeroPreload != nil {
 		@HeroPreloadLink(*p.HeroPreload)
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/xml"
+	"hastcode.com/site/internal/views"
 	"os"
 
 	"github.com/a-h/templ"
@@ -14,8 +15,8 @@ import (
 
 // HTML size gate (spec "Non-functional": HTML ≤ 50 KB uncompressed). It
 // lives in writePage, the one path every page type writes through, so new
-// page types are gated without opting in. CSS is an external file
-// (ADR-0003) and does not count; inline JSON-LD, SVG and scripts do.
+// page types are gated without opting in. The shared inline stylesheet
+// (ADR-0006) does not count; inline JSON-LD, SVG and scripts do.
 const (
 	ruleHTMLSize  = "html-size"
 	maxHTMLBytes  = 50 * 1024
@@ -48,8 +49,12 @@ func (s *site) writePage(urlPath string, c templ.Component) error {
 		return err
 	}
 	html := buf.Bytes()
-	if n := len(html); n > maxHTMLBytes {
-		s.fail("", ruleHTMLSize, "page %s is %d bytes of HTML, over the %s (%d bytes) uncompressed limit; trim it or split it",
+	n := len(html)
+	if bytes.Contains(html, views.InlineStyle()) {
+		n -= len(views.InlineStyle())
+	}
+	if n > maxHTMLBytes {
+		s.fail("", ruleHTMLSize, "page %s is %d bytes of HTML without the inline stylesheet, over the %s (%d bytes) uncompressed limit; trim it or split it",
 			urlPath, n, maxHTMLBudget, maxHTMLBytes)
 		return nil
 	}

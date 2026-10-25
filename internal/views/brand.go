@@ -1,6 +1,9 @@
 package views
 
-import "fmt"
+import (
+	"fmt"
+	"net/url"
+)
 
 // Brand constants (spec "Brand"). Use these for OG defaults, feed and
 // Organization descriptions rather than retyping the strings.
@@ -37,6 +40,11 @@ var (
 // Organization logo (use SiteURL + MarkPath for the absolute logo URL).
 const MarkPath = "/mark.svg"
 
+// markDataURI is the SVG mark embedded as the favicon's data: URI, so the
+// browser makes no request for it before first paint (ADR-0006). The file
+// at MarkPath stays: it is the Organization logo.
+var markDataURI = "data:image/svg+xml," + url.PathEscape(string(markSVG()))
+
 // markSVG is the brand mark: a lowercase "h" stroke on a rounded teal
 // square, inverting to the dark palette when the viewer prefers dark.
 // Drawn as paths, not text, so it never depends on an installed font.
@@ -55,7 +63,6 @@ func markSVG() []byte {
 // Image Store instead (OGBadgePNG).
 func StaticAssets() map[string][]byte {
 	return map[string][]byte{
-		MarkPath:       markSVG(),
-		stylesheetPath: stylesheet,
+		MarkPath: markSVG(),
 	}
 }
