@@ -9,10 +9,7 @@ tags: ["kubernetes", "ebpf", "cni", "networking"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 Cilium picks a Service backend at the moment your application calls `connect()`: the [README](https://github.com/cilium/cilium#load-balancing) says east-west connections are rewritten at the socket level to avoid per-packet NAT, and the [kube-proxy replacement guide](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/) adds that the kernel socket ends up connected straight to the backend address.
 

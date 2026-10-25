@@ -9,10 +9,7 @@ tags: ["search", "rust", "vector-search", "elasticsearch"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 XERJ ships an embedded Raft ring in the same binary as its search engine, and its own [clustering docs](https://xerj.org/docs/clustering/) answer "when not to cluster" with "today, almost always": leader election is real, replication of your data is not.
 

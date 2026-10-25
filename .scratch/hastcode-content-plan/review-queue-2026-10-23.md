@@ -1,5 +1,7 @@
 # Repo Profile review queue (2026-10-23)
 
+> **2026-10-25: all nine un-drafted by the Author's explicit override, without the checks below.** They ship on the next Production Publish. The table stays as the list of claims still to verify; fix and republish as each is checked.
+
 Nine drafts on `main`, each with `draft: true` and one `TODO(author)` line. Production hides them; preview (`make dev`) shows them. For each: read the page, check the listed items against their sources, fix the prose, then remove the TODO line and `draft: true`. Agents never remove the flag (CLAUDE.md).
 
 Common to all nine: the **Alternatives** one-liners come from each agent's general knowledge and link only to the project's own site or repo; the agents did not read those sites. Check every Alternatives line.

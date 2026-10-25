@@ -9,10 +9,7 @@ tags: ["cli", "go", "linux", "observability"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 A repository [created in December 2025](https://github.com/pranshuparmar/witr) is already in the official Debian and Ubuntu repositories: on Ubuntu 26.04 and Debian sid, [`sudo apt install witr`](https://github.com/pranshuparmar/witr#22-package-managers) works, beside Homebrew, winget, conda-forge, the AUR and FreeBSD ports.
 

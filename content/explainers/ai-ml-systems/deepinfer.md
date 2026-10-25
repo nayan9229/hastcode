@@ -9,10 +9,7 @@ tags: ["llm-inference", "python", "gpu-serving"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 DeepSeek says a single cluster running DeepInfer serves [155 trillion tokens a day](https://github.com/deepseek-ai/DeepInfer/blob/main/doc/inference_deployment_qa.md), and the same document says the KV cache store and the load balancers that make that possible are [not yet open-sourced](https://github.com/deepseek-ai/DeepInfer/blob/main/doc/inference_deployment_qa.md).
 

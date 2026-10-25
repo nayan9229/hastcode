@@ -9,10 +9,7 @@ tags: ["postgres", "rust", "columnar", "jit"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 pgrust's [launch post](https://malisper.me/pgrust-rebuilding-postgres-in-rust-with-ai/) says its author stopped reading most of the code the coding agents wrote; six months on, its [README](https://github.com/malisper/pgrust#testing) says 1,397 of Postgres's 3,400 user-facing functions have been proven to behave identically with Kani.
 

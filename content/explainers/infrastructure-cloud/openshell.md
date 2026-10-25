@@ -9,10 +9,7 @@ tags: ["sandboxing", "ai-agents", "rust", "security"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 An agent running in an OpenShell sandbox never holds a real API key: at startup [every credential is swapped for an opaque placeholder](https://docs.nvidia.com/openshell/latest/how-it-works/providers/overview), and the real value is substituted only on a request bound for an endpoint that both the network policy and the credential binding allow.
 

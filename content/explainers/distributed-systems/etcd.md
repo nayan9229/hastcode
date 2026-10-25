@@ -9,10 +9,7 @@ tags: ["key-value-store", "raft", "go", "kubernetes"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 etcd 3.7.0 [boots entirely from the v3 store](https://etcd.io/blog/2026/announcing-etcd-3.7/) and [removes the v2 store outright](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/); the only way there is a rolling upgrade from a cluster already on [v3.6.11 or later](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/), because etcd [upgrades one minor version at a time](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/).
 

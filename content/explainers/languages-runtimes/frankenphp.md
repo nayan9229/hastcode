@@ -9,10 +9,7 @@ tags: ["php", "go", "caddy", "application-server"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 FrankenPHP runs every request on a thread of one process: the PHP interpreter is [compiled into the Caddy binary through cgo](https://github.com/php/frankenphp/blob/main/docs/internals.md), so a single request that allocates past PHP's hard `memory_limit` [exits the process and takes every in-flight request with it](https://frankenphp.dev/docs/known-issues/), which is why the docs tell you to run it under a supervisor.
 

@@ -9,10 +9,7 @@ tags: ["api-gateway", "mcp", "rust", "kubernetes"]
 published: "2026-10-22T09:00:00Z"
 reviewed: "2026-10-22T09:00:00Z"
 author: mira-vance
-draft: true
 ---
-
-TODO(author): verify every claim against its source, then remove draft: true and this line.
 
 Agentgateway's control plane talks to its proxies over Envoy's xDS transport protocol but sends none of Envoy's types: [one `HTTPRoute` rule becomes one `Route`, and one Pod becomes one `Workload`](https://github.com/agentgateway/agentgateway/blob/main/architecture/configuration.md), so a one-field change ships as one small message instead of a multi-megabyte route list.
 
