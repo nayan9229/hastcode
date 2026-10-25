@@ -27,3 +27,7 @@ ADR-0002 put the static site and its one Go function on Vercel Pro. Vercel's CDN
 - A production build with `images.store: r2` and no credentials fails; it never silently falls back to local images.
 - Absolute image URLs appear in HTML, JSON-LD, Open Graph and feeds, so changing the image hostname is a full rebuild and republish.
 - The subscribe logic exists twice (Go for QA, JavaScript for Production) and both need tests at the HTTP seam.
+
+## Amendment 2026-10-25: images stay in the deploy for now
+
+Enabling R2 requires a payment method on the Cloudflare account, even for the free tier. Until the Author adds one, `site.yaml` sets `images.store: local` and every build, local and CI, ships images inside the deploy under `/assets/`. That costs about 15 files per Piece against the Workers free plan's 20,000-file cap, room for roughly 1,300 Pieces. `images.store` in `site.yaml` is now the single switch: the workflows pass no image flag, the R2 secrets are optional, and the wizard skips its R2 stages (4, 6, 19) while the store is local. Moving to R2 later is: enable R2, run those stages, set `store: r2`, Publish; image URLs then change to `images.hastcode.com` and are re-crawled. Everything else in this ADR stands.

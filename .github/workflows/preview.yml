@@ -1,5 +1,6 @@
 # Preview for every branch push but main (spec "Publishing", user story 11):
-# `make test`, then a preview-mode build (drafts included, images to R2),
+# `make test`, then a preview-mode build (drafts included, images per
+# site.yaml images.store),
 # uploaded as a new version of the Cloudflare Worker with
 # `wrangler versions upload`. That never touches what hastcode.com serves:
 # the upload is not deployed, it only gets its own Version Preview URL
@@ -11,8 +12,8 @@
 # The v1 Vercel preview is gone (ticket 08): Vercel is only the QA Target,
 # deployed by Publish tags (publish.yml).
 #
-# Secrets (names only): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
-# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY.
+# Secrets (names only): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID;
+# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY only when images.store is r2.
 name: Preview
 
 on:
@@ -58,14 +59,15 @@ jobs:
           restore-keys: |
             hastcode-preview-
             hastcode-cloudflare-
-      # Same bucket as Production (content-hashed keys, so a draft's images
-      # are simply new objects; `prune` cleans up abandoned ones).
-      - name: Build (preview mode, images to R2)
+      # Images follow site.yaml images.store. With r2: same bucket as
+      # Production (content-hashed keys, so a draft's images are simply new
+      # objects; `prune` cleans up abandoned ones).
+      - name: Build (preview mode)
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: make build MODE=preview FLAGS=-image-store=r2
+        run: make build MODE=preview
       # Previews never ping IndexNow; the adapter removes config.json.
       - run: rm -f .vercel/output/indexnow.json
       - run: make adapt TARGET=cloudflare

@@ -83,7 +83,7 @@ The fetch command reads `GITHUB_TOKEN` (see "Repo Profiles: fetching a
 Fact Pack").
 CI's GitHub secrets and variables are listed under "Deploying". `make build`
 itself also reads `MODE`, `FLAGS`, `OUT` from the environment (the QA
-publish sets `MODE=production FLAGS=-image-store=r2` for `vercel build`).
+publish sets `MODE=production` for `vercel build`).
 
 **Deploy.** See "Deploying" below; first-time setup is
 `scripts/setup-deploy.sh`.
@@ -772,11 +772,18 @@ images:
   cache_dir: node_modules/.cache/hastcode/images
 ```
 
-- **`local`** (default; `make dev`, tests): images are written under
-  `/assets/` in the output and pages use site paths, exactly as before R2.
-  Needs no credentials.
-- **`r2`** (CI: `go run ./cmd/builder -image-store r2`, or
-  `make build FLAGS=-image-store=r2`): nothing image-shaped is written to the
+`images.store` in `site.yaml` is the one switch for every build, local and
+CI; the workflows pass no flag. **It is `local` today** (ADR-0004 as amended
+2026-10-25: R2 needs a payment method on the Cloudflare account, and local
+images fit the free plan's 20,000-file cap for roughly 1,300 pieces at about
+15 files each). To move to R2: enable R2, run the wizard's stages 4, 6 and
+19, add the two R2 secrets, set `store: r2`, Publish.
+
+- **`local`** (current; `make dev`, tests, CI): images are written under
+  `/assets/` in the output, ship inside each deploy, and pages use site
+  paths. Needs no credentials.
+- **`r2`** (`store: r2`, or `-image-store r2` / `make build
+  FLAGS=-image-store=r2` for a one-off): nothing image-shaped is written to the
   output; every image URL in HTML, JSON-LD, Open Graph and feeds is
   absolute on `base_url` (`s.absURL` passes absolute URLs through, so
   nothing is double-prefixed). For each key the build sends `HEAD` and,
@@ -1160,17 +1167,17 @@ hops:
    superseded by <newer tag>" in the run summary when a newer tag for the
    same Target is on `main`. Otherwise the
    Target's job checks out the gated commit and runs `make test`, one
-   production-mode build with images to R2, the Target's adapter and the
-   upload:
-   - **Cloudflare** (`production` environment): `make build MODE=production
-     FLAGS=-image-store=r2` -> set `indexnow.json` aside -> `make adapt
+   production-mode build (images per `images.store`), the Target's adapter
+   and the upload:
+   - **Cloudflare** (`production` environment): `make build MODE=production`
+     -> set `indexnow.json` aside -> `make adapt
      TARGET=cloudflare` -> `cloudflare/wrangler-action@v4` running `wrangler
      deploy --config .vercel/output/wrangler.json --message <tag>` (Wrangler
      4.149.0, as in `package.json`) -> IndexNow ping when
      `INDEXNOW_ENABLED` is `true` -> save the cache.
    - **Vercel** (`qa` environment): `vercel pull --environment=production`
-     -> `vercel build --prod` (runs `make build` with `MODE=production
-     FLAGS=-image-store=r2`; `@vercel/go` adds the subscribe function) ->
+     -> `vercel build --prod` (runs `make build` with `MODE=production`;
+     `@vercel/go` adds the subscribe function) ->
      delete `indexnow.json` -> `make adapt TARGET=vercel` (QA's disallow-all
      `robots.txt`) -> `vercel deploy --prebuilt --prod` -> save the cache.
      QA never pings IndexNow.
@@ -1243,8 +1250,8 @@ GitHub repository secrets (workflows reference names only):
 |---|---|---|
 | `CLOUDFLARE_API_TOKEN` | publish (Cloudflare), preview | Account API token from the "Edit Cloudflare Workers" template, scoped to this account (and zone). |
 | `CLOUDFLARE_ACCOUNT_ID` | publish (both), preview | Cloudflare account id; also the R2 endpoint's account. |
-| `R2_ACCESS_KEY_ID` | publish (both), preview | R2 API token's access key id (Object Read & Write on `hastcode-images`). |
-| `R2_SECRET_ACCESS_KEY` | publish (both), preview | That token's secret access key. |
+| `R2_ACCESS_KEY_ID` | publish (both), preview; only when `images.store` is `r2` | R2 API token's access key id (Object Read & Write on `hastcode-images`). |
+| `R2_SECRET_ACCESS_KEY` | publish (both), preview; only when `images.store` is `r2` | That token's secret access key. |
 | `VERCEL_TOKEN` | publish (Vercel) | Vercel account token. |
 | `VERCEL_ORG_ID` | publish (Vercel) | From `.vercel/project.json` after `vercel link`. |
 | `VERCEL_PROJECT_ID` | publish (Vercel) | Same file. |
@@ -1293,9 +1300,9 @@ scripts/setup-deploy.sh --from 16   # e.g. once the content threshold is met
 | 1 | Tools and logins: git, gh, go, node, make, curl, jq, `npm ci` (pinned Wrangler), `vercel@65.0.0`; `gh`, `vercel` and `wrangler` logins | |
 | 2 | GitHub repo (private, remote `origin`); Actions must allow `cloudflare/wrangler-action`; offers to delete a leftover v1 Lighthouse secret | `.env` `GITHUB_REPO` |
 | 3 | Cloudflare account that holds the hastcode.com zone; workers.dev subdomain | `.env` `CLOUDFLARE_ACCOUNT_ID` |
-| 4 | R2 bucket `hastcode-images` with custom domain `images.hastcode.com` (r2.dev off, no CORS) | |
+| 4 | R2 bucket `hastcode-images` with custom domain `images.hastcode.com` (r2.dev off, no CORS). Skipped while `images.store` is `local` | |
 | 5 | API token from the "Edit Cloudflare Workers" template (account + hastcode.com zone) | `.env` `CF_WORKERS_API_TOKEN` (not `CLOUDFLARE_API_TOKEN`, which would override your `wrangler login`) |
-| 6 | R2 API token: Object Read & Write on `hastcode-images` only | `.env` `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
+| 6 | R2 API token: Object Read & Write on `hastcode-images` only. Skipped while `images.store` is `local` | `.env` `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` |
 | 7 | Buttondown: the real newsletter's key and a test newsletter's key | `.env` `BUTTONDOWN_PROD_API_KEY`, `BUTTONDOWN_TEST_API_KEY`, `BUTTONDOWN_API_KEY` (= test, for `make dev`) |
 | 8 | First `wrangler deploy` of a local preview-mode build, so the Worker `hastcode` exists before any Preview; Worker secret `BUTTONDOWN_API_KEY` = test key | `.env` `WORKER_URL` |
 | 9 | What survives a `wrangler deploy` (no routes, no vars in the config): a dashboard custom domain on a throwaway `deploy-check.hastcode.com`, a dashboard variable, the secret | |
@@ -1308,7 +1315,7 @@ scripts/setup-deploy.sh --from 16   # e.g. once the content threshold is met
 | 16 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
 | 17 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
 | 18 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
-| 19 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks | |
+| 19 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks. Skipped while `images.store` is `local` | |
 
 What only a live run can verify, and the stage that checks it (each line
 in the script names its user story or research question):

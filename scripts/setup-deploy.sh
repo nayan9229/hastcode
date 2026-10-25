@@ -204,8 +204,10 @@ finish() {
 #   scripts/setup-deploy.sh            # every stage, from the start
 #   scripts/setup-deploy.sh --from 14  # resume at stage 14 (values come from .env)
 #
-# Production is Cloudflare (Worker `hastcode`, Workers Static Assets, images in
-# the R2 bucket behind images.hastcode.com); QA is Vercel Hobby at
+# Production is Cloudflare (Worker `hastcode`, Workers Static Assets; images
+# per site.yaml images.store: shipped in the deploy while local, the R2 bucket
+# behind images.hastcode.com when r2, whose stages are skipped while local);
+# QA is Vercel Hobby at
 # qa.hastcode.com behind Vercel Authentication; Previews are Cloudflare Worker
 # versions. Values go to .env (gitignored, mode 0600), GitHub secrets and
 # variables, Vercel env and Worker secrets. Deploys run in GitHub Actions
@@ -233,6 +235,8 @@ esac
 
 WORKER=hastcode
 R2_BUCKET=$(sed -n 's/^  bucket: *//p' site.yaml)
+IMAGE_STORE=$(sed -n 's/^  store: *//p' site.yaml)
+IMAGE_STORE="${IMAGE_STORE:-local}"
 IMAGES_BASE=$(sed -n 's/^  base_url: *//p' site.yaml)
 IMAGES_BASE="${IMAGES_BASE%/}"
 INDEXNOW_KEY=$(sed -n 's/^indexnow_key: *//p' site.yaml)
@@ -245,6 +249,16 @@ begin() {
     return 1
   fi
   stage "$1"
+}
+
+# r2_only: inside a begun stage, skip it (still counted) while site.yaml
+# images.store is local (ADR-0004 as amended 2026-10-25).
+r2_only() {
+  [[ "$IMAGE_STORE" == r2 ]] && return 0
+  note "Skipped: site.yaml images.store is '$IMAGE_STORE', so images ship inside each deploy."
+  note "Set images.store: r2 and re-run this stage with --from $((_STAGE_INDEX)) to use R2."
+  pause
+  return 1
 }
 
 # remember KEY…: load values saved by an earlier run, so --from works.
@@ -339,6 +353,10 @@ bootstrap_build() {
 # image_checks URL: an Image Store object on the custom domain (story 30,
 # research Q4).
 image_checks() {
+  if [[ "$IMAGE_STORE" != r2 ]]; then
+    note "image Store checks skipped: images.store is $IMAGE_STORE (images ship in the deploy)."
+    return 0
+  fi
   local url="$1" h cs=""
   h=$(curl -s -I "$url" | tr -d '\r' || true)
   check "image $url → 200" "200" "$(head -n1 <<<"$h" | cut -d' ' -f2)"
@@ -382,8 +400,10 @@ cf_checks() {
   css=$(body / | grep -o '/assets/site\.[0-9a-f]*\.css' | head -n1 || true)
   check "hashed CSS immutable (story 23)" "public, max-age=31536000, immutable" \
     "$(header cache-control "$(headers "${css:-/assets/missing.css}")")"
-  if body / | grep -q "$IMAGES_BASE/"; then check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes yes
-  else check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes no; fi
+  if [[ "$IMAGE_STORE" == r2 ]]; then
+    if body / | grep -q "$IMAGES_BASE/"; then check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes yes
+    else check "pages reference $IMAGES_BASE (story 28, 33, 35)" yes no; fi
+  fi
   read -r st loc <<<"$(fetch GET /home)";                check "/home → 301 / (story 22)" "301 $BASE_URL/" "$st $loc"
   read -r st loc <<<"$(fetch GET /about)";               check "/about → 307 /about/ (story 19)" "307 $BASE_URL/about/" "$st $loc"
   read -r st loc <<<"$(fetch GET /about/index.html)";    check "/about/index.html → 307 /about/ (story 19)" "307 $BASE_URL/about/" "$st $loc"
@@ -512,7 +532,7 @@ pause
 fi
 
 # ── 4 ─────────────────────────────────────────────────────────────────────
-if begin "R2 bucket $R2_BUCKET at images.hastcode.com"; then
+if begin "R2 bucket $R2_BUCKET at images.hastcode.com" && r2_only; then
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 say "Every encoded image is uploaded at build time to R2 and served from"
 say "$IMAGES_BASE (site.yaml images.bucket / images.base_url)."
@@ -558,7 +578,7 @@ pause
 fi
 
 # ── 6 ─────────────────────────────────────────────────────────────────────
-if begin "R2 API token for the Image Store"; then
+if begin "R2 API token for the Image Store" && r2_only; then
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 say "Builds (publish, preview) and the prune command use an S3-compatible R2 key."
 open_url "https://dash.cloudflare.com/$CLOUDFLARE_ACCOUNT_ID/r2/api-tokens"
@@ -716,8 +736,10 @@ value GITHUB_REPO "Repository as owner/name:"
 export GH_REPO="$GITHUB_REPO"
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 secret_value CF_WORKERS_API_TOKEN "Workers API token:"
-value R2_ACCESS_KEY_ID "R2 Access Key ID:"
-secret_value R2_SECRET_ACCESS_KEY "R2 Secret Access Key:"
+if [[ "$IMAGE_STORE" == r2 ]]; then
+  value R2_ACCESS_KEY_ID "R2 Access Key ID:"
+  secret_value R2_SECRET_ACCESS_KEY "R2 Secret Access Key:"
+fi
 value VERCEL_ORG_ID "VERCEL_ORG_ID (.vercel/project.json orgId):"
 value VERCEL_PROJECT_ID "VERCEL_PROJECT_ID (.vercel/project.json projectId):"
 open_url "https://vercel.com/account/settings/tokens"
@@ -727,8 +749,10 @@ ask_secret VERCEL_TOKEN "Vercel token:"
 write_env VERCEL_TOKEN "$VERCEL_TOKEN"
 set_secret CLOUDFLARE_API_TOKEN "$CF_WORKERS_API_TOKEN"
 set_secret CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
-set_secret R2_ACCESS_KEY_ID "$R2_ACCESS_KEY_ID"
-set_secret R2_SECRET_ACCESS_KEY "$R2_SECRET_ACCESS_KEY"
+if [[ "$IMAGE_STORE" == r2 ]]; then
+  set_secret R2_ACCESS_KEY_ID "$R2_ACCESS_KEY_ID"
+  set_secret R2_SECRET_ACCESS_KEY "$R2_SECRET_ACCESS_KEY"
+fi
 set_secret VERCEL_TOKEN "$VERCEL_TOKEN"
 set_secret VERCEL_ORG_ID "$VERCEL_ORG_ID"
 set_secret VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
@@ -766,7 +790,9 @@ open_url "https://github.com/${GITHUB_REPO:-}/actions/workflows/publish.yml"
 step "Wait for 'Publish PUBVL-…: gate' and then 'Publish PUBVL-…' (the first run encodes every hero)."
 pause "Press Enter when the deploy run has finished…"
 verify "The gate run's 'Check the tag' step printed commit=${head_sha:0:12}… (lightweight tag resolves to the tagged commit; research Q7)?"
-verify "The deploy run's Build step passed: R2 accepted the single PUTs with checksums 'when required' (research Q1, story 28)?"
+if [[ "$IMAGE_STORE" == r2 ]]; then
+  verify "The deploy run's Build step passed: R2 accepted the single PUTs with checksums 'when required' (research Q1, story 28)?"
+fi
 verify "Its summary printed https://qa.hastcode.com/ and the 'publish.sh cf' reminder (story 7)?"
 BASE_URL="https://qa.hastcode.com"
 read -r st _ <<<"$(fetch GET /)"
@@ -779,7 +805,11 @@ verify "The home page loads (story 13)?"
 verify "DevTools → Network → the document response has X-Robots-Tag: noindex (story 14, 17)?"
 verify "https://qa.hastcode.com/robots.txt is 'User-agent: *' / 'Disallow: /' (story 14, 17)?"
 verify "View source: canonical and og:url start with https://hastcode.com/ (story 16)?"
-verify "og:image and the hero images are $IMAGES_BASE/… and load (story 28, 35)?"
+if [[ "$IMAGE_STORE" == r2 ]]; then
+  verify "og:image and the hero images are $IMAGES_BASE/… and load (story 28, 35)?"
+else
+  verify "og:image is https://hastcode.com/assets/og-badge.….png and hero images under /assets/ load (images.store local)?"
+fi
 verify "/video/x shows the 404 page (QA answers 410; ADR-0001 as amended)?"
 verify "The signup form with your address shows the confirmation, and the TEST newsletter lists it (story 24)? (then delete it there)"
 close_checklist "QA checklist"
@@ -927,7 +957,7 @@ pause
 fi
 
 # ── 19 ────────────────────────────────────────────────────────────────────
-if begin "First prune by hand, and the R2 billing checks"; then
+if begin "First prune by hand, and the R2 billing checks" && r2_only; then
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 value R2_ACCESS_KEY_ID "R2 Access Key ID:"
 secret_value R2_SECRET_ACCESS_KEY "R2 Secret Access Key:"

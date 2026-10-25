@@ -11,7 +11,8 @@
 #   2. That run waits its turn (one deploy per Target, in queue order),
 #      re-checks the tag, skips it if a newer tag for the same Target
 #      exists (newest tag wins; the run summary names it), else builds the
-#      tagged commit once in production mode (images to R2), applies the
+#      tagged commit once in production mode (images per site.yaml
+#      images.store), applies the
 #      Target's deploy adapter and deploys; Cloudflare then pings IndexNow.
 # Why the hop: the build cache (encoded images, rendered diagrams, the
 # IndexNow page manifest) must persist from one Publish to the next, and
@@ -25,8 +26,8 @@
 # newest.
 #
 # Secrets (names only; values from scripts/setup-deploy.sh, see README
-# "Deploying"): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID,
-# R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, VERCEL_TOKEN, VERCEL_ORG_ID,
+# "Deploying"): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, VERCEL_TOKEN,
+# VERCEL_ORG_ID,
 # VERCEL_PROJECT_ID. Variable: INDEXNOW_ENABLED ("true" once hastcode.com
 # is served by Cloudflare).
 name: Publish
@@ -161,16 +162,17 @@ jobs:
           path: &manifest-cache node_modules/.cache/hastcode/pages
           key: hastcode-indexnow-${{ github.run_id }}
           restore-keys: hastcode-indexnow-
-      # Production mode; every image HEAD/PUT to R2 and referenced on
-      # images.hastcode.com. Missing credentials fail here (rule
-      # image-store), before anything is encoded or deployed. The R2
+      # Production mode. Images follow site.yaml images.store: local ships
+      # them inside the deploy; r2 uploads them and needs the R2 secrets,
+      # failing here (rule image-store) when one is missing. The R2 secrets
+      # are optional while the store is local (ADR-0004 as amended). The
       # environment is a YAML anchor, reused by the Vercel build below.
-      - name: Build (production mode, images to R2)
+      - name: Build (production mode)
         env: &r2-env
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-        run: make build MODE=production FLAGS=-image-store=r2
+        run: make build MODE=production
       # Not part of the site (it sits beside static/, so it would not be
       # served anyway): keep it for the ping after the deploy.
       - name: Set aside the IndexNow artefact
@@ -257,9 +259,9 @@ jobs:
       # FLAGS from the environment; @vercel/go then adds the subscribe
       # function. Production mode: QA ships Production's exact bytes.
       # (MODE and FLAGS on the command line: an alias cannot be extended.)
-      - name: Build (production mode, images to R2)
+      - name: Build (production mode)
         env: *r2-env
-        run: MODE=production FLAGS=-image-store=r2 vercel build --prod --token="$VERCEL_TOKEN"
+        run: MODE=production vercel build --prod --token="$VERCEL_TOKEN"
       # QA never pings IndexNow; keep the artefact out of the upload.
       - run: rm -f .vercel/output/indexnow.json
       # Deploy-adapter rule: removes wrangler.json, static/_headers and

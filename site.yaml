@@ -15,14 +15,19 @@ indexnow_key: 465f05c90b9917457c1ad83b8df48051
 # The publication's own profiles elsewhere (home Organization sameAs).
 same_as: []
 # Images (hero variants and crops, Author photos, the OG badge).
-# store: local (default; make dev, tests) writes them under /assets/ in the
-# output. store: r2 (CI passes -image-store r2) uploads them to the R2
-# bucket and references them by absolute URL on base_url; it needs
-# CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in the
-# environment and fails without them. cache_dir (encoded variants keyed on
+# store is the one switch for every build, local and CI (ADR-0004 as
+# amended 2026-10-25). local writes them under /assets/ in the output and
+# ships them inside each deploy (about 15 files per piece against
+# Cloudflare's 20,000-file free cap, so roughly 1,300 pieces). r2 uploads
+# them to the R2 bucket and references them by absolute URL on base_url; it
+# needs CLOUDFLARE_ACCOUNT_ID, R2_ACCESS_KEY_ID and R2_SECRET_ACCESS_KEY in
+# the environment (GitHub secrets in CI) and fails without them. To move to
+# R2: enable R2 (Cloudflare asks for a payment method), run the wizard's R2
+# stages, set store: r2, Publish. cache_dir (encoded variants keyed on
 # source bytes) defaults to node_modules/.cache/hastcode/images, which CI
 # persists between deploys.
 images:
+  store: local
   base_url: https://images.hastcode.com/
   bucket: hastcode-images
 # Verticals: slug (hub at /<slug>/), name, description (shown on the home
