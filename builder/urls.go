@@ -82,3 +82,7 @@ const (
 	authorPhotoDir    = assetsDir + "authors/"
 	pagefindBundleURL = "/" + pagefind.BundleDir + "/"
 )
+
+// adsTxtURL is where ad systems look for the Authorized Digital Sellers
+// list: the root of the domain.
+const adsTxtURL = "/ads.txt"

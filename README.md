@@ -221,7 +221,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `cmd/target/` | `go run ./cmd/target <name\|code\|tag>` prints `target=`, `code=`, `tag_prefix=`: how `scripts/publish.sh` and `scripts/publish-gate.sh` spell a Target. |
 | `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
 | `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
-| `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
+| `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `ads_txt` (records written verbatim to `/ads.txt`; malformed lines fail with `ads-txt`; empty = no file), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
@@ -253,9 +253,9 @@ write author photos 16, upload images 17 (r2 mode), render explainers 20, render
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
 render search page 62, render 404 page 65, check internal links 1000
-(keep it last: it reads every written page); validate IndexNow key 6; write
+(keep it last: it reads every written page); validate IndexNow key 6, validate ads.txt 6; write
 phase: index written pages 5 (reads the output back; later write steps use
-`s.index`), feeds 20, sitemap 30, news sitemap 35, robots.txt 40, IndexNow
+`s.index`), feeds 20, sitemap 30, news sitemap 35, robots.txt 40, ads.txt 41, IndexNow
 key + changed URLs 50, author placeholders 60, config.json 100, Cloudflare manifest 105, index search 800 (Pagefind over the
 final output), save page manifest 900 (keep it last).
 

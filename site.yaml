@@ -7,6 +7,10 @@ plausible_domain: hastcode.com
 # placeholder to an AdSense unit. Off in v1; adsense_client (ca-pub-...)
 # is required when ads_enabled is true.
 ads_enabled: false
+# /ads.txt (IAB Authorized Digital Sellers): one record per line, verbatim.
+# Add each ad network's line here when you join it; empty writes no file.
+ads_txt:
+  - google.com, pub-8711471207758471, DIRECT, f08c47fec0942fa0
 adsense_client: ""
 # IndexNow key (indexnow.org): public by design, served at /<key>.txt.
 # Keep it stable; changing it invalidates the key Bing has verified.

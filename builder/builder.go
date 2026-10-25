@@ -49,6 +49,11 @@ type Config struct {
 	// PlausibleDomain is the Plausible analytics site; blank omits the
 	// analytics script.
 	PlausibleDomain string `yaml:"plausible_domain"`
+	// AdsTxt are the /ads.txt records (IAB Authorized Digital Sellers),
+	// one per line, verbatim: "<ad system domain>, <account id>,
+	// DIRECT|RESELLER[, <certification authority id>]", plus "#" comments
+	// and "key=value" variables. Empty writes no /ads.txt.
+	AdsTxt []string `yaml:"ads_txt"`
 	// IndexNowKey is the site's IndexNow key (indexnow.org: 8 to 128
 	// characters of a-z, A-Z, 0-9 and "-"). It is public by design (the
 	// build serves it at /<key>.txt), so it lives in site.yaml, and it
