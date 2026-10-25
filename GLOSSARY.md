@@ -85,3 +85,21 @@ _Avoid_: Staging, QA (that is a Target)
 **Image Store**:
 Where a Piece's image variants live and are served from, separate from the pages.
 _Avoid_: CDN, bucket, media library
+
+### Sourcing
+
+**Source**:
+A first-party publisher HastCode may draw from: an engineering blog, a project's release feed, a postmortem page, a standards body.
+_Avoid_: Feed, outlet, vendor
+
+**Source Watchlist**:
+The curated list of Sources, grouped by Vertical, that the Author has chosen to follow.
+_Avoid_: Feed list, sources list, subscriptions
+
+**Lead**:
+One item a Source published that the Author may turn into a Piece. A Lead becomes a Piece or is dismissed; it is never published itself.
+_Avoid_: Feed item, story, candidate, tip
+
+**Intake**:
+The run that checks the Source Watchlist and lists the new Leads for the Author.
+_Avoid_: Ingestion, crawl, import, sync
