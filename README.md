@@ -714,7 +714,7 @@ package therefore lives at `subscribe/`. The builder's routes keep `/api/*`
 out of the trailing-slash redirects (a pass-through route before them) and
 put the 404 catch-all after `{"handle":"filesystem"}`, so a POST is never
 redirected to `/api/subscribe/` or answered by the 404. A POST on a real
-QA deployment is on the setup wizard's QA checklist (stage 14).
+The setup wizard no longer sets Vercel up (its Vercel stages were removed 2026-10-25 at the Author's request); configure the QA deployment by hand if the QA Target is kept.
 
 ### Worker (Production Target)
 
@@ -851,7 +851,7 @@ make prune-images PRUNE_FLAGS=--delete     # delete the listed orphans
 - Not yet verified live: whether R2 accepts the checksum header the SDK
   sends on `DeleteObjects` (a checksum-required operation, research
   §1.3). Run the first `--delete` by hand and check the result: the setup
-  wizard's stage 19 does it against a dummy object (`prune-check.txt`).
+  wizard's stage 16 does it against a dummy object (`prune-check.txt`).
 - Credentials for a local run: `set -a; . ./.env; set +a; make
   prune-images` (the wizard saves `CLOUDFLARE_ACCOUNT_ID`,
   `R2_ACCESS_KEY_ID` and `R2_SECRET_ACCESS_KEY` there).
@@ -961,10 +961,10 @@ done   # 410, 301 /, 308 /about/, 200, 308 /about/, 308 /mark.svg, 404
 The local router (`vercel.NewRouter`) refuses a `config.json` using route
 features it does not implement (other `handle` phases, `has`/`missing`, a
 non-RE2 regex), so the check cannot silently diverge from the file. It is not
-Vercel itself: QA sits behind Vercel Authentication, so the setup wizard's
-QA checklist (stage 14) checks it in a signed-in browser; the Production
-equivalents are curled automatically against the first Preview, the
-workers.dev URL and hastcode.com (stages 15, 16, 18). Note that `vercel build`'s merged `config.json` (with
+Vercel itself: QA sits behind Vercel Authentication, so it is checked in a
+signed-in browser by hand (the wizard's Vercel stages were removed
+2026-10-25); the Production equivalents are curled automatically against
+the first Preview, the workers.dev URL and hastcode.com (stages 12, 13, 15). Note that `vercel build`'s merged `config.json` (with
 `@vercel/go`'s `error`/`miss` phases) is not servable by this router: run
 `make dev`, which serves the builder's own output.
 
@@ -1292,7 +1292,7 @@ number: values from earlier stages then come from `.env`.
 
 ```sh
 scripts/setup-deploy.sh             # all 19 stages
-scripts/setup-deploy.sh --from 16   # e.g. once the content threshold is met
+scripts/setup-deploy.sh --from 13   # e.g. once the content threshold is met
 ```
 
 | # | Stage | Writes |
@@ -1306,40 +1306,35 @@ scripts/setup-deploy.sh --from 16   # e.g. once the content threshold is met
 | 7 | Buttondown: the real newsletter's key and a test newsletter's key | `.env` `BUTTONDOWN_PROD_API_KEY`, `BUTTONDOWN_TEST_API_KEY`, `BUTTONDOWN_API_KEY` (= test, for `make dev`) |
 | 8 | First `wrangler deploy` of a local preview-mode build, so the Worker `hastcode` exists before any Preview; Worker secret `BUTTONDOWN_API_KEY` = test key | `.env` `WORKER_URL` |
 | 9 | What survives a `wrangler deploy` (no routes, no vars in the config): a dashboard custom domain on a throwaway `deploy-check.hastcode.com`, a dashboard variable, the secret | |
-| 10 | Vercel Hobby project (personal account), `vercel link`, Node 24.x, Git not connected; env `BUTTONDOWN_API_KEY` (Production, test key) | `.env` `VERCEL_SCOPE`, `VERCEL_PROJECT`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` |
-| 11 | `qa.hastcode.com` on the Vercel project (CNAME at Cloudflare, DNS only); Vercel Authentication with scope **All Deployments** (Standard Protection would leave the custom domain public) | |
-| 12 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false` | `.env` `VERCEL_TOKEN`; GitHub secrets and variable |
-| 13 | Push `main` (tests only) | |
-| 14 | First `scripts/publish.sh vl` and the QA checklist | |
-| 15 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
-| 16 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
-| 17 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
-| 18 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
-| 19 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks. Skipped while `images.store` is `local` | |
+| 10 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false` | `.env` `VERCEL_TOKEN`; GitHub secrets and variable |
+| 11 | Push `main` (tests only) | |
+| 12 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
+| 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
+| 14 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
+| 15 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
+| 16 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks. Skipped while `images.store` is `local` | |
 
 What only a live run can verify, and the stage that checks it (each line
 in the script names its user story or research question):
 
 - R2 accepts single PUTs with checksums set to "when required" (research
-  Q1): stage 14, the first Publish build.
+  Q1): stage 13, the first Publish build.
 - Custom-domain responses carry the object's `Cache-Control` and are
-  cached at the edge (`cf-cache-status: HIT`) (research Q4): stages 14, 18.
+  cached at the edge (`cf-cache-status: HIT`) (research Q4): stages 13, 15.
 - A HEAD miss then a PUT costs one Class A operation; `DeleteObjects` is
-  free like `DeleteObject` (research Q2, Q3): stage 19, from R2 metrics.
-- R2 accepts the SDK's checksum header on `DeleteObjects`: stage 19.
+  free like `DeleteObject` (research Q2, Q3): stage 16, from R2 metrics.
+- R2 accepts the SDK's checksum header on `DeleteObjects`: stage 16.
 - The lightweight Publish tag resolves to the tagged commit (research Q7):
-  stages 14, 18.
-- Workers Preview URLs are reachable by Lighthouse CI: stage 15.
-- Vercel Authentication on Hobby refuses anonymous requests to
-  `qa.hastcode.com`: stage 14.
+  stages 13, 15.
+- Workers Preview URLs are reachable by Lighthouse CI: stage 12.
 - A dashboard custom domain survives `wrangler deploy` without `routes`
-  (stage 9 on a throwaway host, stage 18 on hastcode.com); if it does not,
+  (stage 9 on a throwaway host, stage 15 on hastcode.com); if it does not,
   add `routes` with `custom_domain: true` to the builder's `wrangler.json`
   before the flip. Dashboard variables do not survive a deploy (Wrangler
   deletes them without `--keep-vars`), so the Worker has none; its secret
   does.
 - The Worker's 13 signup cases (`scripts/check-worker.sh`, locally) and
-  the safe subset against the live Preview: stage 15.
+  the safe subset against the live Preview: stage 12.
 
 Local equivalent of a CI build, for debugging: `npm ci`, `make build`,
 `make adapt TARGET=cloudflare`, `npx wrangler deploy --dry-run --config

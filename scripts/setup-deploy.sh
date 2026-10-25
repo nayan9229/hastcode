@@ -202,16 +202,16 @@ finish() {
 # hastcode.com publish setup (publish v2, ADR-0004). Run from the repo root:
 #
 #   scripts/setup-deploy.sh            # every stage, from the start
-#   scripts/setup-deploy.sh --from 14  # resume at stage 14 (values come from .env)
+#   scripts/setup-deploy.sh --from 11  # resume at stage 11 (values come from .env)
 #
 # Production is Cloudflare (Worker `hastcode`, Workers Static Assets; images
 # per site.yaml images.store: shipped in the deploy while local, the R2 bucket
 # behind images.hastcode.com when r2, whose stages are skipped while local);
-# QA is Vercel Hobby at
-# qa.hastcode.com behind Vercel Authentication; Previews are Cloudflare Worker
-# versions. Values go to .env (gitignored, mode 0600), GitHub secrets and
-# variables, Vercel env and Worker secrets. Deploys run in GitHub Actions
-# (publish.yml from `scripts/publish.sh vl|cf`, preview.yml on branch pushes);
+# There is no Vercel stage: the Author removed the QA Target setup on
+# 2026-10-25; the Cloudflare branch Preview is the check before Production.
+# Values go to .env (gitignored, mode 0600), GitHub secrets and variables, and
+# Worker secrets. Deploys run in GitHub Actions
+# (publish.yml from `scripts/publish.sh cf`, preview.yml on branch pushes);
 # this script only runs the bootstrap Worker deploy, the deploy-survival
 # check and `make prune-images`, each behind a confirmation.
 #
@@ -222,7 +222,7 @@ finish() {
 
 run_wizard() {
 
-TOTAL_STAGES=19
+TOTAL_STAGES=16
 CHECK_FAILS=()
 FROM=1
 case "${1:-}" in
@@ -272,7 +272,6 @@ remember() {
 }
 remember GITHUB_REPO CLOUDFLARE_ACCOUNT_ID CF_WORKERS_API_TOKEN R2_ACCESS_KEY_ID \
   R2_SECRET_ACCESS_KEY BUTTONDOWN_PROD_API_KEY BUTTONDOWN_TEST_API_KEY WORKER_URL \
-  VERCEL_SCOPE VERCEL_PROJECT VERCEL_ORG_ID VERCEL_PROJECT_ID VERCEL_TOKEN \
   PREVIEW_URL SIGNUP_TEST_EMAIL
 
 # value KEY "Prompt": make sure $KEY is set (ask once, save to .env).
@@ -457,26 +456,16 @@ if [[ ! -x node_modules/.bin/wrangler ]]; then
   npm ci --no-audit --no-fund
 fi
 note "wrangler $(wr --version 2>/dev/null || echo '?') (pinned in package.json)"
-if ! command -v vercel >/dev/null 2>&1; then
-  warn "Vercel CLI missing."
-  step "Install the version CI uses:  npm install --global vercel@65.0.0"
-  pause "Press Enter once 'vercel --version' works…"
-  need vercel "npm install --global vercel@65.0.0"
-fi
 if ! gh auth status >/dev/null 2>&1; then
   step "Log in to GitHub as the account that owns the repo."
   gh auth login
-fi
-if ! vercel whoami >/dev/null 2>&1; then
-  step "Log in to Vercel (opens a browser)."
-  vercel login
 fi
 say "Cloudflare login (Wrangler):"
 wr whoami || true
 if confirm "Run 'wrangler login' now? (No if the output above already shows your account)"; then
   wr login
 fi
-note "GitHub: $(gh api user --jq .login 2>/dev/null || echo '?')   Vercel: $(vercel whoami 2>/dev/null || echo '?')"
+note "GitHub: $(gh api user --jq .login 2>/dev/null || echo '?')"
 pause
 fi
 
@@ -509,7 +498,7 @@ open_url "https://github.com/$GITHUB_REPO/settings/actions"
 step "Actions permissions: allow all actions, or at least GitHub's own plus cloudflare/wrangler-action."
 step "Workflow permissions may stay 'Read repository contents': publish.yml's hand-off job"
 step "asks for actions: write itself (an org policy must not forbid that)."
-note "Nothing is pushed yet: secrets come first (stage 13 pushes main)."
+note "Nothing is pushed yet: secrets come first (stage 11 pushes main)."
 pause
 fi
 
@@ -623,7 +612,7 @@ say "Previews ('wrangler versions upload') need the Worker '$WORKER' to exist, s
 say "deployed once from here: a local preview-mode build (drafts included, local"
 say "images). The builder's wrangler.json has no routes, so this serves only"
 say "$WORKER.<subdomain>.workers.dev (noindex); hastcode.com is untouched. The first"
-say "'publish.sh cf' (stage 16) replaces it with a production build."
+say "'publish.sh cf' (stage 13) replaces it with a production build."
 if confirm "Build locally and run the first 'wrangler deploy'?"; then
   bootstrap_build
   wr deploy --config .vercel/output/wrangler.json --message bootstrap ||
@@ -633,7 +622,7 @@ ask WORKER_URL "The workers.dev URL wrangler printed (https://$WORKER.<subdomain
 WORKER_URL="${WORKER_URL%/}"
 write_env WORKER_URL "$WORKER_URL"
 say "Worker secret BUTTONDOWN_API_KEY = the TEST newsletter key until the DNS flip"
-say "(Preview versions share the Worker's secrets; stage 17 switches it to production)."
+say "(Preview versions share the Worker's secrets; stage 14 switches it to production)."
 printf '%s' "$BUTTONDOWN_TEST_API_KEY" | wr secret put BUTTONDOWN_API_KEY --name "$WORKER" ||
   SKIPPED+=("Worker secret BUTTONDOWN_API_KEY (test key): npx wrangler secret put BUTTONDOWN_API_KEY --name hastcode")
 BASE_URL="$WORKER_URL"
@@ -681,56 +670,6 @@ pause
 fi
 
 # ── 10 ────────────────────────────────────────────────────────────────────
-if begin "Vercel Hobby project (QA Target)"; then
-secret_value BUTTONDOWN_TEST_API_KEY "Test newsletter API key:"
-say "Vercel is only the QA Target: a Hobby project in your personal account (ADR-0004"
-say "accepts the terms grey area: QA shows no ads and takes no public traffic)."
-note "Logged in as: $(vercel whoami 2>/dev/null || echo '?')"
-ask VERCEL_SCOPE "Your Vercel username (the personal scope shown above):"
-write_env VERCEL_SCOPE "$VERCEL_SCOPE"
-ask VERCEL_PROJECT "Project name (e.g. hastcode-qa):"
-write_env VERCEL_PROJECT "$VERCEL_PROJECT"
-if ! vercel project inspect "$VERCEL_PROJECT" >/dev/null 2>&1; then
-  vercel project create "$VERCEL_PROJECT"
-fi
-vercel link --yes --project "$VERCEL_PROJECT"
-VERCEL_ORG_ID=$(jq -r .orgId .vercel/project.json)
-VERCEL_PROJECT_ID=$(jq -r .projectId .vercel/project.json)
-write_env VERCEL_ORG_ID "$VERCEL_ORG_ID"
-write_env VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
-open_url "https://vercel.com/$VERCEL_SCOPE/$VERCEL_PROJECT/settings/build-and-deployment"
-step "Node.js Version: 24.x. Save. Leave Framework, Build and Install alone (vercel.json sets them)."
-note "Do NOT connect the Git repository: Publish tags deploy QA from GitHub Actions."
-say "QA's Go subscribe function reads BUTTONDOWN_API_KEY at runtime (Production"
-say "environment, which every QA deploy uses). Test newsletter key:"
-printf '%s' "$BUTTONDOWN_TEST_API_KEY" | vercel env add BUTTONDOWN_API_KEY --environment production --sensitive --force --yes ||
-  SKIPPED+=("Vercel env BUTTONDOWN_API_KEY (Production, test key): vercel env add BUTTONDOWN_API_KEY --environment production --sensitive")
-note "BUTTONDOWN_BASE_URL stays unset (default https://api.buttondown.com)."
-pause
-fi
-
-# ── 11 ────────────────────────────────────────────────────────────────────
-if begin "qa.hastcode.com and Vercel Authentication"; then
-value VERCEL_SCOPE "Your Vercel username:"
-value VERCEL_PROJECT "Vercel project name:"
-vercel domains add qa.hastcode.com "$VERCEL_PROJECT" || true
-open_url "https://vercel.com/$VERCEL_SCOPE/$VERCEL_PROJECT/settings/domains"
-step "qa.hastcode.com is listed, connected to Production, no redirect. Note the DNS record"
-step "Vercel asks for (a CNAME for qa; maybe a TXT to verify)."
-open_url "https://dash.cloudflare.com/"
-step "hastcode.com → DNS → Records → Add record: CNAME, name qa, target exactly as Vercel"
-step "shows, Proxy status DNS only (grey cloud). Add the TXT too if Vercel asked."
-pause "Press Enter once Vercel shows qa.hastcode.com as Valid Configuration…"
-open_url "https://vercel.com/$VERCEL_SCOPE/$VERCEL_PROJECT/settings/deployment-protection"
-step "Vercel Authentication: Enabled, scope 'All Deployments' (all plans, Hobby included,"
-step "per Vercel's Deployment Protection docs). 'Standard Protection' leaves production"
-step "domains, i.e. qa.hastcode.com, public. Save."
-step "Leave Protection Bypass for Automation off: nothing uses it any more."
-note "Checked after the first QA Publish (stage 14) with an anonymous request (story 15)."
-pause
-fi
-
-# ── 12 ────────────────────────────────────────────────────────────────────
 if begin "GitHub secrets and the IndexNow variable"; then
 value GITHUB_REPO "Repository as owner/name:"
 export GH_REPO="$GITHUB_REPO"
@@ -740,30 +679,20 @@ if [[ "$IMAGE_STORE" == r2 ]]; then
   value R2_ACCESS_KEY_ID "R2 Access Key ID:"
   secret_value R2_SECRET_ACCESS_KEY "R2 Secret Access Key:"
 fi
-value VERCEL_ORG_ID "VERCEL_ORG_ID (.vercel/project.json orgId):"
-value VERCEL_PROJECT_ID "VERCEL_PROJECT_ID (.vercel/project.json projectId):"
-open_url "https://vercel.com/account/settings/tokens"
-step "Create Token: name 'hastcode GitHub Actions', scope your personal account,"
-step "expiration as long as you are comfortable with (note the date). Copy it."
-ask_secret VERCEL_TOKEN "Vercel token:"
-write_env VERCEL_TOKEN "$VERCEL_TOKEN"
 set_secret CLOUDFLARE_API_TOKEN "$CF_WORKERS_API_TOKEN"
 set_secret CLOUDFLARE_ACCOUNT_ID "$CLOUDFLARE_ACCOUNT_ID"
 if [[ "$IMAGE_STORE" == r2 ]]; then
   set_secret R2_ACCESS_KEY_ID "$R2_ACCESS_KEY_ID"
   set_secret R2_SECRET_ACCESS_KEY "$R2_SECRET_ACCESS_KEY"
 fi
-set_secret VERCEL_TOKEN "$VERCEL_TOKEN"
-set_secret VERCEL_ORG_ID "$VERCEL_ORG_ID"
-set_secret VERCEL_PROJECT_ID "$VERCEL_PROJECT_ID"
 set_var INDEXNOW_ENABLED "false"
-note "INDEXNOW_ENABLED stays false until hastcode.com is served by Cloudflare (stage 18)."
+note "INDEXNOW_ENABLED stays false until hastcode.com is served by Cloudflare (stage 15)."
 note "Optional: Settings → Environments → production → Required reviewers → you,"
 note "so every Production deploy waits for a click (environments appear after first use)."
 pause
 fi
 
-# ── 13 ────────────────────────────────────────────────────────────────────
+# ── 11 ────────────────────────────────────────────────────────────────────
 if begin "Push main"; then
 say "Publish tags must point at commits on origin/main. main must hold the publish-v2"
 say "work (integration/publish-v2 merged). Pushing main runs the tests only (story 1)."
@@ -777,46 +706,7 @@ close_checklist "Push main"
 pause
 fi
 
-# ── 14 ────────────────────────────────────────────────────────────────────
-if begin "First QA Publish (publish vl) and the QA checklist"; then
-say "Tags HEAD of main PUBVL-<UTC stamp> and pushes the tag; publish.yml gates it and"
-say "deploys a production-mode build to qa.hastcode.com (story 2, 3)."
-head_sha=$(git rev-parse HEAD)
-note "HEAD: $head_sha"
-if confirm "Run scripts/publish.sh vl now?"; then
-  scripts/publish.sh vl || SKIPPED+=("publish.sh vl refused or failed: fix and re-run with --from 14")
-fi
-open_url "https://github.com/${GITHUB_REPO:-}/actions/workflows/publish.yml"
-step "Wait for 'Publish PUBVL-…: gate' and then 'Publish PUBVL-…' (the first run encodes every hero)."
-pause "Press Enter when the deploy run has finished…"
-verify "The gate run's 'Check the tag' step printed commit=${head_sha:0:12}… (lightweight tag resolves to the tagged commit; research Q7)?"
-if [[ "$IMAGE_STORE" == r2 ]]; then
-  verify "The deploy run's Build step passed: R2 accepted the single PUTs with checksums 'when required' (research Q1, story 28)?"
-fi
-verify "Its summary printed https://qa.hastcode.com/ and the 'publish.sh cf' reminder (story 7)?"
-BASE_URL="https://qa.hastcode.com"
-read -r st _ <<<"$(fetch GET /)"
-case "$st" in 401|302|303|307) prot=protected ;; *) prot="open (HTTP $st)" ;; esac
-check "anonymous request to qa.hastcode.com is refused: Vercel Authentication on Hobby covers it (story 15, Further Notes)" protected "$prot"
-image_checks "$(og_badge_url)"
-open_url "https://qa.hastcode.com/"
-say "In the browser (signed in to Vercel):"
-verify "The home page loads (story 13)?"
-verify "DevTools → Network → the document response has X-Robots-Tag: noindex (story 14, 17)?"
-verify "https://qa.hastcode.com/robots.txt is 'User-agent: *' / 'Disallow: /' (story 14, 17)?"
-verify "View source: canonical and og:url start with https://hastcode.com/ (story 16)?"
-if [[ "$IMAGE_STORE" == r2 ]]; then
-  verify "og:image and the hero images are $IMAGES_BASE/… and load (story 28, 35)?"
-else
-  verify "og:image is https://hastcode.com/assets/og-badge.….png and hero images under /assets/ load (images.store local)?"
-fi
-verify "/video/x shows the 404 page (QA answers 410; ADR-0001 as amended)?"
-verify "The signup form with your address shows the confirmation, and the TEST newsletter lists it (story 24)? (then delete it there)"
-close_checklist "QA checklist"
-pause
-fi
-
-# ── 15 ────────────────────────────────────────────────────────────────────
+# ── 12 ────────────────────────────────────────────────────────────────────
 if begin "First branch Preview and its checklist"; then
 say "A push to any branch but main runs make test, uploads a Worker version (not a"
 say "deploy) and runs Lighthouse CI against its Preview URL (story 11, 33)."
@@ -833,7 +723,6 @@ PREVIEW_URL="${PREVIEW_URL%/}"
 write_env PREVIEW_URL "$PREVIEW_URL"
 verify "The Preview run's 'make test', 'Deploy preview' and 'Lighthouse CI' jobs are green (story 11)?"
 verify "The lighthouse-reports artefact holds real scores for the Preview URLs, no fetch or NO_FCP error: Workers preview URLs are reachable by Lighthouse CI (Further Notes)?"
-verify "Vercel shows no new deployment from this push (story 12)?"
 verify "hastcode.com (still the old host) and ${WORKER_URL:-the workers.dev URL} are unchanged: a version upload deploys nothing?"
 BASE_URL="$PREVIEW_URL"
 cf_checks noindex
@@ -852,7 +741,7 @@ fi
 pause
 fi
 
-# ── 16 ────────────────────────────────────────────────────────────────────
+# ── 13 ────────────────────────────────────────────────────────────────────
 if begin "Content gate and the first Production Publish (before DNS)"; then
 say "The DNS flip is one-way (ADR-0001): hastcode.com stops serving the Genuin community"
 say "and every old /video, /community, /group URL returns 404."
@@ -866,7 +755,7 @@ briefs=$(published content/briefs | wc -l | tr -d ' ')
 todos=$(grep -rl 'TODO(author)' content 2>/dev/null | wc -l | tr -d ' ')
 note "in this checkout: $explainers published Explainers in $verticals Verticals, $briefs Briefs, $todos file(s) with TODO(author)"
 if ! confirm "Is the threshold met, so cutover may start?"; then
-  note "Stopping before cutover. Re-run with: scripts/setup-deploy.sh --from 16"
+  note "Stopping before cutover. Re-run with: scripts/setup-deploy.sh --from 13"
   finish
   return 0
 fi
@@ -874,7 +763,7 @@ say "First, put a production build on the Worker so the flip never exposes the"
 say "bootstrap (drafts) build. hastcode.com still points at the old host;"
 say "INDEXNOW_ENABLED is false, so nothing is pinged (story 4, 10)."
 if confirm "Run scripts/publish.sh cf now (Production Publish of HEAD $(git rev-parse --short HEAD))?"; then
-  scripts/publish.sh cf || SKIPPED+=("publish.sh cf refused or failed: fix and re-run with --from 16")
+  scripts/publish.sh cf || SKIPPED+=("publish.sh cf refused or failed: fix and re-run with --from 13")
 fi
 open_url "https://github.com/${GITHUB_REPO:-}/actions/workflows/publish.yml"
 pause "Press Enter when the 'Publish PUBCF-…' run has finished…"
@@ -887,13 +776,13 @@ close_checklist "Production on workers.dev"
 pause
 fi
 
-# ── 17 ────────────────────────────────────────────────────────────────────
+# ── 14 ────────────────────────────────────────────────────────────────────
 if begin "Production DNS flip: hastcode.com and www to the Worker"; then
 secret_value BUTTONDOWN_PROD_API_KEY "Production newsletter API key:"
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 warn "This takes hastcode.com off the Genuin community for good (ADR-0001)."
 if ! confirm "Flip hastcode.com and www.hastcode.com to the Worker now?"; then
-  note "Stopping before the flip. Re-run with: scripts/setup-deploy.sh --from 17"
+  note "Stopping before the flip. Re-run with: scripts/setup-deploy.sh --from 14"
   finish
   return 0
 fi
@@ -916,11 +805,11 @@ close_checklist "DNS flip"
 pause
 fi
 
-# ── 18 ────────────────────────────────────────────────────────────────────
+# ── 15 ────────────────────────────────────────────────────────────────────
 if begin "Go live: IndexNow on, publish cf, the live checklist"; then
 value GITHUB_REPO "Repository as owner/name:"
 export GH_REPO="$GITHUB_REPO"
-say "hastcode.com now serves stage 16's Publish. Turn IndexNow on and drop Production's"
+say "hastcode.com now serves stage 13's Publish. Turn IndexNow on and drop Production's"
 say "IndexNow page manifest (only that: encoded images and diagrams stay cached) so the"
 say "next Publish lists every page for IndexNow."
 if confirm "Set INDEXNOW_ENABLED=true and delete the hastcode-indexnow-* Actions caches?"; then
@@ -929,7 +818,7 @@ if confirm "Set INDEXNOW_ENABLED=true and delete the hastcode-indexnow-* Actions
     while read -r id; do gh cache delete "$id" || true; done || true
 fi
 if confirm "Run scripts/publish.sh cf now (first live Production Publish)?"; then
-  scripts/publish.sh cf || SKIPPED+=("publish.sh cf refused or failed: fix and re-run with --from 18")
+  scripts/publish.sh cf || SKIPPED+=("publish.sh cf refused or failed: fix and re-run with --from 15")
 fi
 open_url "https://github.com/$GITHUB_REPO/actions/workflows/publish.yml"
 pause "Press Enter when the 'Publish PUBCF-…' run has finished…"
@@ -943,7 +832,6 @@ BASE_URL="https://hastcode.com"
 cf_checks index
 h=$(headers /)
 check "served by Cloudflare" cloudflare "$(header server "$h")"
-check "not served by Vercel (no x-vercel-id)" "" "$(header x-vercel-id "$h")"
 read -r st loc <<<"$(curl -s -o /dev/null -w '%{http_code} %{redirect_url}' 'https://www.hastcode.com/about/?ref=x' || echo '000 ')"
 check "www → apex 301, path and query kept" "301 https://hastcode.com/about/?ref=x" "$st $loc"
 image_checks "$(og_badge_url)"
@@ -956,7 +844,7 @@ close_checklist "Live checklist"
 pause
 fi
 
-# ── 19 ────────────────────────────────────────────────────────────────────
+# ── 16 ────────────────────────────────────────────────────────────────────
 if begin "First prune by hand, and the R2 billing checks" && r2_only; then
 value CLOUDFLARE_ACCOUNT_ID "Cloudflare account ID:"
 value R2_ACCESS_KEY_ID "R2 Access Key ID:"
