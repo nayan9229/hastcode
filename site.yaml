@@ -16,9 +16,9 @@ adsense_client: ca-pub-8711471207758471
 # the same id may be reused. Required for Production and QA builds while
 # ads_enabled is true. AdSense: Ads > By ad unit > Display ads.
 adsense_slots:
-  after-tldr: ""
-  after-what-happened: ""
-  after-body: ""
+  after-tldr: "3067310097"
+  after-what-happened: "3067310097"
+  after-body: "3067310097"
 # IndexNow key (indexnow.org): public by design, served at /<key>.txt.
 # Keep it stable; changing it invalidates the key Bing has verified.
 # Blank turns IndexNow off.
