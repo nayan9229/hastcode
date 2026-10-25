@@ -13,10 +13,18 @@ import (
 
 const testAdSenseClient = "ca-pub-1234567890123456"
 
+// testAdSlots are the AdSense ad unit ids per slot position.
+var testAdSlots = map[string]string{
+	"after-tldr":          "1111111111",
+	"after-what-happened": "2222222222",
+	"after-body":          "3333333333",
+}
+
 func adsOnConfig() builder.Config {
 	cfg := buildtest.Config()
 	cfg.AdsEnabled = true
 	cfg.AdSenseClient = testAdSenseClient
+	cfg.AdSenseSlots = testAdSlots
 	return cfg
 }
 
@@ -47,10 +55,54 @@ func TestAdSlots_EnabledRenderTheAdSenseScriptAndTwoUnits(t *testing.T) {
 		if got := unit.AttrOr("data-ad-client", ""); got != testAdSenseClient {
 			t.Errorf("slot %d data-ad-client = %q, want %s", i, got, testAdSenseClient)
 		}
+		// An AdSense display unit fills only with its ad unit id.
+		position := slot.AttrOr("data-ad-position", "")
+		if got, want := unit.AttrOr("data-ad-slot", ""), testAdSlots[position]; want == "" || got != want {
+			t.Errorf("slot %d (%s) data-ad-slot = %q, want %q", i, position, got, want)
+		}
+		if got := unit.AttrOr("data-ad-format", ""); got != "auto" {
+			t.Errorf("slot %d data-ad-format = %q, want auto (responsive inside the fixed-height box)", i, got)
+		}
 		if got := slot.AttrOr("data-pagefind-ignore", ""); got != "all" {
 			t.Errorf("slot %d data-pagefind-ignore = %q, want all", i, got)
 		}
 	})
+}
+
+// Without an ad unit id a slot would render an empty box on every page,
+// so each position needs one before ads can go on.
+func TestAdSlots_EnabledWithoutAnAdUnitIDFailsTheBuildNamingThePosition(t *testing.T) {
+	cfg := adsOnConfig()
+	cfg.AdSenseSlots = map[string]string{"after-tldr": "1111111111"}
+
+	_, res := buildtest.Build(t, cfg, buildtest.ValidTree())
+
+	buildtest.RequireErrorRule(t, res, "", "ads-config", "after-what-happened")
+	buildtest.RequireErrorRule(t, res, "", "ads-config", "after-body")
+}
+
+func TestAdSlots_AdUnitIDMustBeDigits(t *testing.T) {
+	cfg := adsOnConfig()
+	cfg.AdSenseSlots = map[string]string{"after-tldr": "ca-pub-1", "after-what-happened": "2222222222", "after-body": "3333333333"}
+
+	_, res := buildtest.Build(t, cfg, buildtest.ValidTree())
+
+	buildtest.RequireErrorRule(t, res, "", "ads-config", "after-tldr")
+}
+
+// Previews (and make dev) never carry ads: their impressions would be the
+// Author's own, and Lighthouse CI measures Previews (ADR-0006).
+func TestAdSlots_OmittedFromPreviewBuilds(t *testing.T) {
+	cfg := adsOnConfig()
+	cfg.Mode = builder.Preview
+	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
+
+	if hits := buildtest.FilesContaining(t, out, "googlesyndication.com"); len(hits) != 0 {
+		t.Errorf("AdSense appears in %v in a preview build", hits)
+	}
+	if n := buildtest.Page(t, out, explainerPath).Find(".ad-slot").Length(); n != 0 {
+		t.Errorf("found %d ad slots in a preview build, want none", n)
+	}
 }
 
 func TestAdSlots_EnabledWithoutAdSenseClientFailsTheBuild(t *testing.T) {

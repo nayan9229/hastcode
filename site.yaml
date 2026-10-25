@@ -6,12 +6,19 @@ plausible_domain: hastcode.com
 # Ads: one flag switches every ad slot from an empty fixed-height
 # placeholder to an AdSense unit. Off in v1; adsense_client (ca-pub-...)
 # is required when ads_enabled is true.
-ads_enabled: false
+ads_enabled: true
 # /ads.txt (IAB Authorized Digital Sellers): one record per line, verbatim.
 # Add each ad network's line here when you join it; empty writes no file.
 ads_txt:
   - google.com, pub-8711471207758471, DIRECT, f08c47fec0942fa0
-adsense_client: ""
+adsense_client: ca-pub-8711471207758471
+# AdSense ad unit ids (the data-ad-slot digits), one per slot position;
+# the same id may be reused. Required for Production and QA builds while
+# ads_enabled is true. AdSense: Ads > By ad unit > Display ads.
+adsense_slots:
+  after-tldr: ""
+  after-what-happened: ""
+  after-body: ""
 # IndexNow key (indexnow.org): public by design, served at /<key>.txt.
 # Keep it stable; changing it invalidates the key Bing has verified.
 # Blank turns IndexNow off.

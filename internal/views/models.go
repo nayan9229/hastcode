@@ -73,6 +73,8 @@ type Ads struct {
 	Enabled bool
 	// Client is the AdSense publisher id ("ca-pub-..."); required when Enabled.
 	Client string
+	// Slots are the AdSense ad unit ids (data-ad-slot) by slot position.
+	Slots map[string]string
 }
 
 // Link is a named site-relative URL.

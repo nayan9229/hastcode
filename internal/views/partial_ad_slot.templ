@@ -7,6 +7,9 @@ const (
 	AdAfterBody         = "after-body"          // both: after the article body
 )
 
+// AdPositions are every slot position, each needing an AdSense ad unit id.
+var AdPositions = []string{AdAfterTLDR, AdAfterWhatHappened, AdAfterBody}
+
 // adsenseLoader emits the AdSense library once per page, at the first slot,
 // so pages without slots never load it.
 var adsenseLoader = templ.NewOnceHandle()
@@ -22,7 +25,7 @@ templ AdSlot(ads Ads, position string) {
 			@adsenseLoader.Once() {
 				<script async src={ "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=" + ads.Client } crossorigin="anonymous"></script>
 			}
-			<ins class="adsbygoogle" data-ad-client={ ads.Client }></ins>
+			<ins class="adsbygoogle" data-ad-client={ ads.Client } data-ad-slot={ ads.Slots[position] } data-ad-format="auto"></ins>
 			@templ.Raw("<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>")
 		</aside>
 	}

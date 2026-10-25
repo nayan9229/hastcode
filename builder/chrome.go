@@ -21,9 +21,16 @@ func (s *site) page(urlPath, title, description string) views.Page {
 		Canonical:       s.absURL(urlPath),
 		Social:          views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
 		Chrome:          s.chrome(),
-		Ads:             views.Ads{Enabled: s.cfg.AdsEnabled, Client: s.cfg.AdSenseClient},
+		Ads:             views.Ads{Enabled: s.adsOn(), Client: s.cfg.AdSenseClient, Slots: s.cfg.AdSenseSlots},
 		PlausibleDomain: s.analyticsDomain(),
 	}
+}
+
+// adsOn reports whether pages carry ad units: never in preview builds
+// (Previews and make dev), whose impressions would be the Author's own and
+// which Lighthouse CI measures without third-party scripts (ADR-0006).
+func (s *site) adsOn() bool {
+	return s.cfg.AdsEnabled && s.cfg.Mode != Preview
 }
 
 // analyticsDomain is the Plausible domain pages carry: none in preview

@@ -46,6 +46,10 @@ type Config struct {
 	// AdSenseClient is the AdSense publisher id ("ca-pub-..."), required
 	// when AdsEnabled.
 	AdSenseClient string `yaml:"adsense_client"`
+	// AdSenseSlots are the AdSense ad unit ids (data-ad-slot, digits) by
+	// slot position: after-tldr, after-what-happened, after-body. Each is
+	// required when AdsEnabled, or the slot would stay an empty box.
+	AdSenseSlots map[string]string `yaml:"adsense_slots"`
 	// PlausibleDomain is the Plausible analytics site; blank omits the
 	// analytics script.
 	PlausibleDomain string `yaml:"plausible_domain"`

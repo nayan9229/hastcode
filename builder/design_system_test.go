@@ -160,6 +160,7 @@ func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
 	ads.PlausibleDomain = "hastcode.com"
 	ads.AdsEnabled = true
 	ads.AdSenseClient = "ca-pub-1234567890123456"
+	ads.AdSenseSlots = map[string]string{"after-tldr": "1", "after-what-happened": "2", "after-body": "3"}
 
 	for name, cfg := range map[string]builder.Config{"default": buildtest.Config(), "analytics": analytics, "ads": ads} {
 		t.Run(name, func(t *testing.T) {
