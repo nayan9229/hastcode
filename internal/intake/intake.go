@@ -14,6 +14,7 @@
 //	watchlist.go   the Watchlist file: Source, LoadWatchlist and its validation
 //	fetch.go       the per-Source-type fetcher registry (registerFetcher) and Item
 //	fetch_feed.go  feed Sources: RSS 2.0 and Atom, the format read from the root element
+//	fetch_github.go  repository Sources: releases through the GitHub REST API (internal/github), never github.com pages
 //	http.go        the HTTP GET a feed fetch makes
 //	lead.go        Lead and its ID
 //	state.go       the seen-state file (state.json): every Lead ever listed and per-Source state
@@ -52,8 +53,16 @@ type Intake struct {
 	// ContentDir is the content tree. Run refuses a StateDir inside it,
 	// so Intake can never write under it.
 	ContentDir string
-	// HTTP makes the feed requests; default http.DefaultClient.
+	// HTTP makes the feed requests; default http.DefaultClient. When set,
+	// the GitHub requests use it too.
 	HTTP *http.Client
+	// GitHubURL is the GitHub REST API repository Sources are fetched
+	// from (fetch_github.go); default github.APIURL. Tests point it at a
+	// fake.
+	GitHubURL string
+	// Getenv reads the GitHub token (github.EnvToken), needed only when
+	// the Watchlist has a repository Source; default os.Getenv.
+	Getenv func(string) string
 	// Now is the run's clock (Lead ages, first-seen dates); default
 	// time.Now.
 	Now func() time.Time
@@ -71,8 +80,8 @@ type Report struct {
 	Open int
 	// QueueFile is the queue's path.
 	QueueFile string
-	// Skipped are the Sources this run did not fetch, with why (a GitHub
-	// repository Source until its fetcher exists).
+	// Skipped are the Sources this run did not fetch, with why (a Source
+	// type with no registered fetcher).
 	Skipped []SkippedSource
 }
 

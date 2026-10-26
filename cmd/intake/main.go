@@ -9,8 +9,9 @@
 //
 // The Verticals come from -config (site.yaml). The queue and the
 // seen-state live in -state, a local gitignored directory; Intake writes
-// nothing under -content. All logic is in internal/intake; main is flags
-// and exit codes:
+// nothing under -content. Repository Sources read GITHUB_TOKEN, as the
+// fetch command does; a feed-only Watchlist needs none. All logic is in
+// internal/intake; main is flags and exit codes:
 //
 //	0  done
 //	1  the run failed: an invalid Watchlist, a Source that failed, I/O

@@ -135,27 +135,6 @@ func TestRun_LeadIDsAreStableAcrossRunsAndShortEnoughToType(t *testing.T) {
 	}
 }
 
-func TestRun_SkipsRepositorySourcesWithANote(t *testing.T) {
-	feeds := newFeedServer(t)
-	in := newIntake(t, exampleWatchlist(t, feeds))
-
-	report := mustRun(t, in)
-
-	if len(report.Skipped) != 1 || report.Skipped[0].Source != "Example Runtime" {
-		t.Fatalf("skipped = %+v, want the repository Source Example Runtime", report.Skipped)
-	}
-	var summary strings.Builder
-	report.WriteSummary(&summary)
-	if !strings.Contains(summary.String(), "skipped Example Runtime") {
-		t.Errorf("summary does not name the skipped Source:\n%s", summary.String())
-	}
-	for _, l := range readQueue(t, in) {
-		if l.Vertical == "Languages & Runtimes" {
-			t.Errorf("queue lists %q from the skipped repository Source", l.Title)
-		}
-	}
-}
-
 func TestRun_WritesNothingOutsideTheStateDirectory(t *testing.T) {
 	feeds := newFeedServer(t)
 	root := t.TempDir()

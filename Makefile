@@ -94,7 +94,8 @@ refresh:
 # only, like a Refresh; never in GitHub Actions. The queue and the
 # seen-state live in $(INTAKE_STATE), gitignored; nothing is written under
 # $(CONTENT). `make lead-dismiss ID=…` hides a Lead for good; `make lead
-# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one. See README
+# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one. Repository
+# Sources need GITHUB_TOKEN (the REST API, as for `make fetch`). See README
 # "Intake".
 INTAKE_STATE ?= .intake
 WATCHLIST    ?= sources.yaml

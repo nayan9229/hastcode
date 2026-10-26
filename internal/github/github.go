@@ -146,13 +146,37 @@ func (e *StatusError) Error() string {
 // 429 after the wait GitHub asks for, and a 5xx after a short backoff,
 // each at most Retries times and never longer than MaxWait at once.
 func (c *Client) Get(ctx context.Context, path string, v any) (http.Header, error) {
+	header, _, err := c.GetIfNoneMatch(ctx, path, "", v)
+	return header, err
+}
+
+// GetIfNoneMatch is Get as a conditional request (RFC 9110 §13.1.2): a
+// non-empty etag (the ETag header of an earlier answer) is sent as
+// If-None-Match, and a 304 answer returns notModified with v untouched.
+// GitHub does not count an authorised 304 against the primary rate limit
+// (docs/research/content-source-intake.md §5.3). The returned headers carry
+// the ETag to send next time.
+func (c *Client) GetIfNoneMatch(ctx context.Context, path, etag string, v any) (header http.Header, notModified bool, err error) {
+	header, err = c.get(ctx, path, etag, v)
+	if errors.Is(err, errNotModified) {
+		return header, true, nil
+	}
+	return header, false, err
+}
+
+// errNotModified is how get reports a 304 to GetIfNoneMatch.
+var errNotModified = errors.New("not modified (304)")
+
+func (c *Client) get(ctx context.Context, path, etag string, v any) (http.Header, error) {
 	for attempt := 0; ; attempt++ {
-		status, header, body, err := c.do(ctx, path)
+		status, header, body, err := c.do(ctx, path, etag)
 		if err != nil {
 			return nil, fmt.Errorf("GET %s: %w", path, err)
 		}
 		var wait time.Duration
 		switch {
+		case status == http.StatusNotModified && etag != "":
+			return header, errNotModified
 		case status == http.StatusOK:
 			if v != nil {
 				if err := json.Unmarshal(body, v); err != nil {
@@ -192,10 +216,13 @@ func (c *Client) Get(ctx context.Context, path string, v any) (http.Header, erro
 	}
 }
 
-func (c *Client) do(ctx context.Context, path string) (int, http.Header, []byte, error) {
+func (c *Client) do(ctx context.Context, path, etag string) (int, http.Header, []byte, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, c.BaseURL+path, nil)
 	if err != nil {
 		return 0, nil, nil, err
+	}
+	if etag != "" {
+		req.Header.Set("If-None-Match", etag)
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", apiVersion)

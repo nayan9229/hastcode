@@ -200,7 +200,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
-| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom); the HTTP GET (`http.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
+| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom; `fetch_github.go`: repository Sources' releases through `internal/github`, ETag kept in `SourceState`); the HTTP GET (`http.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -716,8 +716,7 @@ Adding a Source is one entry with a reason, in its own commit. Every run
 validates the whole file first and stops before any request on an unknown
 Vertical or kind, both or neither of `feed` and `repository`, a duplicate
 name, a missing name, site or reason, or an unknown key, listing every
-problem by Source name. Repository Sources pass validation but are skipped
-with a note until their fetcher lands (ticket 04).
+problem by Source name.
 
 **A run** fetches each feed Source in Watchlist order, reads RSS 2.0 or
 Atom (told apart by the root element, never the `Content-Type`), and
@@ -725,6 +724,22 @@ records each item not seen before as an open Lead whose kind and Vertical
 are copied from its Source, never guessed. A second run lists nothing new.
 A Lead's ID is eight characters derived from the Source's name and the
 item's RSS `guid` (else its link) or Atom `id`, the same on every run.
+
+**Repository Sources** (`repository: owner/name`) are read through the
+GitHub REST API with the Fact Pack fetcher's client (`internal/github`):
+one `GET /repos/{owner}/{name}/releases?per_page=10` per Source per run,
+with the same `GITHUB_TOKEN`, User-Agent and rate-limit handling as `make
+fetch`; never a github.com page, `releases.atom` included (research §5.3).
+The token is needed only when the Watchlist has a repository Source; without
+it each one fails naming `GITHUB_TOKEN`. The request is conditional: the
+ETag of the last answer goes back as `If-None-Match`, and an unchanged list
+answers 304, which GitHub does not count against the rate limit when
+authenticated. A release is a Lead titled by its name (else its tag),
+linked to its release page, dated by `published_at`, keyed on its release
+id. **Prerelease rule:** prereleases and drafts are never Leads (release
+candidates are not news a Reader can act on, and alpha/beta/rc streams would
+bury the full releases); a skipped prerelease is not marked seen, so if the
+maintainers promote that same release to a full one, the next run lists it.
 
 **Where state lives**: `.intake/` at the repository root (gitignored;
 `-state` moves it, but never inside the content tree, which Intake refuses).

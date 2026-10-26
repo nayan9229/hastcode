@@ -6,7 +6,7 @@ Spec: `../spec.md` ("Intake"). Research section 5 (REST limits, `releases.atom` 
 
 **Blocked by:** 02 (Intake tracer)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Intake-seam tests against a fake GitHub (reuse the Fact Pack fake's approach): new releases listed as Leads with the Source's kind and Vertical; second run lists nothing new; a missing token gives a clear error for repository Sources only; prereleases handled per a documented rule
-- [ ] No request ever goes to github.com web pages
+- [x] Intake-seam tests against a fake GitHub (reuse the Fact Pack fake's approach): new releases listed as Leads with the Source's kind and Vertical; second run lists nothing new; a missing token gives a clear error for repository Sources only; prereleases handled per a documented rule
+- [x] No request ever goes to github.com web pages

@@ -109,7 +109,9 @@ func exampleWatchlist(t *testing.T, f *feedServer) string {
 }
 
 // newIntake is an Intake over watchlist with a temp state directory, the
-// fixed clock and the test Verticals.
+// fixed clock and the test Verticals. Its repository Sources go to a fake
+// GitHub where every repository has no releases, with a test token
+// (newIntakeWithGitHub gives a test the fake).
 func newIntake(t *testing.T, watchlist string) *intake.Intake {
 	t.Helper()
 	return &intake.Intake{
@@ -117,6 +119,8 @@ func newIntake(t *testing.T, watchlist string) *intake.Intake {
 		Verticals: testVerticals,
 		StateDir:  filepath.Join(t.TempDir(), ".intake"),
 		Now:       func() time.Time { return testNow },
+		GitHubURL: newFakeGitHub(t).srv.URL,
+		Getenv:    tokenEnv,
 	}
 }
 
