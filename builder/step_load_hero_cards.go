@@ -14,8 +14,8 @@ import (
 	"hastcode.com/site/internal/views"
 )
 
-// Generated heroes (spec "Page composition and gates": generated hero;
-// ticket 10). A Piece that names no `hero` gets one drawn by the build: a
+// Generated heroes (spec "Page composition and gates": generated hero).
+// A Piece that names no `hero` gets one drawn by the build: a
 // Repo Profile the hero card, from its Fact Pack (views.HeroCardPNG); a
 // Case Study, Concept, Comparison or Brief the title card, from its title,
 // kind and Vertical (views.TitleCardPNG). The card is drawn, cached under
@@ -65,7 +65,7 @@ func drawHeroCards(s *site) error {
 		if b.Hero != "" || s.failed[b.File] {
 			continue
 		}
-		c := views.TitleCard{Title: b.Title, Kind: "Brief"}
+		c := views.TitleCard{Title: b.Title, Kind: briefLabel}
 		if err := s.registerHeroCard(b.File, b.Slug, views.TitleCardPNG(c), c.Alt()); err != nil {
 			return err
 		}

@@ -25,6 +25,8 @@ func init() {
 }
 
 const (
+	// ruleHeroMissing is a named `hero` file that is not there; a Piece
+	// without `hero` gets a drawn card and never reaches it.
 	ruleHeroMissing   = "hero-missing"
 	ruleHeroFormat    = "hero-format"
 	ruleHeroTooNarrow = "hero-too-narrow"

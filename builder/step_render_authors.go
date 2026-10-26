@@ -97,7 +97,7 @@ func (s *site) authorPieces(slug string) []views.AuthorPiece {
 	}
 	for _, b := range s.publishedBriefs() {
 		if b.Author == slug {
-			pieces = append(pieces, views.AuthorPiece{Type: "Brief", Title: b.Title, URL: briefURL(b), Published: b.Published})
+			pieces = append(pieces, views.AuthorPiece{Type: briefLabel, Title: b.Title, URL: briefURL(b), Published: b.Published})
 		}
 	}
 	slices.SortStableFunc(pieces, func(a, b views.AuthorPiece) int { return b.Published.Compare(a.Published) })

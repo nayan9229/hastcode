@@ -15,7 +15,7 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
-// Generated title card (ticket 10). Every Piece without `hero` gets its
+// Generated title card. Every Piece without `hero` gets its
 // hero from the build, the way a Repo Profile does: a Case Study, Concept,
 // Comparison or Brief gets a card drawn from its title, kind and Vertical
 // (or "Brief") and fed through the hero pipeline like a sourced file.
@@ -122,12 +122,6 @@ func articleType(name string) string {
 	return "Article"
 }
 
-// titleCardFile is the card the build draws for a Piece: written under the
-// build cache, mirroring the content path (README "generated hero").
-func titleCardFile(cacheDir, contentFile string) string {
-	return filepath.Join(cacheDir, "hero-cards", filepath.FromSlash(strings.TrimSuffix(contentFile, ".md")+".png"))
-}
-
 // drawnTitleCard builds p into a fresh build cache and returns the card it
 // drew.
 func drawnTitleCard(t *testing.T, p titleCardPiece) []byte {
@@ -135,7 +129,7 @@ func drawnTitleCard(t *testing.T, p titleCardPiece) []byte {
 	cfg := buildtest.Config()
 	cfg.CacheDir = t.TempDir()
 	buildtest.MustBuild(t, cfg, p.tree)
-	data, err := os.ReadFile(titleCardFile(cfg.CacheDir, p.file))
+	data, err := os.ReadFile(buildtest.HeroCardFile(cfg.CacheDir, p.file))
 	if err != nil {
 		t.Fatalf("the build drew no card: %v", err)
 	}
@@ -251,14 +245,14 @@ func TestTitleCard_SecondBuildOfAnUnchangedPieceDrawsTheSameBytesAndHitsTheImage
 
 			cfg.CacheDir = t.TempDir()
 			first := buildtest.MustBuild(t, cfg, p.tree)
-			firstCard := titleCardFile(cfg.CacheDir, p.file)
+			firstCard := buildtest.HeroCardFile(cfg.CacheDir, p.file)
 			before := cacheSnapshot(t, cfg.Images.CacheDir)
 			cfg.CacheDir = t.TempDir() // fresh output and build cache: the card is drawn again
 			second := buildtest.MustBuild(t, cfg, p.tree)
 			after := cacheSnapshot(t, cfg.Images.CacheDir)
 
 			a, errA := os.ReadFile(firstCard)
-			b, errB := os.ReadFile(titleCardFile(cfg.CacheDir, p.file))
+			b, errB := os.ReadFile(buildtest.HeroCardFile(cfg.CacheDir, p.file))
 			if errA != nil || errB != nil || !bytes.Equal(a, b) {
 				t.Errorf("two builds of the same Piece drew different cards (%v, %v)", errA, errB)
 			}

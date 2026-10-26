@@ -7,7 +7,6 @@ import (
 	"image/png"
 	"maps"
 	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -95,10 +94,9 @@ func TestHeroCard_AltTextIsTheRepositoryAndItsDescriptionOnTheImgAndOpenGraph(t 
 	}
 }
 
-// heroCardFile is the card the build draws for the fixture Profile: written
-// under the build cache, mirroring the content path (README "hero card").
+// heroCardFile is the card the build draws for the fixture Profile.
 func heroCardFile(cacheDir string) string {
-	return filepath.Join(cacheDir, "hero-cards", "explainers", "distributed-systems", "apache-iggy.png")
+	return buildtest.HeroCardFile(cacheDir, "explainers/distributed-systems/apache-iggy.md")
 }
 
 // Spec: the hero pipeline cuts 16:9, 4:3, 1:1 and 1200x630 crops from the

@@ -152,3 +152,12 @@ func FileSize(tb testing.TB, outDir, urlPath string) int64 {
 	}
 	return info.Size()
 }
+
+// HeroCardFile is where a build with cfg.CacheDir = cacheDir writes the
+// card it draws for the Piece at contentFile (content-relative,
+// slash-separated: "explainers/<vertical>/<slug>.md" or
+// "briefs/<slug>.md"): under the build cache's hero-cards/, mirroring the
+// content path (README "generated hero").
+func HeroCardFile(cacheDir, contentFile string) string {
+	return filepath.Join(cacheDir, "hero-cards", filepath.FromSlash(strings.TrimSuffix(contentFile, ".md")+".png"))
+}

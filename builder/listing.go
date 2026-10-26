@@ -93,6 +93,10 @@ var explainerKinds = []explainerKind{
 	{content.RepoProfile, "Repo Profile", "Repo Profiles", "Explainers that evaluate one open-source repository: what it is, how it is built, and whether you should adopt it."},
 }
 
+// briefLabel is a Brief as Readers see it: the author page's piece type
+// and the title card's kind.
+const briefLabel = "Brief"
+
 func kindOf(k content.Kind) explainerKind {
 	for _, ek := range explainerKinds {
 		if ek.kind == k {
