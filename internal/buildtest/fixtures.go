@@ -102,11 +102,14 @@ type Explainer struct {
 	Tags        []string
 	Published   string
 	Reviewed    string
-	Author      string
-	Hero        string
-	HeroAlt     string
-	HeroImage   []byte
-	Related     []string
+	// Verified is the `verified` date (YYYY-MM-DD) only the Author sets on
+	// real content; fixtures set it to test the gate.
+	Verified  string
+	Author    string
+	Hero      string
+	HeroAlt   string
+	HeroImage []byte
+	Related   []string
 	// Sources is the optional `sources` frontmatter list.
 	Sources []Source
 	Draft   bool
@@ -235,6 +238,7 @@ func (e Explainer) Markdown() string {
 	list(&b, "tags", e.Tags)
 	field(&b, "published", e.Published)
 	field(&b, "reviewed", e.Reviewed)
+	field(&b, "verified", e.Verified)
 	field(&b, "author", e.Author)
 	field(&b, "hero", e.Hero)
 	field(&b, "hero_alt", e.HeroAlt)

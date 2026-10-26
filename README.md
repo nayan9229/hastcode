@@ -117,6 +117,20 @@ every Publish stays red until the Author page and the About,
 Contact and Editorial Policy pages are filled in. Preview builds (`make
 dev`, `make build MODE=preview`, the Preview workflow) only warn, so the
 drafts can be read in place.
+
+**The verified gate (ADR-0007).** Explainers (every kind) and Briefs take
+an optional frontmatter `verified: YYYY-MM-DD`: the day the Author checked
+every claim against its Source. Only the Author sets it; an agent never
+does (CLAUDE.md). A **production** build fails (rule `unverified`, naming
+the content file; the page is not written) on any non-draft Piece whose
+`published` day is after 2026-10-26 when `verified` is missing, earlier
+than the `published` day, or after the build clock's day (both days read
+in `published`'s own offset). Preview builds report the same condition as
+a warning. Drafts, and Pieces published on or before 2026-10-26 (the ten
+Repo Profiles that predate the rule), are outside it. A value that is not
+a `YYYY-MM-DD` date fails with rule `frontmatter`
+(`step_validate_verified.go`).
+
 Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: the Explainer names a raster beside its Markdown in `hero` (and
@@ -243,7 +257,7 @@ exclude drafts (production only; Explainers
 and Briefs) 30, draw hero cards 35 (Repo Profiles without `hero`: the
 card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
-skeleton 32, Brief skeleton 35, section-length warning 40, Review-overdue warning 50, validate heroes 50
+skeleton 32, Brief skeleton 35, section-length warning 40, verified gate 45, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30
 (and a Repo Profile's Fact Pack sources), insert Repo Profile fact sections 35,
@@ -478,7 +492,11 @@ parsed output. Helpers in `internal/buildtest`:
   production; set `cfg.Now` to pin the clock; fast hero encoding into the
   shared `SharedImageCacheDir()` so each fixture hero is encoded once; set
   `cfg.Images.CacheDir = t.TempDir()` to test caching itself).
-  Mutate a copy of `ValidExplainer()` to make an invalid fixture.
+  Mutate a copy of `ValidExplainer()` to make an invalid fixture. The
+  fixtures publish before 2026-10-26, so the verified gate leaves them
+  alone; set `Verified` on an Explainer or Brief fixture (tests only, never
+  real content) together with a later `Published` and a pinned `cfg.Now`
+  to test it (`builder/verified_test.go`).
 - Run: `Build(t, cfg, tree) (outDir, Result)`, `MustBuild(t, cfg, tree) outDir`.
   `Config()` points `ToolsDir` at the repo root; `Build` gives each build a
   fresh temp `CacheDir` unless the test sets one, and **skips** the test (with

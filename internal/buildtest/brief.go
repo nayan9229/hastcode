@@ -13,12 +13,14 @@ type Brief struct {
 	Description string
 	Tags        []string
 	Published   string
-	Author      string
-	Hero        string
-	HeroAlt     string
-	HeroImage   []byte
-	SourceURL   string
-	Explainers  []string
+	// Verified is the `verified` date (YYYY-MM-DD); see Explainer.Verified.
+	Verified   string
+	Author     string
+	Hero       string
+	HeroAlt    string
+	HeroImage  []byte
+	SourceURL  string
+	Explainers []string
 	// Sources is the optional `sources` frontmatter list.
 	Sources []Source
 	Draft   bool
@@ -75,6 +77,7 @@ func (b Brief) Markdown() string {
 	field(&s, "description", b.Description)
 	list(&s, "tags", b.Tags)
 	field(&s, "published", b.Published)
+	field(&s, "verified", b.Verified)
 	field(&s, "author", b.Author)
 	field(&s, "hero", b.Hero)
 	field(&s, "hero_alt", b.HeroAlt)
