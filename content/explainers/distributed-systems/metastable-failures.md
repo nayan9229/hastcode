@@ -1,6 +1,6 @@
 ---
 title: "Metastable failures: why systems stay down after the trigger is gone"
-description: "A metastable failure outlives its trigger because a feedback loop such as retries keeps the system overloaded. How the loop works, and the defences that break it."
+description: "A metastable failure outlives its trigger because a loop such as retries keeps the system overloaded. How the loop works and what breaks it."
 kind: concept
 vertical: distributed-systems
 tags: ["metastability", "retries", "load-shedding", "overload", "reliability"]

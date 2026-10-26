@@ -1,6 +1,6 @@
 ---
 title: "Connection reuse in HTTP/1.1, HTTP/2 and HTTP/3: how each works and where each breaks"
-description: "How HTTP/1.1, HTTP/2 and HTTP/3 reuse connections, where each one breaks (head-of-line blocking, limits, idle races, coalescing), and which to use between services."
+description: "How HTTP/1.1, HTTP/2 and HTTP/3 reuse connections, where each one breaks, and which to use for calls between services."
 kind: comparison
 vertical: apis-networking
 tags: ["http", "http2", "http3", "quic", "connection-pooling", "go"]
