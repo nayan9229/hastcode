@@ -103,8 +103,11 @@ INTAKE_FLAGS  = -watchlist $(WATCHLIST) -config $(CONFIG) -content $(CONTENT) -s
 ID       ?=
 KIND     ?=
 VERTICAL ?=
+# MAX_AGE=30d widens the age cutoff for one run (default 14 days: older
+# entries are recorded as seen, never listed).
+MAX_AGE  ?=
 intake: generate
-	go run ./cmd/intake $(INTAKE_FLAGS)
+	go run ./cmd/intake $(INTAKE_FLAGS) $(if $(MAX_AGE),-max-age "$(MAX_AGE)")
 # Both refuse to start without ID= (the command refuses an empty ID too),
 # so a forgotten ID is a usage error, never a full run.
 lead-dismiss: generate

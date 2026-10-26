@@ -691,10 +691,10 @@ never writes a Piece. It runs locally when the Author runs it, never in
 GitHub Actions.
 
 ```sh
-make intake                   # list new Leads in .intake/queue.md
+make intake                   # list new Leads in .intake/queue.md (MAX_AGE=30d: a wider one-off run)
 make lead-dismiss ID=opu7b35z # hide a Lead for good
 make lead ID=opu7b35z         # start a draft skeleton (ticket 09: not built yet)
-# same as: go run ./cmd/intake [-dismiss ID | -pick ID [-kind K] [-vertical V]]
+# same as: go run ./cmd/intake [-max-age 30d | -dismiss ID | -pick ID [-kind K] [-vertical V]]
 #          -watchlist sources.yaml -config site.yaml -content content -state .intake
 ```
 
@@ -722,6 +722,13 @@ problem by Source name.
 Atom (told apart by the root element, never the `Content-Type`), and
 records each item not seen before as an open Lead whose kind and Vertical
 are copied from its Source, never guessed. A second run lists nothing new.
+**Age cutoff**: a run lists only entries published within 14 days of its
+clock (`Intake.MaxAge`, `DefaultMaxAge`), so the first run does not list
+every Source's back catalogue. An older entry is recorded in the seen-state
+as `too-old` (seen, never listed); `make intake MAX_AGE=30d` (`-max-age
+30d`, or a Go duration such as `720h`) widens the cutoff for one run, which
+lists the `too-old` entries it now reaches as new, once. An entry with no
+date is listed once, on the run that first sees it.
 A Lead's ID is eight characters derived from the Source's name and the
 item's RSS `guid` (else its link) or Atom `id`, the same on every run.
 
@@ -762,9 +769,9 @@ release to a full one, the next run lists it.
 by Vertical (site.yaml order), newest first, one line each (ID, title
 linked, Source, kind, date and age, `new` on the run that first listed
 it, `covered` when a Piece already cites its link), rewritten from the state on every run. `.intake/state.json` is the
-seen-state: every Lead ever listed, keyed by ID, with its decision
-(`open`, `picked`, `dismissed`, `expired`) and first-seen time, plus
-per-Source state (`etag`, `last_modified`, `newest`). Deleting `.intake/` makes the next run list everything
+seen-state: every entry ever seen, keyed by Lead ID, with its decision
+(`open`, `picked`, `dismissed`, `expired`, or `too-old`: seen, never listed) and first-seen time, plus
+per-Source state (`etag`, `last_modified`, `newest`). Deleting `.intake/` makes the next run list everything within the cutoff
 again.
 
 **Deciding** keeps the queue to open decisions only. `make lead-dismiss

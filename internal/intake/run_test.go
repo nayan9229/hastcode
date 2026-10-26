@@ -115,6 +115,7 @@ func TestRun_LeadIDsAreStableAcrossRunsAndShortEnoughToType(t *testing.T) {
 	a := readQueueAfterRun(t, newIntake(t, watchlist))
 	later := newIntake(t, watchlist) // a fresh state directory, a week on
 	later.Now = func() time.Time { return testNow.AddDate(0, 0, 7) }
+	later.MaxAge = 30 * 24 * time.Hour // so its age cutoff still reaches all four
 	b := readQueueAfterRun(t, later)
 
 	if len(a) != 4 || len(b) != 4 {

@@ -2,7 +2,7 @@
 // the Source Watchlist and lists the new Leads in a local queue. `make
 // intake`, `make lead-dismiss ID=…` and `make lead ID=…` run it.
 //
-//	go run ./cmd/intake                         run: list new Leads in .intake/queue.md
+//	go run ./cmd/intake [-max-age 30d]          run: list new Leads in .intake/queue.md
 //	go run ./cmd/intake -dismiss <id>           hide a Lead for good
 //	go run ./cmd/intake -pick <id> [-kind k] [-vertical v]
 //	                                            start a draft skeleton from a Lead (ticket 09)
@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"time"
 
 	"hastcode.com/site/internal/intake"
 )
@@ -44,6 +45,8 @@ type options struct {
 	dismiss, pick string
 	set           map[string]bool
 	pickOptions   intake.PickOptions
+	// maxAge is -max-age: empty for the default (intake.DefaultMaxAge).
+	maxAge string
 }
 
 func main() {
@@ -56,6 +59,7 @@ func main() {
 	flag.StringVar(&o.pick, "pick", "", "pick the Lead with this ID: write its draft skeleton")
 	flag.StringVar(&o.pickOptions.Kind, "kind", "", "with -pick: override the Lead's suggested kind")
 	flag.StringVar(&o.pickOptions.Vertical, "vertical", "", "with -pick: override the Lead's Vertical")
+	flag.StringVar(&o.maxAge, "max-age", "", "list only entries published this recently: whole days (30d) or a duration; default 14d")
 	flag.Parse()
 	o.set = map[string]bool{}
 	flag.Visit(func(f *flag.Flag) { o.set[f.Name] = true })
@@ -75,6 +79,15 @@ func run(o options) int {
 		return usage("-pick needs a Lead ID (make lead ID=<id>)")
 	case !o.set["pick"] && (o.pickOptions.Kind != "" || o.pickOptions.Vertical != ""):
 		return usage("-kind and -vertical go with -pick")
+	case (o.set["dismiss"] || o.set["pick"]) && o.maxAge != "":
+		return usage("-max-age goes with a run, not -dismiss or -pick")
+	}
+	var maxAge time.Duration
+	if o.maxAge != "" {
+		var err error
+		if maxAge, err = intake.ParseMaxAge(o.maxAge); err != nil {
+			return usage(err.Error())
+		}
 	}
 	verticals, err := intake.LoadVerticals(o.config)
 	if err != nil {
@@ -86,6 +99,7 @@ func run(o options) int {
 		Verticals:  verticals,
 		StateDir:   o.stateDir,
 		ContentDir: o.contentDir,
+		MaxAge:     maxAge,
 		Log:        os.Stdout,
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)

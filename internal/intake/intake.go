@@ -32,6 +32,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -56,6 +57,11 @@ type Intake struct {
 	HTTP *http.Client
 	// Timeout bounds each request (http.go); default DefaultTimeout.
 	Timeout time.Duration
+	// MaxAge is the age cutoff: a run lists only entries published at most
+	// this long before its clock; default DefaultMaxAge. An older entry is
+	// recorded as seen (TooOld) and never listed, unless a later run with
+	// a wider MaxAge reaches it. An entry with no date is listed once.
+	MaxAge time.Duration
 	// GitHubURL is the GitHub REST API repository Sources are fetched
 	// from (fetch_github.go); default github.APIURL. Tests point it at a
 	// fake.
@@ -130,6 +136,7 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 		return nil, err
 	}
 	now := in.now()
+	cutoff := now.Add(-in.maxAge())
 	report := &Report{}
 	newIDs := map[string]bool{}
 	for _, src := range wl.Sources {
@@ -150,7 +157,13 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 		added := 0
 		for _, item := range fetched.Items {
 			lead := newLead(src, item, now)
-			if _, seen := st.Leads[lead.ID]; seen {
+			old := !item.Published.IsZero() && item.Published.Before(cutoff)
+			if prev, seen := st.Leads[lead.ID]; seen && (prev.Decision != TooOld || old) {
+				continue // listed before, or still too old
+			}
+			if old {
+				lead.Decision = TooOld // seen, never listed
+				st.Leads[lead.ID] = lead
 				continue
 			}
 			st.Leads[lead.ID] = lead
@@ -200,6 +213,35 @@ func (in *Intake) checkStateDir() error {
 		return fmt.Errorf("intake: state directory %s is inside the content tree %s; Intake never writes under it", in.StateDir, in.ContentDir)
 	}
 	return nil
+}
+
+// DefaultMaxAge is the age cutoff when Intake.MaxAge is zero: two weeks,
+// so a first run over the whole Watchlist lists what is current, not every
+// Source's back catalogue.
+const DefaultMaxAge = 14 * 24 * time.Hour
+
+// ParseMaxAge reads an age cutoff as the command takes it: whole days
+// ("30d") or a Go duration ("720h").
+func ParseMaxAge(s string) (time.Duration, error) {
+	if days, ok := strings.CutSuffix(s, "d"); ok {
+		n, err := strconv.Atoi(days)
+		if err != nil || n <= 0 {
+			return 0, fmt.Errorf("max age %q: want whole days (30d) or a duration (720h)", s)
+		}
+		return time.Duration(n) * 24 * time.Hour, nil
+	}
+	d, err := time.ParseDuration(s)
+	if err != nil || d <= 0 {
+		return 0, fmt.Errorf("max age %q: want whole days (30d) or a duration (720h)", s)
+	}
+	return d, nil
+}
+
+func (in *Intake) maxAge() time.Duration {
+	if in.MaxAge <= 0 {
+		return DefaultMaxAge
+	}
+	return in.MaxAge
 }
 
 func (in *Intake) now() time.Time {

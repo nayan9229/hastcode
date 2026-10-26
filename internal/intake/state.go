@@ -27,6 +27,10 @@ const (
 	Dismissed Decision = "dismissed"
 	// Expired: left open too long and dismissed by a run.
 	Expired Decision = "expired"
+	// TooOld: seen by a run but published before its age cutoff
+	// (Intake.MaxAge), so never listed: not a Lead the Author decides on.
+	// A later run with a wider MaxAge that reaches it lists it as new.
+	TooOld Decision = "too-old"
 )
 
 // state is the seen-state file: every Lead ever listed, keyed by ID, with
