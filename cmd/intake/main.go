@@ -12,8 +12,8 @@
 // nothing under -content. All logic is in internal/intake; main is flags
 // and exit codes:
 //
-//	0  done
-//	1  the run failed: an invalid Watchlist, a Source that failed, I/O
+//	0  done, even when Sources failed (each is named in the summary)
+//	1  the run failed: an invalid Watchlist, the state, I/O, interrupted
 //	2  usage: bad flags, unreadable site config
 package main
 

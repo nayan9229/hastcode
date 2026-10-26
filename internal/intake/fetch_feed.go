@@ -26,15 +26,18 @@ type feedFetcher struct{}
 const atomNS = "http://www.w3.org/2005/Atom"
 
 func (feedFetcher) fetch(ctx context.Context, in *Intake, src Source, prev SourceState) (Fetched, error) {
-	body, err := in.get(ctx, src.Feed)
+	resp, err := in.get(ctx, src.Feed, prev)
 	if err != nil {
 		return Fetched{}, err
 	}
-	items, err := parseFeed(body, src.Feed)
+	if resp.NotModified {
+		return Fetched{State: resp.State}, nil
+	}
+	items, err := parseFeed(resp.Body, src.Feed)
 	if err != nil {
 		return Fetched{}, fmt.Errorf("%s: %w", src.Feed, err)
 	}
-	return Fetched{Items: items, State: prev}, nil
+	return Fetched{Items: items, State: resp.State}, nil
 }
 
 func parseFeed(body []byte, feedURL string) ([]Item, error) {

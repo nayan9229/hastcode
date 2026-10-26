@@ -36,12 +36,13 @@ type feedServer struct {
 
 	mu       sync.Mutex
 	bodies   map[string][]byte // "/rss.xml" -> body
+	handlers map[string]http.HandlerFunc
 	requests []*http.Request
 }
 
 func newFeedServer(t *testing.T) *feedServer {
 	t.Helper()
-	f := &feedServer{t: t, bodies: map[string][]byte{}}
+	f := &feedServer{t: t, bodies: map[string][]byte{}, handlers: map[string]http.HandlerFunc{}}
 	for _, name := range []string{"rss.xml", "atom.xml"} {
 		f.serveFile("/"+name, filepath.Join("testdata", "feeds", name))
 	}
@@ -71,7 +72,12 @@ func (f *feedServer) serve(w http.ResponseWriter, r *http.Request) {
 	f.mu.Lock()
 	f.requests = append(f.requests, r.Clone(context.Background()))
 	body, ok := f.bodies[r.URL.Path]
+	h := f.handlers[r.URL.Path]
 	f.mu.Unlock()
+	if h != nil {
+		h(w, r)
+		return
+	}
 	if !ok {
 		http.NotFound(w, r)
 		return
@@ -80,6 +86,27 @@ func (f *feedServer) serve(w http.ResponseWriter, r *http.Request) {
 	// comes from the root element.
 	w.Header().Set("Content-Type", "text/xml")
 	w.Write(body)
+}
+
+// handle answers path with h from now on, in place of its body (a test's
+// own publisher behaviour: validators, errors, hangs).
+func (f *feedServer) handle(path string, h http.HandlerFunc) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.handlers[path] = h
+}
+
+// requestsTo are the requests made for path so far, in order.
+func (f *feedServer) requestsTo(path string) []*http.Request {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	var out []*http.Request
+	for _, r := range f.requests {
+		if r.URL.Path == path {
+			out = append(out, r)
+		}
+	}
+	return out
 }
 
 func (f *feedServer) requestCount() int {

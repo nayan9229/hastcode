@@ -38,11 +38,6 @@ type state struct {
 	Sources map[string]SourceState `json:"sources"`
 }
 
-// SourceState is what Intake keeps about one Source between runs, keyed by
-// the Source's name. Its fetcher returns it (Fetched.State) and gets it
-// back on the next run.
-type SourceState struct{}
-
 func loadState(dir string) (*state, error) {
 	st := &state{Version: stateVersion, Leads: map[string]Lead{}, Sources: map[string]SourceState{}}
 	data, err := os.ReadFile(filepath.Join(dir, StateFile))
