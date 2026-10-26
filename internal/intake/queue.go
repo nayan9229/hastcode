@@ -29,22 +29,23 @@ type queueGroup struct {
 }
 
 // queue builds the queue of st's open Leads: groups in Vertical order (a
-// Vertical no longer in site.yaml last, under its slug), newest first,
-// ties by title then ID so the file is stable.
-func (in *Intake) queue(st *state, isNew map[string]bool, now time.Time) *queue {
+// Vertical no longer in site.yaml last, under its slug), newest first (a
+// date after now counts as now), ties by title then ID so the file is
+// stable.
+func (in *Intake) queue(st *state, isNew, covered map[string]bool, now time.Time) *queue {
 	byVertical := map[string][]Lead{}
 	for _, l := range st.Leads {
 		if l.Decision == Open {
 			byVertical[l.Vertical] = append(byVertical[l.Vertical], l)
 		}
 	}
-	q := &queue{now: now, isNew: isNew}
+	q := &queue{now: now, isNew: isNew, covered: covered}
 	add := func(heading string, leads []Lead) {
 		if len(leads) == 0 {
 			return
 		}
 		slices.SortFunc(leads, func(a, b Lead) int {
-			if c := b.date().Compare(a.date()); c != 0 {
+			if c := q.date(b).Compare(q.date(a)); c != 0 {
 				return c
 			}
 			return strings.Compare(a.Title+a.ID, b.Title+b.ID)
@@ -64,6 +65,15 @@ func (in *Intake) queue(st *state, isNew map[string]bool, now time.Time) *queue 
 		add(slug, byVertical[slug])
 	}
 	return q
+}
+
+// date is l's date for ordering and age (Lead.date), no later than the run
+// clock: a Source that dates an entry in the future does not jump the queue.
+func (q *queue) date(l Lead) time.Time {
+	if d := l.date(); d.Before(q.now) {
+		return d
+	}
+	return q.now
 }
 
 // leads are the queue's Leads in order.
@@ -94,7 +104,7 @@ func (q *queue) render() string {
 		}
 	}
 	fmt.Fprintf(&b, "# Leads\n\n")
-	fmt.Fprintf(&b, "Intake %s: %s open, %d new.\n", q.now.UTC().Format("2006-01-02 15:04 UTC"), plural(len(all), "Lead"), newCount)
+	fmt.Fprintf(&b, "Intake %s: %s open, %d new.\n", q.now.UTC().Format(time.DateOnly+" 15:04 UTC"), plural(len(all), "Lead"), newCount)
 	fmt.Fprintf(&b, "Pick one with `make lead ID=<id>`; dismiss one with `make lead-dismiss ID=<id>`.\n")
 	for _, g := range q.groups {
 		fmt.Fprintf(&b, "\n## %s\n\n", g.heading)
@@ -113,19 +123,24 @@ func (q *queue) render() string {
 }
 
 // dateAndAge is "2026-10-24 (1 day old)", by the publication date or, when
-// the Source gives none, "first seen 2026-10-24 (…)".
+// the Source gives none, "first seen 2026-10-24 (…)"; a publication date
+// after the run clock is "2026-10-30 (date in future)".
 func (q *queue) dateAndAge(l Lead) string {
-	days := int(q.now.Sub(l.date()) / (24 * time.Hour))
-	age := "today"
-	if days > 0 {
-		age = plural(days, "day") + " old"
-	}
-	date := l.date().UTC().Format("2006-01-02")
+	date := l.date().UTC().Format(time.DateOnly)
 	if l.Published.IsZero() {
 		date = "first seen " + date
 	}
+	age := "today"
+	if l.date().After(q.now) {
+		age = "date in future"
+	} else if days := wholeDays(q.now.Sub(l.date())); days > 0 {
+		age = plural(days, "day") + " old"
+	}
 	return fmt.Sprintf("%s (%s)", date, age)
 }
+
+// wholeDays is d in whole days, rounded down.
+func wholeDays(d time.Duration) int { return int(d / (24 * time.Hour)) }
 
 func plural(n int, noun string) string {
 	if n == 1 {

@@ -33,14 +33,14 @@ func (feedFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sourc
 	if resp.NotModified {
 		return Fetched{State: resp.State}, nil
 	}
-	items, err := parseFeed(resp.Body, src.Feed)
+	entries, err := parseFeed(resp.Body, src.Feed)
 	if err != nil {
 		return Fetched{}, fmt.Errorf("%s: %w", src.Feed, err)
 	}
-	return Fetched{Items: items, State: resp.State}, nil
+	return Fetched{Entries: entries, State: resp.State}, nil
 }
 
-func parseFeed(body []byte, feedURL string) ([]Item, error) {
+func parseFeed(body []byte, feedURL string) ([]Entry, error) {
 	dec := xml.NewDecoder(bytes.NewReader(body))
 	dec.CharsetReader = charset.NewReaderLabel
 	dec.Strict = false
@@ -63,13 +63,13 @@ func parseFeed(body []byte, feedURL string) ([]Item, error) {
 			if err := dec.DecodeElement(&doc, &root); err != nil {
 				return nil, fmt.Errorf("RSS: %w", err)
 			}
-			return doc.items(base), nil
+			return doc.entries(base), nil
 		case root.Name.Local == "feed" && root.Name.Space == atomNS:
 			var doc atomFeed
 			if err := dec.DecodeElement(&doc, &root); err != nil {
 				return nil, fmt.Errorf("Atom: %w", err)
 			}
-			return doc.items(base), nil
+			return doc.entries(base), nil
 		default:
 			return nil, fmt.Errorf("not an RSS 2.0 or Atom feed (root element <%s>)", root.Name.Local)
 		}
@@ -92,8 +92,8 @@ type xmlText struct {
 	Text    string `xml:",chardata"`
 }
 
-func (d *rssDoc) items(base *url.URL) []Item {
-	var items []Item
+func (d *rssDoc) entries(base *url.URL) []Entry {
+	var entries []Entry
 	for _, it := range d.Items {
 		link := ""
 		for _, l := range it.Links {
@@ -106,14 +106,14 @@ func (d *rssDoc) items(base *url.URL) []Item {
 		if key == "" {
 			continue
 		}
-		items = append(items, Item{
+		entries = append(entries, Entry{
 			Key:       key,
 			Title:     oneLine(it.Title),
 			Link:      link,
 			Published: parseDate(it.PubDate, rssDateLayouts),
 		})
 	}
-	return items
+	return entries
 }
 
 // rssDateLayouts are RFC 822 dates as feeds write them: four-digit years,
@@ -138,8 +138,8 @@ type atomFeed struct {
 	} `xml:"http://www.w3.org/2005/Atom entry"`
 }
 
-func (f *atomFeed) items(base *url.URL) []Item {
-	var items []Item
+func (f *atomFeed) entries(base *url.URL) []Entry {
+	var entries []Entry
 	for _, e := range f.Entries {
 		link := ""
 		for _, l := range e.Links {
@@ -154,14 +154,14 @@ func (f *atomFeed) items(base *url.URL) []Item {
 		}
 		// A changed <updated> is an edit, not a new item (research §5.1):
 		// the key stays the id, and the date is <published> when given.
-		items = append(items, Item{
+		entries = append(entries, Entry{
 			Key:       key,
 			Title:     oneLine(e.Title),
 			Link:      link,
 			Published: parseDate(cmp.Or(e.Published, e.Updated), []string{time.RFC3339}),
 		})
 	}
-	return items
+	return entries
 }
 
 func parseDate(s string, layouts []string) time.Time {

@@ -1,7 +1,12 @@
 // Package intake is the Intake (GLOSSARY "Sourcing"; ADR-0007): the run
 // that checks the Source Watchlist and lists the new Leads for the Author.
-// It lists Leads; it never writes a Piece, and it writes nothing outside
-// its local state directory (never under the content tree).
+// It lists Leads; it never writes prose.
+//
+// What writes where: Run and Dismiss write only under StateDir (the
+// seen-state and the queue) and only read the content tree; they never
+// write outside StateDir. Pick (ticket 09) is the only entry point that
+// writes outside StateDir, and only under ContentDir: one draft skeleton
+// per pick.
 //
 // Entry points, one file each, wrapped by cmd/intake:
 //
@@ -11,14 +16,15 @@
 //
 // The rest, also one concern per file:
 //
+//	verticals.go   Vertical and LoadVerticals (site.yaml's Verticals in display order)
 //	watchlist.go   the Watchlist file: Source, LoadWatchlist and its validation
-//	fetch.go       the per-Source-type fetcher registry (registerFetcher) and Item
+//	fetch.go       the per-Source-type fetcher registry (registerFetcher) and Entry
 //	fetch_feed.go  feed Sources: RSS 2.0 and Atom, the format read from the root element
 //	fetch_github.go  repository Sources: releases through the GitHub REST API (internal/github), never github.com pages
 //	http.go        the HTTP GET a feed fetch makes
 //	lead.go        Lead and its ID
-//	state.go       the seen-state file (state.json): every Lead ever listed and per-Source state
-//	source_state.go   SourceState: a Source's validators (ETag, Last-Modified) and newest item date
+//	state.go       the seen-state file (state.json): every entry ever seen, by Lead ID, and per-Source state
+//	source_state.go   SourceState: a Source's validators (ETag, Last-Modified) and newest entry date
 //	source_health.go  failed and silent Sources in the Report and the run summary
 //	expire.go      expiry: open Leads undecided for ExpireAfter (7 days) become Expired
 //	covered.go     covered Leads: links a Piece already cites, read from the content tree, normalised
@@ -47,10 +53,12 @@ type Intake struct {
 	// name one, and the queue groups Leads in this order.
 	Verticals []Vertical
 	// StateDir is the local, gitignored directory holding the seen-state
-	// (StateFile) and the queue (QueueFile). Intake writes nowhere else.
+	// (StateFile) and the queue (QueueFile). Run and Dismiss write nowhere
+	// else.
 	StateDir string
-	// ContentDir is the content tree. Run refuses a StateDir inside it,
-	// so Intake can never write under it.
+	// ContentDir is the content tree. Run reads it (covered Leads); Run
+	// and Dismiss refuse a StateDir inside it, so neither writes under it.
+	// Pick (ticket 09) is its only writer: one draft skeleton per pick.
 	ContentDir string
 	// HTTP makes the feed requests; default http.DefaultClient. When set,
 	// the GitHub requests use it too.
@@ -72,8 +80,8 @@ type Intake struct {
 	// Now is the run's clock (Lead ages, first-seen dates); default
 	// time.Now.
 	Now func() time.Time
-	// Log receives progress lines (one per Source fetched or skipped).
-	// Default: discarded.
+	// Log receives progress lines (one per Source fetched or failed, one
+	// per Fact Pack skipped). Default: discarded.
 	Log io.Writer
 }
 
@@ -86,9 +94,6 @@ type Report struct {
 	Open int
 	// QueueFile is the queue's path.
 	QueueFile string
-	// Skipped are the Sources this run did not fetch, with why (a Source
-	// type with no registered fetcher).
-	Skipped []SkippedSource
 	// Failed are the Sources whose fetch failed this run (network, a
 	// status other than 200 or 304, an unparseable body), with why; the
 	// run went on without them (source_health.go).
@@ -111,14 +116,9 @@ type Count struct {
 	New  int
 }
 
-// SkippedSource is a Source a run did not fetch.
-type SkippedSource struct {
-	Source string
-	Reason string
-}
-
 // Run validates the Watchlist, fetches every Source in Watchlist order,
-// records each item not seen before as an open Lead, saves the state and
+// records each entry not seen before as an open Lead (an entry published
+// before the age cutoff as TooOld: seen, not listed), saves the state and
 // rewrites the queue. A Watchlist error stops the run before any request.
 // Requests go one at a time; a Source that fails (network, timeout, a
 // status other than 200 or 304, unparseable) is reported in Report.Failed
@@ -140,24 +140,22 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 	report := &Report{}
 	newIDs := map[string]bool{}
 	for _, src := range wl.Sources {
-		f, ok := fetchers[src.Type()]
-		if !ok {
-			report.Skipped = append(report.Skipped, SkippedSource{src.Name, fmt.Sprintf("%s Sources are not fetched yet", src.Type())})
-			continue
-		}
-		fetched, err := f.fetch(ctx, in, src, st.Sources[src.Name])
+		prev := st.Sources[src.Name]
+		fetched, err := fetchers[src.Type()].fetch(ctx, in, src, prev)
 		if err != nil {
 			if ctx.Err() != nil { // interrupted: stop, not one Source's fault
 				return nil, ctx.Err()
 			}
-			report.fail(in, src, err) // the Source keeps its state; the run goes on
+			report.fail(in.logf, src, err) // the Source keeps its state; the run goes on
 			continue
 		}
-		st.Sources[src.Name] = report.fetchedState(src, st.Sources[src.Name], fetched, now)
+		next := fetched.State.withNewest(prev.Newest, fetched.Entries)
+		st.Sources[src.Name] = next
+		report.checkSilent(src, next.Newest, now)
 		added := 0
-		for _, item := range fetched.Items {
-			lead := newLead(src, item, now)
-			old := !item.Published.IsZero() && item.Published.Before(cutoff)
+		for _, entry := range fetched.Entries {
+			lead := newLead(src, entry, now)
+			old := !entry.Published.IsZero() && entry.Published.Before(cutoff)
 			if prev, seen := st.Leads[lead.ID]; seen && (prev.Decision != TooOld || old) {
 				continue // listed before, or still too old
 			}
@@ -170,7 +168,7 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 			newIDs[lead.ID] = true
 			added++
 		}
-		in.logf("fetched %s: %d items, %d new", src.Name, len(fetched.Items), added)
+		in.logf("fetched %s: %d entries, %d new", src.Name, len(fetched.Entries), added)
 	}
 	report.Expired = st.expire(now)
 	if err := st.save(in.StateDir); err != nil {
@@ -180,14 +178,14 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 	if err != nil {
 		return nil, err
 	}
-	q := in.queue(st, newIDs, now)
-	q.covered = covered
-	for _, l := range q.leads() {
+	q := in.queue(st, newIDs, covered, now)
+	open := q.leads()
+	for _, l := range open {
 		if newIDs[l.ID] {
 			report.New = append(report.New, l)
 		}
 	}
-	report.Open = len(q.leads())
+	report.Open = len(open)
 	report.NewByVertical, report.NewByKind = in.countNew(report.New)
 	report.QueueFile, err = q.write(in.StateDir)
 	if err != nil {

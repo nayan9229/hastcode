@@ -33,21 +33,21 @@ const leadIDLength = 8
 
 var leadIDEncoding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
-// leadID is the stable ID of the item key from the Source named source:
-// the same item gets the same ID on every run and in every state
+// leadID is the stable ID of the entry key from the Source named source:
+// the same entry gets the same ID on every run and in every state
 // directory.
 func leadID(source, key string) string {
 	sum := sha256.Sum256([]byte(source + "\x00" + key))
 	return strings.ToLower(leadIDEncoding.EncodeToString(sum[:]))[:leadIDLength]
 }
 
-func newLead(src Source, item Item, now time.Time) Lead {
+func newLead(src Source, e Entry, now time.Time) Lead {
 	return Lead{
-		ID:        leadID(src.Name, item.Key),
+		ID:        leadID(src.Name, e.Key),
 		Source:    src.Name,
-		Title:     item.Title,
-		Link:      item.Link,
-		Published: item.Published,
+		Title:     e.Title,
+		Link:      e.Link,
+		Published: e.Published,
 		Kind:      src.Kind,
 		Vertical:  src.Vertical,
 		FirstSeen: now.UTC().Truncate(time.Second),

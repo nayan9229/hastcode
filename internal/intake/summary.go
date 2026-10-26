@@ -8,17 +8,13 @@ import (
 
 // WriteSummary prints the run summary the command shows after a run: the
 // new and open counts, where the queue is, the new Leads per Vertical and
-// per kind, how many Leads expired, every Source skipped, then the failed
-// and silent Sources.
+// per kind, how many Leads expired, then the failed and silent Sources.
 func (r *Report) WriteSummary(w io.Writer) {
 	fmt.Fprintf(w, "%s, %d open: %s\n", plural(len(r.New), "new Lead"), r.Open, r.QueueFile)
 	fmt.Fprintf(w, "new by Vertical: %s\n", formatCounts(r.NewByVertical))
 	fmt.Fprintf(w, "new by kind: %s\n", formatCounts(r.NewByKind))
 	if r.Expired > 0 {
-		fmt.Fprintf(w, "expired %s left open %d days\n", plural(r.Expired, "Lead"), int(ExpireAfter.Hours()/24))
-	}
-	for _, s := range r.Skipped {
-		fmt.Fprintf(w, "skipped %s: %s\n", s.Source, s.Reason)
+		fmt.Fprintf(w, "expired %s left open %d days\n", plural(r.Expired, "Lead"), wholeDays(ExpireAfter))
 	}
 	r.writeSourceHealth(w) // failed and silent Sources (source_health.go)
 }

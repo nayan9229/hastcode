@@ -50,8 +50,8 @@ func TestRun_ListsNewReleasesOfARepositorySourceAsLeads(t *testing.T) {
 	if len(report.New) != 6 {
 		t.Errorf("report lists %d new Leads, want 6 (four feed items, two releases)", len(report.New))
 	}
-	if len(report.Skipped) != 0 {
-		t.Errorf("skipped = %+v, want none: repository Sources are fetched", report.Skipped)
+	if len(report.Failed) != 0 {
+		t.Errorf("failed = %+v, want none: repository Sources are fetched", report.Failed)
 	}
 }
 

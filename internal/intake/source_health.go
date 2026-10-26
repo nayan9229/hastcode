@@ -25,28 +25,18 @@ type SilentSource struct {
 	Days   int // whole days from Newest to the run
 }
 
-// fail records src's failed fetch.
-func (r *Report) fail(in *Intake, src Source, err error) {
+// fail records src's failed fetch and logs it.
+func (r *Report) fail(logf func(format string, args ...any), src Source, err error) {
 	r.Failed = append(r.Failed, FailedSource{Source: src.Name, Reason: err.Error()})
-	in.logf("failed %s: %v", src.Name, err)
+	logf("failed %s: %v", src.Name, err)
 }
 
-// fetchedState is the state to keep for src after a successful fetch: the
-// fetcher's, with Newest carried over from prev and moved on by any newer
-// dated item (a 304 lists none, so it keeps prev's). It flags src silent
-// when that newest item is more than SilentAfter before now.
-func (r *Report) fetchedState(src Source, prev SourceState, fetched Fetched, now time.Time) SourceState {
-	st := fetched.State
-	st.Newest = prev.Newest
-	for _, it := range fetched.Items {
-		if it.Published.After(st.Newest) {
-			st.Newest = it.Published
-		}
+// checkSilent flags src silent when its newest entry, published at newest
+// (zero: none dated yet), is more than SilentAfter before now.
+func (r *Report) checkSilent(src Source, newest, now time.Time) {
+	if !newest.IsZero() && now.Sub(newest) > SilentAfter {
+		r.Silent = append(r.Silent, SilentSource{Source: src.Name, Newest: newest, Days: wholeDays(now.Sub(newest))})
 	}
-	if !st.Newest.IsZero() && now.Sub(st.Newest) > SilentAfter {
-		r.Silent = append(r.Silent, SilentSource{Source: src.Name, Newest: st.Newest, Days: int(now.Sub(st.Newest) / (24 * time.Hour))})
-	}
-	return st
 }
 
 // writeSourceHealth prints the failed and the silent Sources, one line

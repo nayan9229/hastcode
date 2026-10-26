@@ -109,6 +109,47 @@ func TestRun_ListsOnlyTheItemPublishedSinceTheLastRun(t *testing.T) {
 	}
 }
 
+// A publisher's clock or time zone can date an entry after the run: it is
+// aged and sorted as of the run clock and shown as dated in the future.
+func TestRun_ShowsAnEntryDatedAfterTheRunClockAsDatedInTheFuture(t *testing.T) {
+	feeds := newFeedServer(t)
+	feeds.setBody("/rss.xml", []byte(`<?xml version="1.0"?>
+<rss version="2.0"><channel><title>Example Engineering</title>
+  <item><title>Zeta: scheduled for Friday</title><link>https://engineering.example.com/posts/zeta</link>
+    <pubDate>Fri, 30 Oct 2026 09:00:00 +0000</pubDate></item>
+  <item><title>Alpha: scheduled for tomorrow</title><link>https://engineering.example.com/posts/alpha</link>
+    <pubDate>Tue, 27 Oct 2026 09:00:00 +0000</pubDate></item>
+  <item><title>Posted this morning</title><link>https://engineering.example.com/posts/morning</link>
+    <pubDate>Mon, 26 Oct 2026 07:00:00 +0000</pubDate></item>
+</channel></rss>`))
+	in := newIntake(t, writeWatchlist(t, feeds, `sources:
+  - name: Example Engineering
+    site: https://engineering.example.com/
+    feed: "{{server}}/rss.xml"
+    vertical: distributed-systems
+    kind: case-study
+    reason: Postmortems.
+`))
+
+	got := readQueueAfterRun(t, in)
+
+	want := []struct{ title, date string }{
+		// Both future entries count as published at the run clock: a tie,
+		// broken by title, ahead of the one posted two hours earlier.
+		{"Alpha: scheduled for tomorrow", "2026-10-27 (date in future)"},
+		{"Zeta: scheduled for Friday", "2026-10-30 (date in future)"},
+		{"Posted this morning", "2026-10-26 (today)"},
+	}
+	if len(got) != len(want) {
+		t.Fatalf("queue lists %q, want %d Leads", titles(got), len(want))
+	}
+	for i, w := range want {
+		if got[i].Title != w.title || got[i].Date != w.date {
+			t.Errorf("queue Lead %d = %q · %q, want %q · %q", i, got[i].Title, got[i].Date, w.title, w.date)
+		}
+	}
+}
+
 func TestRun_LeadIDsAreStableAcrossRunsAndShortEnoughToType(t *testing.T) {
 	feeds := newFeedServer(t)
 	watchlist := exampleWatchlist(t, feeds)

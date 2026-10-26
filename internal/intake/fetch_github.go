@@ -65,7 +65,7 @@ func (githubFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sou
 	}
 	cutoff := in.now().Add(-in.maxAge())
 	state := prev
-	var items []Item
+	var entries []Entry
 	for page := 1; page <= maxReleasePages; page++ {
 		path := fmt.Sprintf("/repos/%s/releases?per_page=%d", src.Repository, releasesPerPage)
 		etag := prev.ETag // only the first page is conditional
@@ -87,26 +87,26 @@ func (githubFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sou
 		}
 		for _, r := range releases {
 			if !r.Draft && !r.Prerelease {
-				items = append(items, r.item())
+				entries = append(entries, r.entry())
 			}
 		}
 		if newest := newestRelease(releases); len(releases) < releasesPerPage || newest.Before(cutoff) {
 			break
 		}
 	}
-	return Fetched{Items: items, State: state}, nil
+	return Fetched{Entries: entries, State: state}, nil
 }
 
-func (r release) item() Item {
-	item := Item{
+func (r release) entry() Entry {
+	e := Entry{
 		Key:   strconv.FormatInt(r.ID, 10),
 		Title: oneLine(cmp.Or(r.Name, r.TagName)),
 		Link:  r.HTMLURL,
 	}
 	if r.PublishedAt != nil {
-		item.Published = r.PublishedAt.UTC()
+		e.Published = r.PublishedAt.UTC()
 	}
-	return item
+	return e
 }
 
 // newestRelease is the latest published_at of a page's non-draft releases,
