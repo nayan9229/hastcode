@@ -28,3 +28,15 @@ Spec: `../spec.md` ("Format before pipeline"). ADR-0007. Voice: `docs/editorial/
 | Comparison | `xtsbvhnf` Elastic Expert Parallelism → tensor vs pipeline vs expert parallelism | vLLM blog | AI/ML Systems |
 
 **Author's picks (2026-10-26):** Titus (Case Study), metastable failures (Concept), HTTP connection reuse (Comparison). Bold above.
+
+## Draft: Case Study, Netflix single-tenant Titus (`infrastructure-cloud/netflix-single-tenant-titus`)
+
+~2,630 words, draft, placeholder hero. Lead read via Netflix's RSS (the blog returns 403 to direct fetches); three earlier Netflix posts described as the new post describes them. Labelled inferences: per-cell autoscaler/scheduler; single-tenant tag as Kubernetes metadata; the 1-vCPU overhead arithmetic is our hypothetical.
+
+Check before verifying:
+- Netflix wrote "Expected Departure Time"; Cilium's docs say "Earliest Departure Time" (piece says "the approach Cilium's Bandwidth Manager calls EDT").
+- "No benchmark scores published" (the post's measurement sentence reads garbled in the feed).
+- Priority-class bullet "never evicted to make room for another pod" is a gloss of "exempts the task from preemption".
+- The three microVM costs, incl. "nested virtualization was not ready at the time".
+- Shared fleet packs denser: Netflix's own report, no numbers.
+- Headline numbers: "millions of containers a week across tens of thousands of EC2 instances"; r7i.2xlarge vs m7a.8xlarge warm-pool example.
