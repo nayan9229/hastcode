@@ -8,15 +8,15 @@ description: "How Cloudflare D1 keeps its central Postgres off the query path of
 kind: case-study
 vertical: databases-storage
 tags: ["sqlite", "serverless", "control-plane", "eventual-consistency", "cloudflare"]
-published: "2026-10-26T19:11:55Z"
-reviewed: "2026-10-26T19:11:55Z"
+published: "2026-10-26T19:22:40Z"
+verified: 2026-10-26
+reviewed: "2026-10-26T19:22:40Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: system-name.png
 # hero_alt: "What the image shows"
 related: [metastable-failures]
-draft: true
 ---
 
 Cloudflare's serverless SQLite database, D1, has [15 times as many live databases as a year ago and 65 times as many as two years ago](https://blog.cloudflare.com/d1-control-plane/), and its control plane was rebuilt for platforms with millions of databases. Every one is recorded in a central Postgres cluster, yet a query to any of them is built to stay away from it.
@@ -31,8 +31,6 @@ Cloudflare's serverless SQLite database, D1, has [15 times as many live database
 - The price is staleness by design: [limits react a little late](https://blog.cloudflare.com/d1-control-plane/), orphaned objects live until their next heartbeat, and the post reports growth, not latency.
 
 ## Three planes, with one Durable Object per database
-
-TODO(author): verify every claim against its source, then set verified: and remove draft: true and this line.
 
 The diagram is ours, redrawn from the text of Cloudflare's post; Cloudflare's own figures are in [the original](https://blog.cloudflare.com/d1-control-plane/). Cloudflare sorts every D1 operation into [three planes](https://blog.cloudflare.com/d1-control-plane/). The data plane is any query, and "should be as fast as possible and always at the edge". The control plane is the rest of the HTTP API (create, delete, list, import, export, time travel) and may depend on central, single-region components. The background plane runs analytics and billing, and may be eventually consistent.
 
