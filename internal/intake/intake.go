@@ -18,6 +18,8 @@
 //	http.go        the HTTP GET a feed fetch makes
 //	lead.go        Lead and its ID
 //	state.go       the seen-state file (state.json): every Lead ever listed and per-Source state
+//	source_state.go   SourceState: a Source's validators (ETag, Last-Modified) and newest item date
+//	source_health.go  failed and silent Sources in the Report and the run summary
 //	queue.go       the queue file (queue.md) the Author reads, regenerated from state each run
 //	summary.go     the run summary printed after a run
 package intake
@@ -56,6 +58,8 @@ type Intake struct {
 	// HTTP makes the feed requests; default http.DefaultClient. When set,
 	// the GitHub requests use it too.
 	HTTP *http.Client
+	// Timeout bounds each request (http.go); default DefaultTimeout.
+	Timeout time.Duration
 	// GitHubURL is the GitHub REST API repository Sources are fetched
 	// from (fetch_github.go); default github.APIURL. Tests point it at a
 	// fake.
@@ -83,6 +87,13 @@ type Report struct {
 	// Skipped are the Sources this run did not fetch, with why (a Source
 	// type with no registered fetcher).
 	Skipped []SkippedSource
+	// Failed are the Sources whose fetch failed this run (network, a
+	// status other than 200 or 304, an unparseable body), with why; the
+	// run went on without them (source_health.go).
+	Failed []FailedSource
+	// Silent are the Sources fetched this run whose newest item is more
+	// than SilentAfter old (source_health.go).
+	Silent []SilentSource
 }
 
 // SkippedSource is a Source a run did not fetch.
@@ -94,6 +105,9 @@ type SkippedSource struct {
 // Run validates the Watchlist, fetches every Source in Watchlist order,
 // records each item not seen before as an open Lead, saves the state and
 // rewrites the queue. A Watchlist error stops the run before any request.
+// Requests go one at a time; a Source that fails (network, timeout, a
+// status other than 200 or 304, unparseable) is reported in Report.Failed
+// and the run goes on.
 func (in *Intake) Run(ctx context.Context) (*Report, error) {
 	wl, err := LoadWatchlist(in.Watchlist, in.Verticals)
 	if err != nil {
@@ -117,9 +131,13 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 		}
 		fetched, err := f.fetch(ctx, in, src, st.Sources[src.Name])
 		if err != nil {
-			return nil, fmt.Errorf("source %q: %w", src.Name, err)
+			if ctx.Err() != nil { // interrupted: stop, not one Source's fault
+				return nil, ctx.Err()
+			}
+			report.fail(in, src, err) // the Source keeps its state; the run goes on
+			continue
 		}
-		st.Sources[src.Name] = fetched.State
+		st.Sources[src.Name] = report.fetchedState(src, st.Sources[src.Name], fetched, now)
 		added := 0
 		for _, item := range fetched.Items {
 			lead := newLead(src, item, now)

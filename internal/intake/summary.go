@@ -12,4 +12,5 @@ func (r *Report) WriteSummary(w io.Writer) {
 	for _, s := range r.Skipped {
 		fmt.Fprintf(w, "skipped %s: %s\n", s.Source, s.Reason)
 	}
+	r.writeSourceHealth(w) // failed and silent Sources (source_health.go)
 }

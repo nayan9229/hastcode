@@ -38,15 +38,6 @@ type state struct {
 	Sources map[string]SourceState `json:"sources"`
 }
 
-// SourceState is what Intake keeps about one Source between runs, keyed by
-// the Source's name. Its fetcher returns it (Fetched.State) and gets it
-// back on the next run.
-type SourceState struct {
-	// ETag is the validator the Source's last answer carried, sent back as
-	// If-None-Match (a repository Source's releases: fetch_github.go).
-	ETag string `json:"etag,omitempty"`
-}
-
 func loadState(dir string) (*state, error) {
 	st := &state{Version: stateVersion, Leads: map[string]Lead{}, Sources: map[string]SourceState{}}
 	data, err := os.ReadFile(filepath.Join(dir, StateFile))

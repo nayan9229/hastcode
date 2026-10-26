@@ -1,7 +1,6 @@
 package intake_test
 
 import (
-	"context"
 	"net/http"
 	"strings"
 	"testing"
@@ -105,15 +104,14 @@ func TestRun_WithoutAGitHubTokenFailsRepositorySourcesOnly(t *testing.T) {
 	withRepo := newIntake(t, exampleWatchlist(t, feeds))
 	withRepo.GitHubURL = gh.srv.URL
 	withRepo.Getenv = noToken
-	_, err := withRepo.Run(context.Background())
+	report := mustRun(t, withRepo)
 
-	if err == nil {
-		t.Fatal("Run with a repository Source and no token succeeded, want an error")
+	if len(report.Failed) != 1 || report.Failed[0].Source != "Example Runtime" ||
+		!strings.Contains(report.Failed[0].Reason, "GITHUB_TOKEN is not set") {
+		t.Fatalf("failed = %+v, want only Example Runtime, naming GITHUB_TOKEN", report.Failed)
 	}
-	for _, want := range []string{`"Example Runtime"`, "GITHUB_TOKEN is not set"} {
-		if !strings.Contains(err.Error(), want) {
-			t.Errorf("error %q does not name %s", err, want)
-		}
+	if len(report.New) != 4 {
+		t.Errorf("the feeds beside it list %d new Leads, want their 4", len(report.New))
 	}
 	if reqs := gh.requestLog(); len(reqs) != 0 {
 		t.Errorf("GitHub got %d requests without a token, want none", len(reqs))

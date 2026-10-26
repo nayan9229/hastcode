@@ -4,6 +4,7 @@ import (
 	"cmp"
 	"context"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"time"
@@ -84,7 +85,8 @@ func (githubFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sou
 
 // githubClient is the Fact Pack fetcher's GitHub client, pointed at
 // GitHubURL, with the token read through Getenv: a missing token is an
-// error for repository Sources only.
+// error for repository Sources only (Run reports each as failed). It keeps
+// the client's User-Agent, the one make fetch sends.
 func (in *Intake) githubClient() (*github.Client, error) {
 	getenv := in.Getenv
 	if getenv == nil {
@@ -95,8 +97,8 @@ func (in *Intake) githubClient() (*github.Client, error) {
 		return nil, err
 	}
 	client.BaseURL = cmp.Or(in.GitHubURL, github.APIURL)
-	if in.HTTP != nil {
-		client.HTTP = in.HTTP
-	}
+	// Each request gets Intake's timeout (http.go) over Intake's transport;
+	// the client's own retries and rate-limit waits sit between requests.
+	client.HTTP = &http.Client{Transport: in.httpClient().Transport, Timeout: in.timeout()}
 	return client, nil
 }
