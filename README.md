@@ -240,6 +240,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
+| `internal/views/analytics.go`, `layout_analytics.templ` | Google Analytics 4 (ADR-0008): the inline snippet (`analyticsSnippet`: regional `analytics_storage` consent defaults, the host guard with Google's `ga-disable-<id>` opt-out, the config) and the deferred gtag.js. Validated by `builder/step_validate_analytics_config.go` (rule `analytics-config`). Tests: `builder/ads_analytics_test.go`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (inlined in every page's `<head>`, ADR-0006) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
@@ -283,7 +284,7 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
 and Briefs) 30, draw hero cards 35 (every Explainer and Brief without
-`hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
+`hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, analytics config 7, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
 skeleton 32, Brief skeleton 35, section-length warning 40, verified gate 45, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
@@ -313,8 +314,8 @@ sitemaps are written in the write phase, after the gate, so their entries
 stay). Otherwise it is a `broken-link`
 error naming the page and the target, attributed to the page's content
 file ("" for home and listings), and the page is removed from the output.
-Header and footer links are checked on every page, so the About, Contact
-and Editorial Policy pages must exist (`buildtest.NewTree()` includes them).
+Header and footer links are checked on every page, so the About, Contact,
+Editorial Policy and Privacy pages must exist (`buildtest.NewTree()` includes them).
 Brief Explainer links and `related` slugs are checked earlier, at the
 source, under the same rule.
 
@@ -495,8 +496,9 @@ happened" for a Brief) with the first slot between them and the second
 after `.e-content`. Google Analytics 4 comes from `layout_analytics.templ`
 (snippet in `internal/views/analytics.go`) at the end of every `<head>`, in
 production builds only (ADR-0008): an inline snippet that sets consent
-defaults (denied in the EEA, UK and Switzerland until the AdSense GDPR
-message grants it, granted elsewhere) and configures `ga_measurement_id`,
+`analytics_storage` defaults (denied in the EEA, UK and Switzerland until
+the AdSense GDPR message grants it, granted elsewhere; ad consent is left to
+AdSense) and configures `ga_measurement_id`,
 then `gtag.js` with `defer`. The snippet reports only on `site_url`'s host;
 on any other host (the QA Target) it sets Google's `ga-disable-<id>` opt-out
 instead. Preview builds (Previews, `make dev`) carry no analytics, so their
@@ -1568,7 +1570,7 @@ scripts/setup-deploy.sh --from 13   # e.g. once the content threshold is met
 | 10 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false` | `.env` `VERCEL_TOKEN`; GitHub secrets and variable |
 | 11 | Push `main` (tests only) | |
 | 12 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
-| 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
+| 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the Google Analytics 4 Measurement ID in `site.yaml` (stops if missing, ADR-0008), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
 | 14 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
 | 15 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Google Analytics 4 property, AdSense consent mode for analytics and AdSense link, Search Console and Bing sitemaps | GitHub variable |
 | 16 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks. Skipped while `images.store` is `local` | |

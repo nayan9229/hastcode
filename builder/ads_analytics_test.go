@@ -172,6 +172,7 @@ func TestAdSlots_DisabledRenderNoSlotAndReserveNoSpace(t *testing.T) {
 	}
 }
 
+// gtagSrc is gtag.js as every fixture Production page loads it.
 const gtagSrc = "https://www.googletagmanager.com/gtag/js?id=" + buildtest.GAMeasurementID
 
 // Every Production page reports to Google Analytics 4 (ADR-0008): an inline
@@ -201,14 +202,18 @@ func TestAnalytics_ProductionPagesCarryGA4(t *testing.T) {
 		for _, want := range []string{
 			`window.dataLayer=window.dataLayer||[]`,
 			`if(location.hostname!=="hastcode.test"){window["ga-disable-"+"` + buildtest.GAMeasurementID + `"]=true;}`,
-			`analytics_storage:"denied",wait_for_update:500,region:[`,
+			`gtag("consent","default",{analytics_storage:"denied",wait_for_update:500,region:[`,
 			`"DE"`, `"NO"`, `"GB"`, `"CH"`,
-			`analytics_storage:"granted"}`,
+			`gtag("consent","default",{analytics_storage:"granted"});`,
 			`gtag("config","` + buildtest.GAMeasurementID + `")`,
 		} {
 			if !strings.Contains(code, want) {
 				t.Errorf("%s: analytics snippet lacks %s:\n%s", page, want, code)
 			}
+		}
+		// Ad consent belongs to AdSense's own consent message (ADR-0008).
+		if strings.Contains(code, "ad_storage") || strings.Contains(code, "ad_personalization") {
+			t.Errorf("%s: analytics snippet sets ad consent; it may set analytics_storage only", page)
 		}
 		// Consent defaults only apply when set before the config command.
 		if strings.LastIndex(code, `gtag("consent","default"`) > strings.Index(code, `gtag("config"`) {

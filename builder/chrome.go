@@ -34,19 +34,30 @@ func (s *site) adsOn() bool {
 	return s.cfg.AdsEnabled && s.cfg.Mode != Preview
 }
 
-// analytics is the Google Analytics 4 configuration pages carry (ADR-0008):
-// none in preview builds (Previews and make dev), whose visits are not
+// analyticsOn reports whether pages carry Google Analytics 4 (ADR-0008):
+// never in preview builds (Previews and make dev), whose visits are not
 // Readers' and which Lighthouse CI measures without third-party scripts
-// (ADR-0006). Host is site_url's host, the only one that reports.
+// (ADR-0006). Production builds must configure it (checkAnalyticsConfig).
+func (s *site) analyticsOn() bool {
+	return s.cfg.Mode != Preview
+}
+
+// analytics is the Google Analytics 4 configuration pages carry; Host is
+// site_url's host, the only one that reports.
 func (s *site) analytics() views.Analytics {
-	if s.cfg.Mode == Preview || s.cfg.GAMeasurementID == "" {
+	if !s.analyticsOn() {
 		return views.Analytics{}
 	}
-	host := ""
-	if u, err := url.Parse(s.cfg.SiteURL); err == nil {
-		host = u.Hostname()
+	return views.Analytics{MeasurementID: s.cfg.GAMeasurementID, Host: s.siteHost()}
+}
+
+// siteHost is site_url's host name ("hastcode.com"); "" if it has none.
+func (s *site) siteHost() string {
+	u, err := url.Parse(s.cfg.SiteURL)
+	if err != nil {
+		return ""
 	}
-	return views.Analytics{MeasurementID: s.cfg.GAMeasurementID, Host: host}
+	return u.Hostname()
 }
 
 // sortedVerticals are the configured Verticals in their configured order.

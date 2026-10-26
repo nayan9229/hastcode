@@ -21,3 +21,8 @@
 ## Comments
 
 Author steps, not agent steps: create the property and web data stream in analytics.google.com, paste the Measurement ID into `site.yaml`, link AdSense, turn on "consent mode for analytics purposes" in AdSense Privacy & messaging, review `/privacy/`, Publish, cancel any Plausible account afterwards.
+
+2026-10-27, two-axis review (Standards + Spec), all fixed in the follow-up commit:
+- Standards: analytics step moved to its own file (order 7) and listed in README; `analyticsOn()` and `siteHost()` like `adsOn()`; README Internal links names Privacy; file-map row for the snippet; glossary wording in ADR-0008; tests share `gtagSrc` and pass the Config.
+- Spec: wizard now asks for the Measurement ID in stage 13, before the first Publish, and stops without it; privacy page discloses the IP address Buttondown receives and drops the search-terms claim; snippet sets `analytics_storage` only (ad consent left to AdSense, as decided); empty `site_url` host fails `analytics-config`; ADR-0008 Lighthouse line reconciled.
+- Kept, outside the ticket's letter: the Realtime check in the wizard and the checkpoint template now reading Google Analytics 4 (ADR-0005's day-28 numbers had no other source).

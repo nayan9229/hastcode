@@ -759,6 +759,15 @@ if ! confirm "Is the threshold met, so cutover may start?"; then
   finish
   return 0
 fi
+say "Production builds fail (analytics-config) without a Google Analytics 4 Measurement ID (ADR-0008)."
+step "analytics.google.com → Admin → Create property 'HastCode' → Web data stream for https://hastcode.com → copy its Measurement ID (G-…)."
+step "Put it in site.yaml as ga_measurement_id, commit and push main."
+if ! grep -Eq '^ga_measurement_id: *"?G-[A-Z0-9]{4,}"?' site.yaml; then
+  warn "site.yaml has no ga_measurement_id yet; the Publish below would fail."
+  note "Stopping before the first Publish. Re-run with: scripts/setup-deploy.sh --from 13"
+  finish
+  return 0
+fi
 say "First, put a production build on the Worker so the flip never exposes the"
 say "bootstrap (drafts) build. hastcode.com still points at the old host;"
 say "INDEXNOW_ENABLED is false, so nothing is pinged (story 4, 10)."
@@ -838,7 +847,6 @@ image_checks "$(og_badge_url)"
 if confirm "POST a real signup to hastcode.com? (goes to the PRODUCTION newsletter)"; then
   real_signup PRODUCTION
 fi
-step "Google Analytics 4 (ADR-0008), if not done before this Publish: analytics.google.com → Admin → Create property 'HastCode' → Web data stream for https://hastcode.com → copy the Measurement ID (G-…) into site.yaml ga_measurement_id and commit (Production builds fail without it)."
 step "AdSense → Privacy & messaging → European regulations → Settings: turn on consent mode for analytics purposes, so the GDPR message grants Google Analytics in the EEA, UK and Switzerland."
 step "Link AdSense to the GA4 property (AdSense → Account → Access and authorisation → Google Analytics integration) for revenue per page."
 step "Google Analytics → Realtime: open https://hastcode.com in a private window and confirm one active user; qa.hastcode.com must never appear."

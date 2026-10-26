@@ -13,7 +13,7 @@ who collects it, and what you can do about it.
 
 We use Google Analytics to count visits: which pages are read, roughly
 where Readers are (country and city level), which site sent them, what
-device and browser they use, and the words typed into our search box.
+device and browser they use.
 Google Analytics sets cookies on hastcode.com (named `_ga` and
 `_ga_<id>`) to tell one visit from the next. We use these numbers to decide
 what to write and to show advertisers how many people read the site. We
@@ -35,16 +35,16 @@ other ad companies at [aboutads.info](https://www.aboutads.info/choices/).
 
 If you visit from the European Economic Area, the United Kingdom or
 Switzerland, Google's consent message asks for your choice before any
-advertising or analytics cookie is set. Until you agree, Google Analytics
-sets no cookies and receives only cookieless signals that a page was
-viewed. You can change your choice at any time through the privacy
+advertising or analytics cookie is set. Until you agree to analytics,
+Google Analytics sets no cookies and receives only cookieless signals that
+a page was viewed. You can change your choice at any time through the privacy
 settings link that Google's message places on the page.
 
 ## The newsletter
 
-If you subscribe, your email address and the page you subscribed from go
-to [Buttondown](https://buttondown.com/legal/privacy), which sends the
-newsletter for us. You confirm by email before anything is sent, and every
+If you subscribe, your email address, the page you subscribed from and
+your IP address go to [Buttondown](https://buttondown.com/legal/privacy),
+which sends the newsletter for us. You confirm by email before anything is sent, and every
 issue has an unsubscribe link. To stop abuse, the sign-up form counts
 attempts per IP address for ten minutes in memory; the count is never
 stored.

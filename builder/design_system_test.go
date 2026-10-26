@@ -164,7 +164,7 @@ func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
 	for name, cfg := range map[string]builder.Config{"production": buildtest.Config(), "preview": preview, "ads": ads} {
 		t.Run(name, func(t *testing.T) {
 			out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
-			requireOnlyAllowedScripts(t, buildtest.Page(t, out, explainerPath), cfg.AdsEnabled && cfg.Mode != builder.Preview, cfg.Mode != builder.Preview)
+			requireOnlyAllowedScripts(t, buildtest.Page(t, out, explainerPath), cfg)
 		})
 	}
 }
@@ -174,8 +174,10 @@ func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
 // Production builds the Google Analytics 4 snippet and gtag.js (ADR-0008),
 // and, only when ads are on, the AdSense library and its one-line
 // per-unit push.
-func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled, analytics bool) {
+func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, cfg builder.Config) {
 	t.Helper()
+	production := cfg.Mode != builder.Preview
+	adsEnabled := cfg.AdsEnabled && production
 	const adsensePush = "(adsbygoogle=window.adsbygoogle||[]).push({});"
 
 	// Executable scripts only: JSON-LD blocks are data, not code.
@@ -195,7 +197,7 @@ func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled, 
 		}
 		if src, ok := s.Attr("src"); ok {
 			switch {
-			case analytics && strings.HasPrefix(src, "https://www.googletagmanager.com/gtag/js?id="):
+			case production && src == gtagSrc:
 			case strings.HasPrefix(src, "/pagefind/"):
 			case adsEnabled && strings.HasPrefix(src, "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="):
 			default:
@@ -206,7 +208,7 @@ func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled, 
 		if adsEnabled && strings.TrimSpace(s.Text()) == adsensePush {
 			return
 		}
-		if analytics && strings.HasPrefix(s.Text(), "window.dataLayer=") && s.Next().Is(`script[src^="https://www.googletagmanager.com/"]`) {
+		if production && strings.HasPrefix(s.Text(), "window.dataLayer=") && s.Next().AttrOr("src", "") == gtagSrc {
 			return
 		}
 		inline = append(inline, s)
