@@ -6,9 +6,9 @@ Spec: `../spec.md` ("Source Watchlist", "Intake"). Research: `docs/research/cont
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] New Intake package with run (and stubs to extend for dismiss/pick) behind a thin command and `make intake`
-- [ ] Intake-seam tests with `httptest` servers serving RSS 2.0 and Atom fixtures, temp state dir and fixed clock: new Leads listed with the Source's kind and Vertical; second run lists nothing new; Watchlist validation errors; nothing written under the content tree
-- [ ] Lead IDs are stable across runs and short enough to type
-- [ ] The local state directory is gitignored; README gains an Intake section (commands, where state lives)
+- [x] New Intake package with run (and stubs to extend for dismiss/pick) behind a thin command and `make intake`
+- [x] Intake-seam tests with `httptest` servers serving RSS 2.0 and Atom fixtures, temp state dir and fixed clock: new Leads listed with the Source's kind and Vertical; second run lists nothing new; Watchlist validation errors; nothing written under the content tree
+- [x] Lead IDs are stable across runs and short enough to type
+- [x] The local state directory is gitignored; README gains an Intake section (commands, where state lives)

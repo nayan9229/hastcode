@@ -1,0 +1,22 @@
+# A tiny example Source Watchlist for the Intake-seam tests; the real one is
+# sources.yaml at the repo root. {{server}} is replaced by the URL of the
+# test's httptest server, which serves testdata/feeds/.
+sources:
+  - name: Example Engineering
+    site: https://engineering.example.com/
+    feed: "{{server}}/rss.xml"
+    vertical: distributed-systems
+    kind: case-study
+    reason: Postmortems with timelines, written by the engineers involved.
+  - name: Example Database Blog
+    site: https://db.example.org/blog/
+    feed: "{{server}}/atom.xml"
+    vertical: databases-storage
+    kind: concept
+    reason: Storage-engine internals explained by the maintainers.
+  - name: Example Runtime
+    site: https://github.com/example/runtime
+    repository: example/runtime
+    vertical: languages-runtimes
+    kind: brief
+    reason: Release notes for a runtime our readers deploy.

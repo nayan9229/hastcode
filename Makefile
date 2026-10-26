@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh
+.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh intake lead lead-dismiss
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -88,6 +88,26 @@ fetch:
 refresh:
 	mkdir -p $(dir $(FETCH_BIN)) && go build -o $(FETCH_BIN) ./cmd/fetch
 	$(FETCH_BIN) -refresh -content $(CONTENT)
+
+# `make intake`: check every Source on the Source Watchlist (sources.yaml)
+# and list the new Leads in $(INTAKE_STATE)/queue.md (ADR-0007). Local
+# only, like a Refresh; never in GitHub Actions. The queue and the
+# seen-state live in $(INTAKE_STATE), gitignored; nothing is written under
+# $(CONTENT). `make lead-dismiss ID=…` hides a Lead for good; `make lead
+# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one. See README
+# "Intake".
+INTAKE_STATE ?= .intake
+WATCHLIST    ?= sources.yaml
+INTAKE_FLAGS  = -watchlist $(WATCHLIST) -config $(CONFIG) -content $(CONTENT) -state $(INTAKE_STATE)
+ID       ?=
+KIND     ?=
+VERTICAL ?=
+intake: generate
+	go run ./cmd/intake $(INTAKE_FLAGS)
+lead-dismiss: generate
+	go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
+lead: generate
+	go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)"
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)

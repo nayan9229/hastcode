@@ -186,6 +186,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
+| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom); the HTTP GET (`http.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -455,9 +456,14 @@ analytics, so their visits are never counted and Lighthouse CI measures the
 page's own code (ADR-0006).
 Everything must work without JS.
 
-**Tests.** Four seams are tested, and only these (spec "Testing
+**Tests.** Five seams are tested, and only these (spec "Testing
 Decisions"): the Build seam, the Subscribe HTTP seam, the Fetch seam
-(`internal/factpack` against an in-process GitHub) and the hero card's
+(`internal/factpack` against an in-process GitHub), the Intake seam
+(`internal/intake`'s `Run`/`Dismiss`/`Pick` against `httptest` publishers,
+a temp state directory and a fixed clock, asserting on the queue file,
+the state and the run summary; helpers in `internal/intake/helpers_test.go`:
+`newFeedServer`, `exampleWatchlist`/`writeWatchlist`, `newIntake`,
+`mustRun`, `readQueue`) and the hero card's
 text seam (`views.HeroCardText`, below). Build-seam tests live in `builder/` as package
 `builder_test`, import only `builder` and `internal/buildtest`, and assert on
 parsed output. Helpers in `internal/buildtest`:
@@ -659,6 +665,59 @@ Rate limit: a personal token allows 5,000 requests an hour and a Refresh
 makes about 9 per Profile, so hundreds of Profiles fit in one run. Cadence:
 weekly, Monday, so the Changelog stays fresh; the 90-day Review re-reads
 the prose.
+
+## Intake
+
+Intake (ADR-0007) checks the Source Watchlist and lists the new Leads; it
+never writes a Piece. It runs locally when the Author runs it, never in
+GitHub Actions.
+
+```sh
+make intake                   # list new Leads in .intake/queue.md
+make lead-dismiss ID=opu7b35z # hide a Lead for good (ticket 05: not built yet)
+make lead ID=opu7b35z         # start a draft skeleton (ticket 09: not built yet)
+# same as: go run ./cmd/intake [-dismiss ID | -pick ID [-kind K] [-vertical V]]
+#          -watchlist sources.yaml -config site.yaml -content content -state .intake
+```
+
+**The Watchlist** is `sources.yaml` at the repository root, committed and
+reviewed like code. Each Source is one entry:
+
+```yaml
+sources:
+  - name: Kubernetes blog            # unique; part of every Lead ID, so renaming re-lists its items
+    site: https://kubernetes.io/blog/
+    feed: https://kubernetes.io/feed.xml   # RSS 2.0 or Atom; or instead:
+    # repository: kubernetes/kubernetes    # a GitHub repository (owner/name): its releases
+    vertical: infrastructure-cloud   # a slug from site.yaml
+    kind: concept                    # case-study, concept, comparison or brief
+    reason: Release and feature explainers from the maintainers.
+```
+
+Adding a Source is one entry with a reason, in its own commit. Every run
+validates the whole file first and stops before any request on an unknown
+Vertical or kind, both or neither of `feed` and `repository`, a duplicate
+name, a missing name, site or reason, or an unknown key, listing every
+problem by Source name. Repository Sources pass validation but are skipped
+with a note until their fetcher lands (ticket 04).
+
+**A run** fetches each feed Source in Watchlist order, reads RSS 2.0 or
+Atom (told apart by the root element, never the `Content-Type`), and
+records each item not seen before as an open Lead whose kind and Vertical
+are copied from its Source, never guessed. A second run lists nothing new.
+A Lead's ID is eight characters derived from the Source's name and the
+item's RSS `guid` (else its link) or Atom `id`, the same on every run.
+
+**Where state lives**: `.intake/` at the repository root (gitignored;
+`-state` moves it, but never inside the content tree, which Intake refuses).
+`.intake/queue.md` is the queue the Author reads: every open Lead grouped
+by Vertical (site.yaml order), newest first, one line each (ID, title
+linked, Source, kind, date and age, `new` on the run that first listed
+it), rewritten from the state on every run. `.intake/state.json` is the
+seen-state: every Lead ever listed, keyed by ID, with its decision
+(`open`, `picked`, `dismissed`, `expired`) and first-seen time, plus
+per-Source state. Deleting `.intake/` makes the next run list everything
+again.
 
 ## Subscribe function
 

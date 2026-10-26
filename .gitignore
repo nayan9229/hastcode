@@ -18,3 +18,6 @@ node_modules/
 # Lighthouse CI reports (lhci autorun)
 .lighthouseci/
 todo.list
+
+# Intake's local state: the Lead queue and the seen-state (README "Intake")
+.intake/

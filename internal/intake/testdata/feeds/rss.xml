@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Example Engineering</title>
+    <link>https://engineering.example.com/</link>
+    <description>Engineering at Example</description>
+    <item>
+      <title>How we lost a region for 40 minutes</title>
+      <link>https://engineering.example.com/posts/region-outage</link>
+      <guid isPermaLink="false">example-eng-1042</guid>
+      <pubDate>Sat, 24 Oct 2026 14:30:00 +0000</pubDate>
+    </item>
+    <item>
+      <title>Raft in production: five years on</title>
+      <link>https://engineering.example.com/posts/raft-five-years</link>
+      <pubDate>Mon, 19 Oct 2026 09:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

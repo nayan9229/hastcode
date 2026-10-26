@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Example Database Blog</title>
+  <id>tag:db.example.org,2026:blog</id>
+  <updated>2026-10-25T08:00:00Z</updated>
+  <link rel="self" href="https://db.example.org/blog/atom.xml"/>
+  <entry>
+    <title>Inside the write-ahead log</title>
+    <id>tag:db.example.org,2026:wal</id>
+    <link rel="alternate" type="text/html" href="https://db.example.org/blog/wal"/>
+    <published>2026-10-25T08:00:00Z</published>
+    <updated>2026-10-25T08:00:00Z</updated>
+  </entry>
+  <entry>
+    <title>Why our B-tree pages are 8 KiB</title>
+    <id>tag:db.example.org,2026:btree-pages</id>
+    <link href="https://db.example.org/blog/btree-pages"/>
+    <updated>2026-10-12T17:45:00Z</updated>
+  </entry>
+</feed>
