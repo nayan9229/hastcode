@@ -7,8 +7,6 @@ tags: ["containers", "multi-tenancy", "kubernetes", "isolation", "netflix"]
 published: "2026-10-26T17:18:00Z"
 reviewed: "2026-10-26T17:18:00Z"
 author: mira-vance
-hero: netflix-single-tenant-titus.png
-hero_alt: "Placeholder hero image"
 draft: true
 ---
 

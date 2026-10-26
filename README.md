@@ -133,15 +133,42 @@ a `YYYY-MM-DD` date fails with rule `frontmatter`
 
 Add a Vertical by adding one entry to `site.yaml`.
 
-Heroes: the Explainer names a raster beside its Markdown in `hero` (and
-`hero_alt`). The build fails if it is missing, does not decode, or is narrower
-than 1200 px. The one exception is a Repo Profile, which may omit `hero`:
-the build then draws a 1600x900 card from its Fact Pack (wordmark,
-repository, description, language, stars, license, latest release; light
-palette, Go fonts; alt text "{repo}: {description}") and feeds it through
-the same pipeline, so a changed star count or release renames every
-variant and an unchanged Fact Pack hits the cache
-(`step_load_hero_cards.go`, `internal/views/hero_card.go`). It writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
+Heroes: every Piece's hero comes from the build unless it names one.
+`hero` (and `hero_alt`) are optional for every kind and for Briefs, and
+one rule holds for all of them: a Piece without `hero` gets a 1600x900
+card the build draws (light palette, accent band along the bottom, the
+`hastcode` wordmark at the top; Go Mono Bold and Go Regular, the OG
+badge's fonts, so no image file and no system font), and a Piece that
+names a `hero` keeps that raster and its `hero_alt`, no card drawn. A
+named `hero` must exist beside the Markdown, decode, and be at least
+1200 px wide (`hero-missing`, `hero-format`, `hero-too-narrow`); it is
+never silently swapped for the card.
+
+- **Repo Profile: the hero card**, from its Fact Pack (repository,
+  description, language, stars, license, latest release; alt text
+  "{repo}: {description}"), so a changed star count or release renames
+  every variant (`internal/views/hero_card.go`).
+- **Case Study, Concept, Comparison, Brief: the title card**, from the
+  frontmatter: an eyebrow in upper case ("CASE STUDY · INFRASTRUCTURE &
+  CLOUD"; a Brief's reads "BRIEF"), the title under it in Go Mono Bold
+  at the largest size (76 down to 48 px) that wraps it into four lines
+  (cut with an ellipsis at 48), and the accent rule under the title; the
+  eyebrow, title and rule are centred as one block below the wordmark.
+  Alt text is the title. A retitled Piece renames every variant
+  (`internal/views/title_card.go`).
+
+Both are drawn in the load phase (draw hero cards 35, after the draft
+exclusion, so production never draws a draft's card), written under the
+build cache (`hero-cards/<content path>.png`, rewritten only when the
+bytes change) and registered as the Piece's hero source, so the same
+pipeline encodes them like a sourced file, variants named
+`<slug>-card-<w>x<h>.<hash>.<ext>`, and an unchanged Piece draws the same
+bytes and hits the image cache (`step_load_hero_cards.go`). Every line
+stays inside the middle 900 px and off the top and bottom 30 px, so the
+1:1 and 1200x630 crops keep the whole text. The card is an image like any
+hero: the same `<picture>`, preload and `fetchpriority="high"`, nothing
+fetched before first paint that a sourced hero would not fetch (ADR-0006).
+The pipeline writes AVIF and JPEG at 480/800/1000/1200/1472 px wide
 (never upscaled past the source; `heroWidths`), plus 1200 px JPEG crops at
 16:9, 4:3 and 1:1 (JSON-LD `image`) and 1200x630 (`og:image`,
 `twitter:image`), to `/assets/heroes/<name>-<w>x<h>.<hash>.<ext>` (hash of
@@ -205,7 +232,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
 | `internal/images/` | Resize/crop/encode (AVIF, JPEG; per-variant quality) through a worker pool with an on-disk cache. Knows nothing of heroes or URLs. |
-| `builder/step_load_hero_cards.go`, `internal/views/hero_card.go` | The generated hero card: a Repo Profile without `hero` gets a 1600x900 PNG drawn from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's text seam, see "Tests"), written under the build cache (`hero-cards/`) and registered as the Profile's hero source before validate heroes, so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `internal/views/hero_card_test.go`. |
+| `builder/step_load_hero_cards.go`, `internal/views/hero_card.go`, `internal/views/title_card.go` | The generated heroes: a Piece without `hero` gets a 1600x900 PNG drawn by the build, a Repo Profile the hero card from its Fact Pack (`views.HeroCardPNG(views.HeroCard)`; `views.HeroCardText` is the renderer's text seam, see "Tests"), every other kind and a Brief the title card from its title, kind and Vertical (`views.TitleCardPNG(views.TitleCard)`); both share the canvas (`drawCard`). The card is written under the build cache (`hero-cards/`) and registered as the Piece's hero source before validate heroes (`s.registerHeroCard`), so the hero pipeline encodes it like a sourced file (variants named `<slug>-card-<w>x<h>.<hash>.<ext>`). Tests: `builder/hero_card_test.go`, `builder/title_card_test.go`, `internal/views/hero_card_test.go`. |
 | `builder/image_store.go`, `step_render_upload_images.go` | The Image Store seam: `s.imageURL(sitePath)` (the URL pages use), `s.storeImage(sitePath, file, data, type)` (write in local mode, queue in r2 mode), `openImageStore` (config + credentials, checked before any step), and the upload step. See "Image Store". |
 | `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
 | `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
@@ -255,8 +282,8 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 (use gaps: 10, 20, 30…). Existing orders: load authors 10, load explainers 20,
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
-and Briefs) 30, draw hero cards 35 (Repo Profiles without `hero`: the
-card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
+and Briefs) 30, draw hero cards 35 (every Explainer and Brief without
+`hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
 skeleton 32, Brief skeleton 35, section-length warning 40, verified gate 45, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
@@ -554,6 +581,13 @@ the renderer lays out, the same layout `HeroCardPNG` draws. Everything
 else about the card (pipeline, alt text, 1600x900, crop-safe layout read
 from the card the build writes under its cache, same bytes for the same
 Fact Pack) is asserted at the Build seam in `builder/hero_card_test.go`.
+The title card has no text seam: `builder/title_card_test.go` asserts it
+at the Build seam only (each kind without `hero` gets the pipeline's
+variants, crops, preload and title alt text; the ink stays crop-safe and
+out of the band for short, wrapped, cut and unbreakable titles; a changed
+title, kind or Vertical draws a different card; a rebuild draws the same
+bytes and hits the image cache; a named `hero` is used unchanged, and a
+named but missing one still fails).
 
 Fetch-seam tests live in `internal/factpack/*_test.go` (package
 `factpack_test`): `newHarness(t)` starts the fake GitHub (`fake_test.go`),

@@ -126,12 +126,6 @@ func TestBriefGate_UnknownAuthorFails(t *testing.T) {
 	requireBriefFails(t, b, "unknown-author", `"grace"`)
 }
 
-func TestBriefGate_MissingHeroFails(t *testing.T) {
-	b := buildtest.ValidBrief()
-	b.Hero = ""
-	requireBriefFails(t, b, "hero-missing", "hero")
-}
-
 func TestBriefFrontmatter_ExplainerOnlyKeysAreRejected(t *testing.T) {
 	for _, key := range []string{`kind: "concept"`, `vertical: "distributed-systems"`, `reviewed: "2026-10-21T09:00:00Z"`} {
 		t.Run(key, func(t *testing.T) {

@@ -4,8 +4,6 @@ description: "On 23 October a fan-out of Dependabot alert events saturated the q
 tags: [queues, backpressure, incidents, github]
 published: "2026-10-26T18:00:00Z"
 author: mira-vance
-hero: github-dependabot-fan-out.png
-hero_alt: "Placeholder hero image"
 source_url: https://www.githubstatus.com/incidents/71y513kjvbzh
 explainers: [metastable-failures]
 draft: true

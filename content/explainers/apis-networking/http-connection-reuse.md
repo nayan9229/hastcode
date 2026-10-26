@@ -7,8 +7,6 @@ tags: ["http", "http2", "http3", "quic", "connection-pooling", "go"]
 published: "2026-10-26T17:18:41Z"
 reviewed: "2026-10-26T17:18:41Z"
 author: mira-vance
-hero: http-connection-reuse.png
-hero_alt: "Placeholder hero image"
 draft: true
 ---
 

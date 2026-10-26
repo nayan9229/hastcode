@@ -16,9 +16,10 @@ import (
 // step), encodes every variant the page, Discover, Open Graph and JSON-LD
 // need into the image cache (step_transform_heroes.go), and publishes them
 // at content-hashed paths under heroAssetDir through the Image Store
-// (step_render_hero_assets.go, image_store.go). A Repo Profile without a
-// `hero` gets a card drawn from its Fact Pack instead, registered in the
-// load phase (step_load_hero_cards.go).
+// (step_render_hero_assets.go, image_store.go). A piece without a `hero`
+// gets a card drawn by the build instead (a Repo Profile's from its Fact
+// Pack, every other kind's from its title), registered in the load phase
+// (step_load_hero_cards.go).
 func init() {
 	registerStep(phaseValidate, 50, "validate heroes", validateHeroes)
 }
@@ -58,7 +59,7 @@ type hero struct {
 
 // heroRef is a piece that must carry a hero (an Explainer or a Brief):
 // its content file and its `hero` / `hero_alt` frontmatter. card marks a
-// Repo Profile without `hero`, whose hero is drawn from its Fact Pack
+// piece without `hero`, whose hero is drawn by the build
 // (step_load_hero_cards.go) rather than sourced.
 type heroRef struct {
 	file, hero, alt string
@@ -69,10 +70,10 @@ type heroRef struct {
 func heroRefsOf(es []*content.Explainer, bs []*content.Brief) []heroRef {
 	var refs []heroRef
 	for _, e := range es {
-		refs = append(refs, heroRef{file: e.File, hero: e.Hero, alt: e.HeroAlt, card: e.Kind == content.RepoProfile && e.Hero == ""})
+		refs = append(refs, heroRef{file: e.File, hero: e.Hero, alt: e.HeroAlt, card: e.Hero == ""})
 	}
 	for _, b := range bs {
-		refs = append(refs, heroRef{file: b.File, hero: b.Hero, alt: b.HeroAlt})
+		refs = append(refs, heroRef{file: b.File, hero: b.Hero, alt: b.HeroAlt, card: b.Hero == ""})
 	}
 	return refs
 }
@@ -93,17 +94,14 @@ func (s *site) heroView(file string) views.Hero {
 	return views.Hero{}
 }
 
-// validateHeroes checks that every Explainer and Brief names a hero that
+// validateHeroes checks that the hero every Explainer and Brief names
 // exists beside its Markdown, decodes, and is at least heroMinWidth wide.
-// A Repo Profile without `hero` is skipped: its card was drawn and
-// registered already, or its Fact Pack failed and so did the Profile.
+// A piece without `hero` is skipped: its card was drawn and registered
+// already (or, for a Repo Profile, its Fact Pack failed and so did the
+// Profile).
 func validateHeroes(s *site) error {
 	for _, ref := range heroRefsOf(s.explainers, s.briefs) {
 		if ref.card {
-			continue
-		}
-		if ref.hero == "" {
-			s.fail(ref.file, ruleHeroMissing, "no hero: set `hero` in frontmatter to a raster image beside the Markdown, at least %d px wide", heroMinWidth)
 			continue
 		}
 		rel := path.Join(path.Dir(ref.file), ref.hero)

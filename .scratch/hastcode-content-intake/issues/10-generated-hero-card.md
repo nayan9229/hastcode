@@ -6,9 +6,11 @@ Spec: `../spec.md`. Prior art: the Repo Profile hero card and the OG badge rende
 
 **Blocked by:** None (Author decision; independent of 07–09)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests: a Case Study, Concept, Comparison and Brief without `hero` get a generated card; decoded output dimensions ≥1200 px wide; JSON-LD image and og:image point at its crops; alt text set; cards differ when titles differ and are byte-identical across rebuilds (content-hashed, cached)
-- [ ] Behaviour for a `hero` field on these kinds matches the Repo Profile rule and is tested
-- [ ] The four drafts on main build in preview with no hero files; production build unchanged
-- [ ] README documents the card
+Resolution: the Repo Profile rule today is neither "forbidden" nor "ignored" but "optional override": without `hero` the build draws the card; a named `hero` (with `hero_alt`) replaces it, and a named but missing one still fails `hero-missing`. That rule now holds for every kind and for Briefs (`builder/title_card_test.go`, `TestTitleCard_APieceWithAHeroUsesItUnchanged`). The templates note is in ticket 08.
+
+- [x] Build-seam tests: a Case Study, Concept, Comparison and Brief without `hero` get a generated card; decoded output dimensions ≥1200 px wide; JSON-LD image and og:image point at its crops; alt text set; cards differ when titles differ and are byte-identical across rebuilds (content-hashed, cached)
+- [x] Behaviour for a `hero` field on these kinds matches the Repo Profile rule and is tested
+- [x] The four drafts on main build in preview with no hero files; production build unchanged
+- [x] README documents the card

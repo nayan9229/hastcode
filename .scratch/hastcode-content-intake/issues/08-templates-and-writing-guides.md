@@ -4,6 +4,8 @@
 
 Spec: `../spec.md` ("Documents"). Research sections 3–4 (Google policy, copyright).
 
+Note from ticket 10 (generated hero card): no Piece needs a hand-made image. Without `hero` the build draws the hero card from the title, kind and Vertical (or "Brief"); alt text is the title. `hero`/`hero_alt` stay optional, as in the Repo Profile template: a sourced image beside the Markdown replaces the card. So the templates leave both keys out (or show them commented out, like `docs/editorial/repo-profile-template.md`), and the guides say the card is checked on the Preview, not made.
+
 **Blocked by:** 07 (First four pieces)
 
 **Status:** ready-for-agent

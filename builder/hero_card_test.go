@@ -178,19 +178,6 @@ func TestHeroCard_ProfileWithAHeroUsesItUnchanged(t *testing.T) {
 	requireColour(t, px, px.Bounds().Dx()/2, px.Bounds().Dy()/2, amber, "the sourced hero's amber")
 }
 
-func TestHeroCard_ACaseStudyWithoutAHeroStillFails(t *testing.T) {
-	e := buildtest.ValidExplainer()
-	e.Kind = "case-study"
-	e.Hero, e.HeroAlt, e.HeroImage = "", "", nil
-
-	out, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithExplainer(e))
-
-	buildtest.RequireErrorRule(t, res, raftFile, "hero-missing", "no hero")
-	if buildtest.Exists(out, raftURL) {
-		t.Error("page was written for a Case Study without a hero")
-	}
-}
-
 func TestHeroCard_FileNamesChangeWhenStarsOrTheLatestReleaseChangeButNotWhenOnlyTheFetchTimeDoes(t *testing.T) {
 	base := pictureURLs(t, buildtest.MustBuild(t, buildtest.Config(), repoProfileTree()), repoProfilePath)
 	if len(base) == 0 {

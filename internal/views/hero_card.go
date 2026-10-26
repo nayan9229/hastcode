@@ -72,12 +72,20 @@ func (c HeroCard) Alt() string {
 // license, latest release), with the accent band the OG badge has along
 // the bottom edge.
 func HeroCardPNG(c HeroCard) []byte {
+	rule := image.Rect((heroCardWidth-heroCardRuleWidth)/2, heroCardRuleY, (heroCardWidth+heroCardRuleWidth)/2, heroCardRuleY+heroCardRuleHeight)
+	return drawCard(heroCardRuns(c), rule)
+}
+
+// drawCard paints a 1600x900 card: the light background, the accent band
+// along the bottom edge, the accent rule and each run centred on its
+// baseline. The hero card and the title card (title_card.go) share it.
+func drawCard(runs []heroCardRun, rule image.Rectangle) []byte {
 	img := image.NewRGBA(image.Rect(0, 0, heroCardWidth, heroCardHeight))
 	fill(img, img.Bounds(), hexColour(lightPalette.bg))
 	fill(img, image.Rect(0, heroCardHeight-heroCardBand, heroCardWidth, heroCardHeight), hexColour(lightPalette.accent))
-	fill(img, image.Rect((heroCardWidth-heroCardRuleWidth)/2, heroCardRuleY, (heroCardWidth+heroCardRuleWidth)/2, heroCardRuleY+heroCardRuleHeight), hexColour(lightPalette.accent))
+	fill(img, rule, hexColour(lightPalette.accent))
 
-	for _, r := range heroCardRuns(c) {
+	for _, r := range runs {
 		if r.wordmark {
 			drawWordmark(img, heroCardWordmarkSize, (heroCardWidth-wordmarkWidth(heroCardWordmarkSize))/2, r.y)
 			continue
@@ -89,7 +97,7 @@ func HeroCardPNG(c HeroCard) []byte {
 	var buf bytes.Buffer
 	enc := png.Encoder{CompressionLevel: png.BestCompression}
 	if err := enc.Encode(&buf, img); err != nil {
-		panic("views: encode hero card: " + err.Error())
+		panic("views: encode card: " + err.Error())
 	}
 	return buf.Bytes()
 }

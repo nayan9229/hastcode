@@ -7,8 +7,6 @@ tags: ["metastability", "retries", "load-shedding", "overload", "reliability"]
 published: "2026-10-26T12:00:00Z"
 reviewed: "2026-10-26T12:00:00Z"
 author: mira-vance
-hero: metastable-failures.png
-hero_alt: "Placeholder hero image"
 draft: true
 ---
 

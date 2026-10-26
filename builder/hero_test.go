@@ -228,18 +228,6 @@ func TestHero_MissingFileIsABuildError(t *testing.T) {
 	}
 }
 
-func TestHero_MissingFromFrontmatterIsABuildError(t *testing.T) {
-	e := buildtest.ValidExplainer()
-	e.Hero = ""
-
-	out, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithExplainer(e))
-
-	buildtest.RequireError(t, res, raftFile, "no hero")
-	if buildtest.Exists(out, raftPage) {
-		t.Error("page was written for an Explainer without a hero")
-	}
-}
-
 func TestHero_FileThatIsNotAnImageIsABuildError(t *testing.T) {
 	e := buildtest.ValidExplainer()
 	e.HeroImage = []byte("not a png")
