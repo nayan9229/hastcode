@@ -48,7 +48,7 @@ func checkVerified(s *site) error {
 // gate, or "" when it passes or the Piece predates the rule. Days, the
 // build clock's (now) included, are read in published's own offset.
 func verifiedProblem(published, verified, now time.Time) string {
-	pubDay := day(published)
+	pubDay := calendarDayUTC(published)
 	if !pubDay.After(verifiedCutoff) {
 		return ""
 	}
@@ -57,15 +57,15 @@ func verifiedProblem(published, verified, now time.Time) string {
 		return "no `verified` date: only the Author sets it, after checking every claim against its Source"
 	case verified.Before(pubDay):
 		return "verified " + verified.Format(time.DateOnly) + " is before published " + pubDay.Format(time.DateOnly)
-	case verified.After(day(now.In(published.Location()))):
+	case verified.After(calendarDayUTC(now.In(published.Location()))):
 		return "verified " + verified.Format(time.DateOnly) + " is in the future (build clock " + now.In(published.Location()).Format(time.DateOnly) + ")"
 	}
 	return ""
 }
 
-// day is t's calendar day in its own offset, as midnight UTC (the form
+// calendarDayUTC is t's calendar day in its own offset, as midnight UTC (the form
 // content.Explainer.Verified takes).
-func day(t time.Time) time.Time {
+func calendarDayUTC(t time.Time) time.Time {
 	y, m, d := t.Date()
 	return time.Date(y, m, d, 0, 0, 0, 0, time.UTC)
 }

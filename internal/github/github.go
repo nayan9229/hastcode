@@ -86,7 +86,7 @@ func NewClient(getenv func(string) string) (*Client, error) {
 		return nil, fmt.Errorf("%s is not set: the fetch command reads one GitHub token from that variable (GitHub Actions provides it; locally, create a fine-grained personal access token with read access to public repositories) and refuses to run unauthenticated, where GitHub allows 60 requests an hour", EnvToken)
 	}
 	return &Client{
-		BaseURL: APIURL,
+		BaseURL:   APIURL,
 		Token:     token,
 		UserAgent: UserAgent,
 		HTTP:      &http.Client{Timeout: 30 * time.Second},

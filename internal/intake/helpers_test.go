@@ -217,6 +217,14 @@ func readQueue(t *testing.T, in *intake.Intake) []queuedLead {
 	return leads
 }
 
+// withoutID is l with its ID left out, for comparing a queue line to an
+// expected one written without it: IDs are derived, and
+// TestRun_LeadIDsAreStableAcrossRunsAndShortEnoughToType checks them.
+func withoutID(l queuedLead) queuedLead {
+	l.ID = ""
+	return l
+}
+
 func titles(leads []queuedLead) []string {
 	var out []string
 	for _, l := range leads {

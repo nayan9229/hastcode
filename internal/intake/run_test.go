@@ -39,9 +39,8 @@ func TestRun_ListsNewLeadsWithTheSourcesKindAndVertical(t *testing.T) {
 		t.Fatalf("queue lists %d Leads %q, want %d", len(got), titles(got), len(want))
 	}
 	for i := range want {
-		want[i].ID = got[i].ID // IDs are checked by their own test
-		if got[i] != want[i] {
-			t.Errorf("queue Lead %d:\n got %+v\nwant %+v", i, got[i], want[i])
+		if g := withoutID(got[i]); g != want[i] {
+			t.Errorf("queue Lead %d:\n got %+v\nwant %+v", i, g, want[i])
 		}
 	}
 	if len(report.New) != 4 {

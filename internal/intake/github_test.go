@@ -42,9 +42,8 @@ func TestRun_ListsNewReleasesOfARepositorySourceAsLeads(t *testing.T) {
 		t.Fatalf("queue lists %d releases %q, want %d", len(got), titles(got), len(want))
 	}
 	for i := range want {
-		want[i].ID = got[i].ID
-		if got[i] != want[i] {
-			t.Errorf("release Lead %d:\n got %+v\nwant %+v", i, got[i], want[i])
+		if g := withoutID(got[i]); g != want[i] {
+			t.Errorf("release Lead %d:\n got %+v\nwant %+v", i, g, want[i])
 		}
 	}
 	if len(report.New) != 6 {
@@ -186,8 +185,10 @@ func TestRun_PagesPastPrereleasesToTheFullReleaseBehindThem(t *testing.T) {
 	for i := range 10 { // page 1: ten release candidates this week
 		add(500-i, fmt.Sprintf("v3.1.0-rc.%d", 10-i), true, fmt.Sprintf("2026-10-%02dT10:00:00Z", 25-i/2))
 	}
-	add(480, "v3.0.0", false, "2026-10-19T10:00:00Z") // page 2: the full release, then older ones
-	for i := range 19 { // the rest of page 2 and all of page 3: last spring's
+	// Page 2: the full release, then last spring's releases, which fill
+	// the rest of page 2 and all of page 3.
+	add(480, "v3.0.0", false, "2026-10-19T10:00:00Z")
+	for i := range 19 {
 		add(470-i, fmt.Sprintf("v2.%d.0", 19-i), false, fmt.Sprintf("2026-04-%02dT10:00:00Z", 28-i))
 	}
 	for i := range 10 { // page 4: never needed
