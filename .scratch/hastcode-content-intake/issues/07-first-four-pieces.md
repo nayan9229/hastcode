@@ -53,3 +53,17 @@ Check before verifying:
 5. disable_active_migration wording: piece says "a server can forbid", RFC 9000 §9 says "the peer".
 6. Every quote verbatim at its anchor.
 7. Replace the hero.
+
+## Draft: Concept, metastable failures (`distributed-systems/metastable-failures`)
+
+~2,500 words, draft, placeholder hero. Opens on the 2015 DynamoDB retry storm. 13 Sources: Brooker's Lead post and four earlier posts, HotOS'21 (Bronson et al.), OSDI'22 (Huang et al.) and its reproduction repo, AWS 2015 DynamoDB summary, AWS "Exponential Backoff And Jitter", two Builders' Library articles, the Raft paper, Stability Sim. Labelled inferences (both in "Where lost writes fit"): how a member lying about fsync() can lose a committed Raft entry; why Brooker pairs lost writes with metastability.
+
+Check before verifying:
+1. OSDI counts: abstract 22 failures vs body 21; draft says "22 from 11 organisations", "retries in more than half", "4 of 15 AWS outages".
+2. "Fix to break" passage keeps OSDI's wording; no claim the SimpleDB fix caused the DynamoDB event.
+3. Jitter result "call count fell by more than half (100 clients)": source baseline ambiguous.
+4. Token-bucket paraphrase "roughly 0.1 retries well above 10% failures".
+5. HotOS worked example: 280 → 560 QPS; recovery below 150 QPS or retries below 20 QPS.
+6. Builders' Library URLs now redirect to builder.aws.com.
+7. The lost-writes inference.
+8. Replace the hero.
