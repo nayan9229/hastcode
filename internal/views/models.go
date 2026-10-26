@@ -45,9 +45,19 @@ type Page struct {
 	HeroPreload *Hero
 	// Ads is the site-wide ad configuration every ad slot reads.
 	Ads Ads
-	// PlausibleDomain is the Plausible analytics site domain; "" omits
-	// the analytics script (tests, local builds).
-	PlausibleDomain string
+	// Analytics is the Google Analytics 4 configuration; a zero value
+	// omits the analytics scripts (preview builds).
+	Analytics Analytics
+}
+
+// Analytics configures Google Analytics 4 (ADR-0008).
+type Analytics struct {
+	// MeasurementID is the GA4 web data stream id ("G-..."); "" omits
+	// analytics entirely.
+	MeasurementID string
+	// Host is the only hostname that reports (the Production Target's);
+	// on any other host (the QA Target) the snippet opts out.
+	Host string
 }
 
 // Social is a page's Open Graph and Twitter card preview.

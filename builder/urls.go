@@ -49,6 +49,7 @@ const (
 	aboutURL           = "/about/"
 	contactURL         = "/contact/"
 	editorialPolicyURL = "/editorial-policy/"
+	privacyURL         = "/privacy/"
 	siteFeedURL        = "/feed.xml"
 	briefsFeedURL      = "/briefs/feed.xml"
 	sitemapURL         = "/sitemap.xml"

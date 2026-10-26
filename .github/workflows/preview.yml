@@ -123,9 +123,9 @@ jobs:
       - run: npm install --global @lhci/cli@0.15.1 --no-audit --no-fund
       # Budgets live in lighthouserc.json: mobile LCP <= 1500 ms (median of
       # 3 runs), CLS 0 (worst run), first-party script transfer <= 60 KB
-      # (a secondary guard: Plausible is blocked here and transfer is
-      # compressed; the total-JS budget, uncompressed with analytics, is
-      # TestJSBudget_EveryPageStaysWithin60KB in make test). Any miss fails
+      # (a secondary guard: Google's analytics and ad hosts are blocked here
+      # and transfer is compressed; the first-party JS budget, uncompressed,
+      # is TestJSBudget_EveryPageStaysWithin60KB in make test, ADR-0008). Any miss fails
       # this check. Reports are uploaded as a build artefact, never to
       # public storage (preview pages may hold drafts).
       - name: Run Lighthouse against the preview

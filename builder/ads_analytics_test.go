@@ -167,32 +167,53 @@ func TestAdSlots_DisabledRenderNoSlotAndReserveNoSpace(t *testing.T) {
 			t.Errorf("%s: found %d AdSense units with ads off, want 0", page, n)
 		}
 	}
-	for _, third := range []string{"googlesyndication.com", "plausible.io"} {
-		if hits := buildtest.FilesContaining(t, out, third); len(hits) != 0 {
-			t.Errorf("%q appears in %v with ads and analytics off", third, hits)
-		}
+	if hits := buildtest.FilesContaining(t, out, "googlesyndication.com"); len(hits) != 0 {
+		t.Errorf("AdSense appears in %v with ads off", hits)
 	}
 }
 
-func TestAnalytics_PlausibleScriptWhenDomainConfigured(t *testing.T) {
-	cfg := buildtest.Config()
-	cfg.PlausibleDomain = "hastcode.com"
-	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
-	doc := buildtest.Page(t, out, explainerPath)
+const gtagSrc = "https://www.googletagmanager.com/gtag/js?id=" + buildtest.GAMeasurementID
 
-	s := doc.Find(`script[src="https://plausible.io/js/script.js"]`)
-	if s.Length() != 1 {
-		t.Fatalf("found %d Plausible scripts, want 1", s.Length())
-	}
-	if got := s.AttrOr("data-domain", ""); got != "hastcode.com" {
-		t.Errorf("Plausible data-domain = %q, want hastcode.com", got)
-	}
-	if _, deferred := s.Attr("defer"); !deferred {
-		t.Errorf("Plausible script must be defer")
-	}
-	// Plausible's standard script sets no cookies; nothing else may either.
-	if hits := buildtest.FilesContaining(t, out, "cookie"); len(hits) != 0 {
-		t.Errorf("output mentions cookies in %v; analytics must be cookieless", hits)
+// Every Production page reports to Google Analytics 4 (ADR-0008): an inline
+// snippet that queues consent defaults and the config, then gtag.js
+// deferred so it runs after parsing.
+func TestAnalytics_ProductionPagesCarryGA4(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+
+	for _, page := range []string{"/", explainerPath, "/search/", "/privacy/"} {
+		doc := buildtest.Page(t, out, page)
+		head := doc.Find("head")
+		loaders := head.Find(`script[src^="https://www.googletagmanager.com/"]`)
+		if loaders.Length() != 1 {
+			t.Fatalf("%s: found %d gtag.js scripts in <head>, want 1", page, loaders.Length())
+		}
+		if got := loaders.AttrOr("src", ""); got != gtagSrc {
+			t.Errorf("%s: gtag.js src = %q, want %q", page, got, gtagSrc)
+		}
+		if _, deferred := loaders.Attr("defer"); !deferred {
+			t.Errorf("%s: gtag.js must be defer", page)
+		}
+		snippet := loaders.Prev()
+		if !snippet.Is("script") || snippet.AttrOr("src", "") != "" {
+			t.Fatalf("%s: gtag.js is not preceded by the inline analytics snippet", page)
+		}
+		code := snippet.Text()
+		for _, want := range []string{
+			`window.dataLayer=window.dataLayer||[]`,
+			`if(location.hostname!=="hastcode.test"){window["ga-disable-"+"` + buildtest.GAMeasurementID + `"]=true;}`,
+			`analytics_storage:"denied",wait_for_update:500,region:[`,
+			`"DE"`, `"NO"`, `"GB"`, `"CH"`,
+			`analytics_storage:"granted"}`,
+			`gtag("config","` + buildtest.GAMeasurementID + `")`,
+		} {
+			if !strings.Contains(code, want) {
+				t.Errorf("%s: analytics snippet lacks %s:\n%s", page, want, code)
+			}
+		}
+		// Consent defaults only apply when set before the config command.
+		if strings.LastIndex(code, `gtag("consent","default"`) > strings.Index(code, `gtag("config"`) {
+			t.Errorf("%s: consent defaults must precede the config", page)
+		}
 	}
 }
 
@@ -201,20 +222,45 @@ func TestAnalytics_PlausibleScriptWhenDomainConfigured(t *testing.T) {
 // the page's own code (ADR-0006).
 func TestAnalytics_OmittedFromPreviewBuilds(t *testing.T) {
 	cfg := buildtest.Config()
-	cfg.PlausibleDomain = "hastcode.com"
 	cfg.Mode = builder.Preview
 	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
 
-	if hits := buildtest.FilesContaining(t, out, "plausible"); len(hits) != 0 {
-		t.Errorf("Plausible appears in %v in a preview build", hits)
+	for _, needle := range []string{"googletagmanager", buildtest.GAMeasurementID, "dataLayer"} {
+		if hits := buildtest.FilesContaining(t, out, needle); len(hits) != 0 {
+			t.Errorf("%q appears in %v in a preview build", needle, hits)
+		}
 	}
 }
 
-func TestAnalytics_OmittedWhenDomainBlank(t *testing.T) {
-	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.ValidTree())
+// A preview build needs no Measurement ID (local builds, branch Previews).
+func TestAnalytics_PreviewBuildPassesWithoutMeasurementID(t *testing.T) {
+	cfg := buildtest.Config()
+	cfg.Mode = builder.Preview
+	cfg.GAMeasurementID = ""
+	buildtest.MustBuild(t, cfg, buildtest.ValidTree())
+}
 
-	if hits := buildtest.FilesContaining(t, out, "plausible"); len(hits) != 0 {
-		t.Errorf("Plausible appears in %v with no domain configured", hits)
+// A Production build (Production and QA Targets) without a Measurement ID
+// would silently record nothing, so it fails (ADR-0008).
+func TestAnalytics_ProductionBuildWithoutMeasurementIDFails(t *testing.T) {
+	cfg := buildtest.Config()
+	cfg.GAMeasurementID = ""
+
+	_, res := buildtest.Build(t, cfg, buildtest.ValidTree())
+
+	buildtest.RequireErrorRule(t, res, "", "analytics-config", "ga_measurement_id is blank")
+}
+
+func TestAnalytics_MeasurementIDMustBeGA4(t *testing.T) {
+	for _, id := range []string{"UA-12345678-1", "g-abc12345", "G-", `G-ABC"};alert(1)//`} {
+		t.Run(id, func(t *testing.T) {
+			cfg := buildtest.Config()
+			cfg.GAMeasurementID = id
+
+			_, res := buildtest.Build(t, cfg, buildtest.ValidTree())
+
+			buildtest.RequireErrorRule(t, res, "", "analytics-config", "not a GA4 Measurement ID")
+		})
 	}
 }
 

@@ -838,7 +838,11 @@ image_checks "$(og_badge_url)"
 if confirm "POST a real signup to hastcode.com? (goes to the PRODUCTION newsletter)"; then
   real_signup PRODUCTION
 fi
-step "Plausible: Site settings → Shields → Hostnames → allow only hastcode.com."
+step "Google Analytics 4 (ADR-0008), if not done before this Publish: analytics.google.com → Admin → Create property 'HastCode' → Web data stream for https://hastcode.com → copy the Measurement ID (G-…) into site.yaml ga_measurement_id and commit (Production builds fail without it)."
+step "AdSense → Privacy & messaging → European regulations → Settings: turn on consent mode for analytics purposes, so the GDPR message grants Google Analytics in the EEA, UK and Switzerland."
+step "Link AdSense to the GA4 property (AdSense → Account → Access and authorisation → Google Analytics integration) for revenue per page."
+step "Google Analytics → Realtime: open https://hastcode.com in a private window and confirm one active user; qa.hastcode.com must never appear."
+step "Later, when applying to Raptive: give Raptive read-only access, then Viewer on the GA4 property."
 step "Submit https://hastcode.com/sitemap.xml and /news-sitemap.xml in Google Search Console and Bing Webmaster Tools."
 close_checklist "Live checklist"
 pause

@@ -15,13 +15,14 @@ type StaticPage struct {
 	Body        string
 }
 
-// TransparencyPages are the three static pages the site chrome links from
-// every page: About, Contact and Editorial Policy.
+// TransparencyPages are the static pages the site chrome links from every
+// page: About, Contact, Editorial Policy and Privacy.
 func TransparencyPages() []StaticPage {
 	return []StaticPage{
 		{Slug: "about", Title: "About HastCode", Description: "Who makes HastCode and why.", Body: "HastCode explains how real systems are built.\n"},
 		{Slug: "contact", Title: "Contact", Description: "How to reach HastCode.", Body: "Email [the Author](mailto:author@hastcode.test).\n"},
 		{Slug: "editorial-policy", Title: "Editorial Policy", Description: "How HastCode researches, writes and corrects.", Body: "Every claim links a first-party source.\n"},
+		{Slug: "privacy", Title: "Privacy", Description: "What HastCode and its providers collect.", Body: "Google Analytics measures visits.\n"},
 	}
 }
 

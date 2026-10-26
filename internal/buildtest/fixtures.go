@@ -345,12 +345,17 @@ func HeroPNGTextured(w, h int, noise uint8) []byte {
 // adds a per-build cache dir), and fast hero encoding with an image cache
 // shared by every test (SharedImageCacheDir), so a fixture hero is encoded
 // once, not once per test.
+// GAMeasurementID is the Google Analytics 4 Measurement ID every fixture
+// Production build carries (ADR-0008 makes it required there).
+const GAMeasurementID = "G-TEST123456"
+
 func Config() builder.Config {
 	return builder.Config{
-		SiteURL:  "https://hastcode.test",
-		Mode:     builder.Production,
-		ToolsDir: RepoRoot(),
-		Images:   builder.ImageConfig{CacheDir: SharedImageCacheDir(), Fast: true},
+		SiteURL:         "https://hastcode.test",
+		Mode:            builder.Production,
+		GAMeasurementID: GAMeasurementID,
+		ToolsDir:        RepoRoot(),
+		Images:          builder.ImageConfig{CacheDir: SharedImageCacheDir(), Fast: true},
 		Verticals: []builder.Vertical{
 			{Slug: "distributed-systems", Name: "Distributed Systems", Description: "Consensus, replication and clocks.", Order: 1},
 			{Slug: "databases-storage", Name: "Databases & Storage", Description: "Storage engines, indexes and transactions.", Order: 2},

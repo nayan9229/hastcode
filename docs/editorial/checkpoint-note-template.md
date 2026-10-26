@@ -17,9 +17,9 @@ by the rule below (ADR-0005), not by mood.
 
 | Metric | This Profile | Median Explainer, same age | Where it comes from |
 |---|---|---|---|
-| Pageviews, days 1–28 | TODO(author) | TODO(author) | Plausible, page filter, custom range |
-| Tier-1 share (US, UK, CA, AU, NZ visitors ÷ all) | TODO(author) | TODO(author) | Plausible, Locations, same filter and range |
-| Site median Tier-1 share, same range | — | TODO(author) | Plausible, Locations, whole site |
+| Pageviews, days 1–28 | TODO(author) | TODO(author) | Google Analytics 4: Reports → Engagement → Pages and screens, Views, filtered to the page path, custom range (ADR-0008) |
+| Tier-1 share (US, UK, CA, AU, NZ visitors ÷ all) | TODO(author) | TODO(author) | Google Analytics 4: same report, add the Country dimension, same filter and range |
+| Site median Tier-1 share, same range | — | TODO(author) | Google Analytics 4: Reports → User attributes → Country, Views, whole site |
 | Bing Webmaster AI Performance citations | TODO(author) | — | Bing Webmaster Tools, AI Performance; name each answer engine and cited page |
 | Inbound links (referring pages) | TODO(author) | — | Search Console, Links; list them below |
 
@@ -42,7 +42,7 @@ Search Console, Performance, page filter on the Profile, days 1–28.
 
 - TODO(author): engine, query or prompt if known, date, or "none"
 
-## The rule (ADR-0005, copied verbatim)
+## The rule (ADR-0005, copied verbatim; read its "Plausible" as Google Analytics 4 since ADR-0008)
 
 > The four-week checkpoint, measured at each Profile's day 28, compares Plausible pageviews and Tier-1 share with the median Explainer of the same age, plus Search Console impressions for the templated queries, Bing Webmaster AI Performance citations and inbound links. Health score and badge proceed only if the median Profile matches the median Explainer's pageviews **and** its Tier-1 share is within 10 points of the site median, or if any Profile is cited by an AI answer engine. Otherwise cadence drops and the product half stays shelved.
 
