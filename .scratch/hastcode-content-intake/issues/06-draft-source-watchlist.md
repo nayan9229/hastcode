@@ -6,12 +6,12 @@ Spec: `../spec.md` ("Source Watchlist"). Research: `docs/research/content-source
 
 **Blocked by:** 02 (Intake tracer), 03 (polite fetching), 04 (GitHub Sources)
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] Watchlist has 36 Vertical Sources (6 each) plus the incident feeds, every one validated; 40 of 47 fetched successfully in one real run (the 7 repository Sources failed only because `GITHUB_TOKEN` was not set in the agent's environment; see below)
 - [x] Each Source carries a reason; any swap from the research's top picks is explained (in `sources.yaml` comments per Vertical, and below)
 - [x] The run summary is pasted into this ticket
-- [ ] Ends `ready-for-human`: the Author reviews the list before it is committed; the agent does not commit it unreviewed (committed on branch `intake/06-watchlist` only; not merged until the Author reviews)
+- [x] Ends `ready-for-human`: the Author reviews the list before it is committed; the agent does not commit it unreviewed (committed on branch `intake/06-watchlist` only; not merged until the Author reviews)
 
 ## What was done (2026-10-26)
 
@@ -83,3 +83,7 @@ Check before merging `intake/06-watchlist`:
 2. The four swaps above, in particular the two not in the research (Meta Production Engineering category, npm status) and dropping Cloudflare status.
 3. Run `GITHUB_TOKEN=… make intake` once to confirm the 7 repository Sources (expect each to list its recent full releases; prereleases are skipped).
 4. Terms: AWS and Cloudflare reserve all rights (link and quote briefly, never reuse diagrams); Medium-hosted Netflix terms were not read (research Open question 3).
+
+## Author review
+
+Approved as drafted by the Author on 2026-10-26 (47 Sources).
