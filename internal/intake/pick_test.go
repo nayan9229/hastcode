@@ -2,6 +2,7 @@ package intake_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"slices"
@@ -375,6 +376,22 @@ func TestPick_RefusesABriefNamingAnExplainerTheContentTreeLacks(t *testing.T) {
 	withExplainer(t, in, "distributed-systems", "metastable-failures")
 
 	requireRefused(t, in, regionOutage, intake.PickOptions{Kind: "brief", Explainers: []string{"metastable-failures", "retry-storms"}}, `no Explainer "retry-storms"`)
+}
+
+func TestPick_RefusesAnExplainerSlugThatIsNotExact(t *testing.T) {
+	in := newPickIntake(t)
+	withExplainer(t, in, "distributed-systems", "metastable-failures")
+
+	for _, slug := range []string{"meta*", "*", "metastable-failure?", "../distributed-systems/metastable-failures"} {
+		requireRefused(t, in, regionOutage, intake.PickOptions{Kind: "brief", Explainers: []string{slug}}, fmt.Sprintf("EXPLAINER=%q is not a slug", slug))
+	}
+}
+
+func TestPick_RefusesAnExplainerSlugThatOnlyPrefixesOne(t *testing.T) {
+	in := newPickIntake(t)
+	withExplainer(t, in, "distributed-systems", "metastable-failures")
+
+	requireRefused(t, in, regionOutage, intake.PickOptions{Kind: "brief", Explainers: []string{"metastable"}}, `no Explainer "metastable"`)
 }
 
 func TestPick_RefusesExplainersForAnExplainerKind(t *testing.T) {

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -160,6 +161,9 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 		return p, errors.New("intake: a Brief links the Explainer that teaches its lesson: name it (EXPLAINER=slug[,slug]); if none exists yet, the Lead is not a Brief today")
 	}
 	for _, slug := range opts.Explainers {
+		if !isSlug(slug) {
+			return p, fmt.Errorf("intake: EXPLAINER=%q is not a slug; name each Explainer by its exact slug (lower-case letters and digits, single hyphens between), no wildcards or paths", slug)
+		}
 		file, err := in.pieceFile(slug)
 		if err != nil {
 			return p, err
@@ -177,17 +181,30 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 
 // pieceFile is the content-relative file of the Piece using slug
 // (explainers/<vertical>/<slug>.md or briefs/<slug>.md; slugs are unique
-// site-wide), or "" when none does.
+// site-wide), or "" when none does. slug must be a slug (isSlug): it is
+// joined into exact paths, never matched as a pattern.
 func (in *Intake) pieceFile(slug string) (string, error) {
-	patterns := []string{filepath.Join("explainers", "*", slug+".md"), filepath.Join("briefs", slug+".md")}
-	for _, pattern := range patterns {
-		matches, err := filepath.Glob(filepath.Join(in.ContentDir, pattern))
+	var candidates []string
+	verticals, err := os.ReadDir(filepath.Join(in.ContentDir, "explainers"))
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return "", err
+	}
+	for _, v := range verticals {
+		if v.IsDir() {
+			candidates = append(candidates, path.Join("explainers", v.Name(), slug+".md"))
+		}
+	}
+	candidates = append(candidates, path.Join("briefs", slug+".md"))
+	for _, rel := range candidates {
+		info, err := os.Stat(filepath.Join(in.ContentDir, filepath.FromSlash(rel)))
+		if errors.Is(err, fs.ErrNotExist) {
+			continue
+		}
 		if err != nil {
 			return "", err
 		}
-		if len(matches) > 0 {
-			rel, err := filepath.Rel(in.ContentDir, matches[0])
-			return filepath.ToSlash(rel), err
+		if !info.IsDir() {
+			return rel, nil
 		}
 	}
 	return "", nil
@@ -354,6 +371,20 @@ func slugify(title string) string {
 		}
 	}
 	return slug
+}
+
+// isSlug reports whether s has the shape slugify gives: lower-case ASCII
+// letters and digits in runs joined by single hyphens.
+func isSlug(s string) bool {
+	if s == "" || strings.HasPrefix(s, "-") || strings.HasSuffix(s, "-") || strings.Contains(s, "--") {
+		return false
+	}
+	for _, r := range s {
+		if !(r >= 'a' && r <= 'z' || r >= '0' && r <= '9' || r == '-') {
+			return false
+		}
+	}
+	return true
 }
 
 // quote is s as a YAML double-quoted scalar (JSON's string syntax is a

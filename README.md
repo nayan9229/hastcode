@@ -854,12 +854,13 @@ for the Author, and the Lead's link as the one line in `## Sources`. An
 Explainer lands at `content/explainers/<vertical>/<slug>.md`, a Brief at
 `content/briefs/<slug>.md`, the slug made from the Lead's title (rename the
 file to retitle it). A Brief has the Lead's link in `source_url`, and needs
-`EXPLAINER=slug[,slug]`: each must be an existing Explainer, written to
+`EXPLAINER=slug[,slug]`: each must be the exact slug of an existing
+Explainer (no wildcards or paths), written to
 `explainers` and linked in "Why it matters". The Lead becomes `picked`, so
 no later queue shows it. Refused, writing nothing: an unknown or non-open
 Lead; an unknown kind or Vertical; a slug any Piece already uses (slugs are
-site-wide); a Brief without `EXPLAINER=`, naming an Explainer that does not
-exist, or from a Lead more than 3 days (72 hours) old by its date
+site-wide); a Brief without `EXPLAINER=`, naming something that is not a
+slug or an Explainer that does not exist, or from a Lead more than 3 days (72 hours) old by its date
 (published, else first seen) at the pick clock, which can still be picked
 as an Explainer. The skeleton builds in preview (`make dev`) with one
 `author-placeholder` warning per file; a production build leaves it out
