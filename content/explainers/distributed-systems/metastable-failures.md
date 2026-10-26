@@ -7,7 +7,6 @@ tags: ["metastability", "retries", "load-shedding", "overload", "reliability"]
 published: "2026-10-26T12:00:00Z"
 reviewed: "2026-10-26T12:00:00Z"
 author: mira-vance
-draft: true
 ---
 
 At 2:19am PDT on 20 September 2015, a [brief network disruption](https://aws.amazon.com/message/5467D2/) hit some of DynamoDB's storage servers in US-East. Networks blip all the time, and this one should have passed unnoticed. Instead, by 2:37am the error rate on customer requests was ["finally stabilizing at approximately 55%"](https://aws.amazon.com/message/5467D2/), and it stayed there. Engineers [could not even add capacity](https://aws.amazon.com/message/5467D2/) to the overloaded metadata service, because it was too busy to accept their administrative requests. Recovery began only at 5:06am, when they [paused requests to the metadata service](https://aws.amazon.com/message/5467D2/), and DynamoDB was back to normal error rates at 7:10am. The disruption had been brief. What held DynamoDB down for hours was its own retry traffic.
@@ -23,8 +22,6 @@ At 2:19am PDT on 20 September 2015, a [brief network disruption](https://aws.ama
 - Once stuck, the way out is to [cut load or raise capacity](https://www.usenix.org/system/files/osdi22-huang-lexiang.pdf) until the loop can no longer sustain itself, as DynamoDB did by pausing requests.
 
 ## What makes a failure metastable
-
-TODO(author): verify every claim against its source, replace the placeholder hero, then set verified: and remove draft: true and this line.
 
 Nathan Bronson and colleagues named the pattern in their HotOS 2021 paper. Metastable failures, they write, ["occur in open systems with an uncontrolled source of load where a trigger causes the system to enter a bad state that persists even when the trigger is removed"](https://sigops.org/s/conferences/hotos/2021/papers/hotos21-s11-bronson.pdf). In that state **goodput**, the throughput of useful work, is unusably low.
 

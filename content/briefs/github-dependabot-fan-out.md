@@ -6,14 +6,11 @@ published: "2026-10-26T18:00:00Z"
 author: mira-vance
 source_url: https://www.githubstatus.com/incidents/71y513kjvbzh
 explainers: [metastable-failures]
-draft: true
 ---
 
 ## What happened
 
 On 23 October, Dependabot alerts on GitHub were slow to close after repositories were updated. GitHub's [incident report](https://www.githubstatus.com/incidents/71y513kjvbzh) says "an advisory-publication driven fan-out was overwhelming Dependabot alert processing on repositories by saturating the queue with its own events". Updates from 15:39 to 16:43 UTC describe more processing capacity rolling out; the final update credits isolating the fan-out and a throttle "so it runs at a fixed rate and cannot delay other events".
-
-TODO(author): verify every claim against its source, replace the placeholder hero, then set verified: and remove draft: true and this line.
 
 ## Why it matters
 

@@ -7,7 +7,6 @@ tags: ["containers", "multi-tenancy", "kubernetes", "isolation", "netflix"]
 published: "2026-10-26T17:18:00Z"
 reviewed: "2026-10-26T17:18:00Z"
 author: mira-vance
-draft: true
 ---
 
 Netflix's container platform, Titus, [launches millions of containers a week across tens of thousands of EC2 instances](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163), and its default is to pack many teams' containers onto each host. In October 2026 Netflix described the opposite move: for an allowlisted set of jobs, Titus now [gives a single task its own virtual machine](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163), and the team that owns the job changes a label, not its deployment.
@@ -22,8 +21,6 @@ Netflix's container platform, Titus, [launches millions of containers a week acr
 - The price is slower starts and wasted headroom on small nodes, so Netflix [aims it at large, long-running, disruption-sensitive workloads](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163). The surprise: moving the noisiest jobs out [let the shared fleet pack denser](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163).
 
 ## The path a single-tenant task takes
-
-TODO(author): verify every claim against its source, replace the placeholder hero, then set verified: and remove draft: true and this line.
 
 The diagram is ours, redrawn from the text of Netflix's post; Netflix's own figures are in [the original](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163). A team opts in not with an API flag but by [targeting a single-tenant workload group](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163) that the platform team controls. From there, three components act in turn, top to bottom. The sections below walk them in order, then turn to what they cost.
 

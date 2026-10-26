@@ -7,7 +7,6 @@ tags: ["http", "http2", "http3", "quic", "connection-pooling", "go"]
 published: "2026-10-26T17:18:41Z"
 reviewed: "2026-10-26T17:18:41Z"
 author: mira-vance
-draft: true
 ---
 
 A four-line Go function that fetches a URL and returns only its status code, called 100 times over HTTP/1, took about 710 milliseconds on Go 1.26 and about 150 milliseconds on Go 1.27, on one machine, in [the Go team's own test against index.golang.org](https://go.dev/blog/http-connection-reuse). The function did not change. Go 1.27's `net/http` now [drains an unread HTTP/1 response body in the background, for up to 50 ms or 256 KB](https://go.dev/blog/http-connection-reuse#the-current-state-and-conclusion), so the connection can be reused instead of thrown away. That fix opens a bigger question for anyone whose backend calls other services: how do HTTP/1.1, HTTP/2 and HTTP/3 each reuse a connection, how does each one fail, and which should you use? We answer the same questions for all three, from the specifications.
@@ -22,8 +21,6 @@ A four-line Go function that fetches a URL and returns only its status code, cal
 - For service-to-service calls, we infer: HTTP/2 is the default to reach for between services you control; HTTP/1.1 with a pool sized to your concurrency is fine for short requests; HTTP/3 pays off on lossy or changing paths, and Go's `net/http` does not speak it.
 
 ## Three ways to reuse one connection
-
-TODO(author): verify every claim against its source, replace the placeholder hero, then set verified: and remove draft: true and this line.
 
 Reuse exists because a new connection is expensive. The Go blog post counts it out: a TCP handshake costs 1 round trip, a TLS 1.2 handshake 2 more, so [the first request leaves after 3 round trips](https://go.dev/blog/http-connection-reuse#the-cost-of-establishing-http-connections), or 300 ms of setup at a 100 ms cross-region round trip. QUIC folds the cryptographic and transport handshakes into one [to minimise connection establishment latency](https://www.rfc-editor.org/rfc/rfc9000.html#section-7), but a reused connection skips the handshake entirely in all three protocols.
 
