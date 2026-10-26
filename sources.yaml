@@ -1,0 +1,343 @@
+# Source Watchlist (GLOSSARY "Source", ADR-0007). `make intake` reads this
+# file; README "Intake" has the entry format and the validation rules.
+#
+# Drafted 2026-10-26 from docs/research/content-source-intake.md: 6 Sources
+# per Vertical plus the 11 incident feeds (kind case-study). Chosen for
+# first-party signal, steady cadence and validators (ETag/Last-Modified);
+# releases come through the GitHub REST API (repository Sources), never
+# releases.atom. Each Vertical's comment names what was left out of the
+# research table and why. Add a Source with one entry and a reason, in its
+# own commit.
+sources:
+  # Distributed Systems. Left out: All Things Distributed (3 items in 90
+  # days); Dropbox, Airbnb (no validators, lower cadence than Netflix);
+  # Microsoft Research and arXiv cs.DC (paper volume, little systems
+  # practice); Kafka (apache/kafka publishes tags, no GitHub Releases, so
+  # the REST API lists nothing); Temporal (etcd is the closer fit).
+  - name: AWS Architecture Blog
+    site: https://aws.amazon.com/blogs/architecture/
+    feed: https://aws.amazon.com/blogs/architecture/feed/
+    vertical: distributed-systems
+    kind: case-study
+    reason: Reference architectures and customer designs on AWS, about four a week, written by AWS solutions architects.
+  - name: Netflix TechBlog
+    site: https://netflixtechblog.com/
+    feed: https://netflixtechblog.com/feed
+    vertical: distributed-systems
+    kind: case-study
+    reason: Netflix engineers on their own data, streaming and resilience platforms; the strongest first-party Case Study blog (no validators, so a full fetch each run).
+  - name: Meta Engineering, Production Engineering
+    site: https://engineering.fb.com/category/production-engineering/
+    feed: https://engineering.fb.com/category/production-engineering/feed/
+    vertical: distributed-systems
+    kind: case-study
+    reason: Meta's reliability-at-scale posts (traffic peaks, time sync, power-loss drills); this category instead of the main feed, which is mostly ML posts already listed by the AI/ML Source.
+  - name: Marc Brooker
+    site: https://brooker.co.za/blog/
+    feed: https://brooker.co.za/blog/rss.xml
+    vertical: distributed-systems
+    kind: concept
+    reason: An AWS distinguished engineer on metastability, retries, consistency and formal methods; few posts, each one a Concept seed.
+  - name: Martin Fowler
+    site: https://martinfowler.com/
+    feed: https://martinfowler.com/feed.atom
+    vertical: distributed-systems
+    kind: concept
+    reason: Architecture patterns, including the Patterns of Distributed Systems series, about ten a month, with clear definitions to cite.
+  - name: etcd releases
+    site: https://github.com/etcd-io/etcd
+    repository: etcd-io/etcd
+    vertical: distributed-systems
+    kind: brief
+    reason: The Raft key-value store under every Kubernetes cluster; its releases (often consistency or durability fixes) are Briefs readers act on.
+
+  # Databases & Storage. Left out: Planet PostgreSQL (an aggregator, not
+  # first-party; read it for discovery, cite the post); ClickHouse
+  # (marketing-heavy, no validators); Redis (no validators; Valkey carries
+  # the open-source line); CockroachDB releases (cockroachdb/cockroach has
+  # no GitHub Releases, tags only), replaced by Valkey; DuckDB releases
+  # (the DuckDB blog announces them).
+  - name: PostgreSQL news
+    site: https://www.postgresql.org/about/newsarchive/
+    feed: https://www.postgresql.org/news.rss
+    vertical: databases-storage
+    kind: brief
+    reason: The PostgreSQL project's own release and security announcements (plus community news to skip).
+  - name: AWS Database Blog
+    site: https://aws.amazon.com/blogs/database/
+    feed: https://aws.amazon.com/blogs/database/feed/
+    vertical: databases-storage
+    kind: case-study
+    reason: Aurora, DynamoDB and RDS internals and migrations from the AWS teams that run them, about one a day.
+  - name: DuckDB blog
+    site: https://duckdb.org/news/
+    feed: https://duckdb.org/feed.xml
+    vertical: databases-storage
+    kind: concept
+    reason: The DuckDB maintainers on vectorised execution, storage format and their releases.
+  - name: PlanetScale blog
+    site: https://planetscale.com/blog
+    feed: https://planetscale.com/blog/feed.atom
+    vertical: databases-storage
+    kind: comparison
+    reason: MySQL/Vitess and Postgres engineers comparing engines, indexes and storage choices with benchmarks; read against the other vendors.
+  - name: TigerBeetle blog
+    site: https://tigerbeetle.com/blog/
+    feed: https://tigerbeetle.com/blog/atom.xml
+    vertical: databases-storage
+    kind: concept
+    reason: Deterministic simulation testing and storage-fault models from the database's authors; rare posts, each deep.
+  - name: Valkey releases
+    site: https://github.com/valkey-io/valkey
+    repository: valkey-io/valkey
+    vertical: databases-storage
+    kind: brief
+    reason: The Linux Foundation fork of Redis; its releases are the open-source in-memory store's news.
+
+  # APIs & Networking. Left out: IETF blog (8 in 90 days; the RFC feed is
+  # the primary signal); W3C news (mostly browser and web-platform specs);
+  # Tailscale and Stripe (no validators; Stripe is mostly product news);
+  # nginx (index.rss, lower cadence than Envoy); Istio and Cilium (3-4
+  # posts in 90 days).
+  - name: Cloudflare blog
+    site: https://blog.cloudflare.com/
+    feed: https://blog.cloudflare.com/rss/
+    vertical: apis-networking
+    kind: case-study
+    reason: Cloudflare engineers on their edge network, DNS, TLS and HTTP stack, about twelve a week; outage posts also arrive via the Post Mortem tag Source.
+  - name: RFC Editor
+    site: https://www.rfc-editor.org/
+    feed: https://www.rfc-editor.org/rfcrss.xml
+    vertical: apis-networking
+    kind: brief
+    reason: Every newly published RFC, the primary record for protocol changes.
+  - name: APNIC blog
+    site: https://blog.apnic.net/
+    feed: https://blog.apnic.net/feed/
+    vertical: apis-networking
+    kind: concept
+    reason: Measurement-backed posts on BGP, DNS, IPv6 and routing security by network researchers and operators.
+  - name: Fastly blog
+    site: https://www.fastly.com/blog
+    feed: https://www.fastly.com/blog_rss.xml
+    vertical: apis-networking
+    kind: case-study
+    reason: CDN and edge-compute engineering from Fastly, a second first-party edge network to read against Cloudflare.
+  - name: Daniel Stenberg (curl)
+    site: https://daniel.haxx.se/blog/
+    feed: https://daniel.haxx.se/blog/feed/
+    vertical: apis-networking
+    kind: concept
+    reason: The curl maintainer on HTTP/2, HTTP/3, QUIC and TLS edge cases, from the client every reader runs.
+  - name: Envoy releases
+    site: https://github.com/envoyproxy/envoy
+    repository: envoyproxy/envoy
+    vertical: apis-networking
+    kind: brief
+    reason: The proxy behind most service meshes and API gateways; releases (often security fixes) on several branches.
+
+  # Infrastructure & Cloud. Left out: AWS What's New, Google Cloud blog,
+  # Azure updates (firehoses of 20-75 items a week that would bury the
+  # Author; research section 1.7); CNCF blog (mostly member-vendor posts);
+  # Kubernetes contributor blog and CVE feed (the blog and releases carry
+  # the same news); containerd and kernel.org releases (lower reader
+  # impact than Kubernetes).
+  - name: Kubernetes blog
+    site: https://kubernetes.io/blog/
+    feed: https://kubernetes.io/feed.xml
+    vertical: infrastructure-cloud
+    kind: concept
+    reason: The project's own feature, deprecation and release explainers (docs CC BY 4.0); sends ETag and answers 304.
+  - name: Kubernetes releases
+    site: https://github.com/kubernetes/kubernetes
+    repository: kubernetes/kubernetes
+    vertical: infrastructure-cloud
+    kind: brief
+    reason: Minor and patch releases of Kubernetes; alphas and RCs are prereleases and never Leads.
+  - name: GitHub Engineering
+    site: https://github.blog/engineering/
+    feed: https://github.blog/engineering/feed/
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: GitHub engineers on Git storage, MySQL and the platform behind github.com, a few a month.
+  - name: Shopify Engineering
+    site: https://shopify.engineering/
+    feed: https://shopify.engineering/blog.atom
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: Shopify's own accounts of running a large Rails monolith, MySQL fleets and Black Friday scale.
+  - name: HashiCorp blog
+    site: https://www.hashicorp.com/blog
+    feed: https://www.hashicorp.com/blog/feed.xml
+    vertical: infrastructure-cloud
+    kind: comparison
+    reason: Terraform, Vault, Consul and Nomad announcements from the maintainers; the inputs for infrastructure-as-code Comparisons.
+  - name: Fly.io blog
+    site: https://fly.io/blog/
+    feed: https://fly.io/blog/feed.xml
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: Candid engineering posts on running a global VM platform (Firecracker, WireGuard, Anycast); few but deep.
+
+  # AI/ML Systems: the research table's first six rows, unchanged. Left
+  # out: NVIDIA Technical Blog (about eleven a week, product-heavy);
+  # Hugging Face (60 in 90 days, mostly model and library news); MLCommons
+  # (benchmark results, kept for Comparisons by hand); arXiv cs.LG
+  # (very high volume).
+  - name: vLLM blog
+    site: https://vllm.ai/blog
+    feed: https://vllm.ai/blog/rss.xml
+    vertical: ai-ml-systems
+    kind: concept
+    reason: The vLLM maintainers on paged attention, scheduling and inference serving (no validators, so a full fetch each run).
+  - name: vLLM releases
+    site: https://github.com/vllm-project/vllm
+    repository: vllm-project/vllm
+    vertical: ai-ml-systems
+    kind: brief
+    reason: Releases of the most-deployed open LLM serving engine; release candidates are prereleases and never Leads.
+  - name: PyTorch blog
+    site: https://pytorch.org/blog/
+    feed: https://pytorch.org/feed/
+    vertical: ai-ml-systems
+    kind: concept
+    reason: The PyTorch team on compilers, distributed training and its release highlights.
+  - name: PyTorch releases
+    site: https://github.com/pytorch/pytorch
+    repository: pytorch/pytorch
+    vertical: ai-ml-systems
+    kind: brief
+    reason: Full PyTorch releases through the REST API (nightly and RC tags are not Releases).
+  - name: Google Research blog
+    site: https://research.google/blog/
+    feed: https://research.google/blog/rss/
+    vertical: ai-ml-systems
+    kind: concept
+    reason: Paper-backed posts from Google Research on ML systems and efficiency, each linking the paper to cite.
+  - name: Meta Engineering, ML Applications
+    site: https://engineering.fb.com/category/ml-applications/
+    feed: https://engineering.fb.com/category/ml-applications/feed/
+    vertical: ai-ml-systems
+    kind: case-study
+    reason: Meta's own training and inference infrastructure for ranking and generative models, at production scale.
+
+  # Languages & Runtimes. Left out: Go tags (tags.atom is not the REST
+  # API, and the REST tags list is not newest-first; the Go blog announces
+  # releases); Inside Rust (the Rust blog carries releases); CPython
+  # downloads (Python Insider announces the same releases); Node.js blog
+  # (no validators; the REST releases carry the same news with an ETag);
+  # .NET, LLVM, Kotlin, Swift (lower priority in the research table).
+  - name: Go blog
+    site: https://go.dev/blog/
+    feed: https://go.dev/blog/feed.atom
+    vertical: languages-runtimes
+    kind: brief
+    reason: The Go team's release and design posts (CC BY 4.0); Go publishes no GitHub Releases, so this is its release signal (no validators).
+  - name: Rust blog
+    site: https://blog.rust-lang.org/
+    feed: https://blog.rust-lang.org/feed.xml
+    vertical: languages-runtimes
+    kind: brief
+    reason: The Rust project's release announcements every six weeks plus language-design posts.
+  - name: Python Insider
+    site: https://blog.python.org/
+    feed: https://blog.python.org/feeds/posts/default
+    vertical: languages-runtimes
+    kind: brief
+    reason: The CPython release managers' announcements of every release and security fix.
+  - name: Python PEPs
+    site: https://peps.python.org/
+    feed: https://peps.python.org/peps.rss
+    vertical: languages-runtimes
+    kind: concept
+    reason: New Python Enhancement Proposals, the primary design record (free-threading, packaging, typing).
+  - name: Inside Java
+    site: https://inside.java/
+    feed: https://inside.java/feed.xml
+    vertical: languages-runtimes
+    kind: concept
+    reason: Oracle's Java team on GC, virtual threads, Valhalla and JDK releases.
+  - name: Node.js releases
+    site: https://github.com/nodejs/node
+    repository: nodejs/node
+    vertical: languages-runtimes
+    kind: brief
+    reason: Current and LTS Node.js releases, including security releases, from the project itself.
+
+  # Incident feeds (research section 2.1): every one kind case-study. Status
+  # pages give timestamps, not causes; a Case Study needs the operator's
+  # post-incident review, which these Leads point to. Two swaps from the
+  # research's list: Atlassian's status.atlassian.com history feed is stale
+  # (newest 2025-04-30), so the Jira Software status page, Atlassian's live
+  # product-level Statuspage, takes its place; Cloudflare status's
+  # history.atom held only scheduled maintenance on 2026-10-26 (25 of 25
+  # items, dated up to a week ahead), which pushes incidents out of the
+  # feed, so npm status takes its place (Cloudflare's outages still arrive
+  # via the Post Mortem tag Source). AWS Post-Event Summaries and Azure PIR
+  # history have no feed: check those pages by hand.
+  - name: AWS Health Dashboard
+    site: https://health.aws.amazon.com/health/status
+    feed: https://status.aws.amazon.com/rss/all.rss
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: AWS's own service-disruption notices; a big one is followed by a Post-Event Summary to build the Case Study on.
+  - name: Azure status
+    site: https://azure.status.microsoft/en-us/status/history/
+    feed: https://azure.status.microsoft/en-us/status/feed/
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: Live Azure incidents (empty when all is well); each broad one gets a Post Incident Review kept five years.
+  - name: Google Cloud Service Health
+    site: https://status.cloud.google.com/summary
+    feed: https://status.cloud.google.com/en/feed.atom
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: Google Cloud incidents with links to Google's own incident reports.
+  - name: Cloudflare blog, Post Mortem tag
+    site: https://blog.cloudflare.com/tag/post-mortem/
+    feed: https://blog.cloudflare.com/tag/post-mortem/rss/
+    vertical: apis-networking
+    kind: case-study
+    reason: Cloudflare's long-form, engineer-written outage reviews, the best public postmortems; months apart, so a silent flag here (newest 2026-05-01) is good news, not a dead feed.
+  - name: npm status
+    site: https://status.npmjs.org/
+    feed: https://status.npmjs.org/history.rss
+    vertical: languages-runtimes
+    kind: case-study
+    reason: Incidents of the npm registry every Node.js install depends on (replaces Cloudflare status, whose feed was all scheduled maintenance).
+  - name: GitHub availability reports
+    site: https://github.blog/tag/github-availability-report/
+    feed: https://github.blog/tag/github-availability-report/feed/
+    vertical: distributed-systems
+    kind: case-study
+    reason: GitHub's monthly write-up of each major incident with its cause and fix.
+  - name: GitHub status
+    site: https://www.githubstatus.com/history
+    feed: https://www.githubstatus.com/history.rss
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: GitHub incident timelines; the big ones reappear in the monthly availability report.
+  - name: Fly.io Infra Log
+    site: https://fly.io/infra-log/
+    feed: https://fly.io/infra-log/feed.xml
+    vertical: infrastructure-cloud
+    kind: case-study
+    reason: Fly.io's internal-incident log, a superset of its status page, with causes in plain words.
+  - name: Slack status
+    site: https://slack-status.com/
+    feed: https://slack-status.com/feed/rss
+    vertical: distributed-systems
+    kind: case-study
+    reason: Slack incident timelines; major ones get an engineering-blog write-up.
+  - name: Discord status
+    site: https://discordstatus.com/
+    feed: https://discordstatus.com/history.rss
+    vertical: distributed-systems
+    kind: case-study
+    reason: Discord incident timelines for a large real-time messaging system.
+  - name: Jira Software status
+    site: https://jira-software.status.atlassian.com/
+    feed: https://jira-software.status.atlassian.com/history.rss
+    vertical: distributed-systems
+    kind: case-study
+    reason: Atlassian's live incident history (replaces the stale status.atlassian.com feed), including cross-product platform incidents.
