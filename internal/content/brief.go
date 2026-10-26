@@ -19,12 +19,14 @@ type Brief struct {
 	Description string
 	Tags        []string
 	Published   time.Time
-	Author      string
-	Hero        string
-	HeroAlt     string
-	Related     []string
-	Draft       bool
-	Sources     []Source
+	// Verified: see Explainer.Verified.
+	Verified time.Time
+	Author   string
+	Hero     string
+	HeroAlt  string
+	Related  []string
+	Draft    bool
+	Sources  []Source
 	// SourceURL is the public source the Brief is curated from.
 	SourceURL string
 	// Explainers are the slugs of the Explainers the body links to.
@@ -37,6 +39,7 @@ type briefFrontmatter struct {
 	Description string   `yaml:"description"`
 	Tags        []string `yaml:"tags"`
 	Published   string   `yaml:"published"`
+	Verified    string   `yaml:"verified"`
 	Author      string   `yaml:"author"`
 	Hero        string   `yaml:"hero"`
 	HeroAlt     string   `yaml:"hero_alt"`
@@ -62,6 +65,10 @@ func ParseBrief(file string, data []byte) (*Brief, error) {
 	if err != nil {
 		return nil, err
 	}
+	verified, err := parseDate("verified", fm.Verified)
+	if err != nil {
+		return nil, err
+	}
 	return &Brief{
 		File:        file,
 		Slug:        strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)),
@@ -69,6 +76,7 @@ func ParseBrief(file string, data []byte) (*Brief, error) {
 		Description: fm.Description,
 		Tags:        fm.Tags,
 		Published:   published,
+		Verified:    verified,
 		Author:      fm.Author,
 		Hero:        fm.Hero,
 		HeroAlt:     fm.HeroAlt,

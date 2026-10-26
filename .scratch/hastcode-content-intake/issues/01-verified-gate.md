@@ -6,9 +6,9 @@ Spec: `../spec.md` ("Verification gate"). ADR-0007. CLAUDE.md already says an ag
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam tests: new non-draft Piece without `verified` fails production naming the file; valid date passes; date before `published` fails; future date fails; draft unaffected; Piece published on or before 2026-10-26 unaffected; preview build warns instead of failing
-- [ ] Works for every kind of Explainer and for Briefs
-- [ ] Real `content/` still builds in production (the ten Profiles predate the rule)
-- [ ] README documents the field and the rule
+- [x] Build-seam tests: new non-draft Piece without `verified` fails production naming the file; valid date passes; date before `published` fails; future date fails; draft unaffected; Piece published on or before 2026-10-26 unaffected; preview build warns instead of failing
+- [x] Works for every kind of Explainer and for Briefs
+- [x] Real `content/` still builds in production (the ten Profiles predate the rule)
+- [x] README documents the field and the rule

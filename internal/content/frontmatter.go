@@ -53,3 +53,16 @@ func parseTime(key, value string) (time.Time, error) {
 	}
 	return t, nil
 }
+
+// parseDate parses an optional calendar date (YYYY-MM-DD) as midnight UTC;
+// an empty value is the zero time.
+func parseDate(key, value string) (time.Time, error) {
+	if value == "" {
+		return time.Time{}, nil
+	}
+	t, err := time.Parse(time.DateOnly, value)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("frontmatter: %s %q is not a date (YYYY-MM-DD)", key, value)
+	}
+	return t, nil
+}

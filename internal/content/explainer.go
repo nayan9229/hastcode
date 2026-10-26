@@ -40,12 +40,15 @@ type Explainer struct {
 	Tags        []string
 	Published   time.Time
 	Reviewed    time.Time
-	Author      string
-	Hero        string
-	HeroAlt     string
-	Related     []string
-	Draft       bool
-	Sources     []Source
+	// Verified is the day the Author checked every claim against its
+	// Source (midnight UTC; zero = not set). Only the Author sets it.
+	Verified time.Time
+	Author   string
+	Hero     string
+	HeroAlt  string
+	Related  []string
+	Draft    bool
+	Sources  []Source
 	// Repo is the repository a Repo Profile evaluates (owner/name); WhoFor
 	// is its optional "who it is for" line. Both are Repo Profile only.
 	Repo   Repo
@@ -61,6 +64,7 @@ type explainerFrontmatter struct {
 	Tags        []string `yaml:"tags"`
 	Published   string   `yaml:"published"`
 	Reviewed    string   `yaml:"reviewed"`
+	Verified    string   `yaml:"verified"`
 	Author      string   `yaml:"author"`
 	Hero        string   `yaml:"hero"`
 	HeroAlt     string   `yaml:"hero_alt"`
@@ -99,6 +103,10 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 	if err != nil {
 		return nil, err
 	}
+	verified, err := parseDate("verified", fm.Verified)
+	if err != nil {
+		return nil, err
+	}
 	return &Explainer{
 		File:        file,
 		Slug:        strings.TrimSuffix(filepath.Base(file), filepath.Ext(file)),
@@ -109,6 +117,7 @@ func ParseExplainer(file string, data []byte) (*Explainer, error) {
 		Tags:        fm.Tags,
 		Published:   published,
 		Reviewed:    reviewed,
+		Verified:    verified,
 		Author:      fm.Author,
 		Hero:        fm.Hero,
 		HeroAlt:     fm.HeroAlt,
