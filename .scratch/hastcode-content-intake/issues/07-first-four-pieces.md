@@ -40,3 +40,16 @@ Check before verifying:
 - The three microVM costs, incl. "nested virtualization was not ready at the time".
 - Shared fleet packs denser: Netflix's own report, no numbers.
 - Headline numbers: "millions of containers a week across tens of thousands of EC2 instances"; r7i.2xlarge vs m7a.8xlarge warm-pool example.
+
+## Draft: Comparison, HTTP connection reuse (`apis-networking/http-connection-reuse`)
+
+~2,450 words, draft, placeholder hero. Sources: Go blog post (CC BY 4.0), RFC 9112 §9, RFC 9113, RFC 9114, RFC 9000, Go `net/http` docs (go1.27.3). Labelled inferences: HTTP/3 from Go needs a non-stdlib client; idle cap default 2 causes re-dials above 2 concurrent; IdleConnTimeout below the server's makes close races rarer; coalescing matters mainly with a shared wildcard cert behind one proxy; the whole "When each wins" section.
+
+Check before verifying:
+1. Intro's 710 ms / 150 ms figures and the "on my machine" caveat.
+2. RFC 9112 §9 says nothing about cross-host connection sharing (the Coalescing section and table's "Not described" rely on it).
+3. GOAWAY + RFC 9113 §8.7 back the "even a POST" retry claim.
+4. DefaultTransport vs custom Transport HTTP/2 defaults (custom Transport with Protocols nil is usually HTTP/1 only).
+5. disable_active_migration wording: piece says "a server can forbid", RFC 9000 §9 says "the peer".
+6. Every quote verbatim at its anchor.
+7. Replace the hero.
