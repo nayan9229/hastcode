@@ -200,7 +200,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
-| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom); the HTTP GET (`http.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
+| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom); the conditional HTTP GET with User-Agent and timeout (`http.go`); per-Source validators and newest item (`source_state.go`); failed and silent Sources (`source_health.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -726,6 +726,19 @@ are copied from its Source, never guessed. A second run lists nothing new.
 A Lead's ID is eight characters derived from the Source's name and the
 item's RSS `guid` (else its link) or Atom `id`, the same on every run.
 
+**Polite fetching** (research §5.2): requests go one at a time, each with
+`User-Agent: HastCode-Intake/1 (+https://hastcode.com/contact/;
+mira-vance@hastcode.com)` and a 30-second timeout (`Intake.Timeout`). Each
+Source's `ETag` and `Last-Modified` are stored verbatim and sent back as
+`If-None-Match` and `If-Modified-Since`; a 304 lists nothing and costs no
+body. A Source that sends neither is fetched in full every run. A Source
+that fails (network, timeout, any status but 200/304, not RSS or Atom) is
+printed as `failed <Source>: <why>` and keeps its state; every other Source
+still runs, and the command still exits 0. Only an invalid Watchlist, the
+state file or I/O exits 1. A Source whose newest dated item is more than
+90 days old is printed as `silent <Source>: newest item <date> (N days
+ago)`: a candidate to retire from the Watchlist.
+
 **Where state lives**: `.intake/` at the repository root (gitignored;
 `-state` moves it, but never inside the content tree, which Intake refuses).
 `.intake/queue.md` is the queue the Author reads: every open Lead grouped
@@ -734,7 +747,7 @@ linked, Source, kind, date and age, `new` on the run that first listed
 it), rewritten from the state on every run. `.intake/state.json` is the
 seen-state: every Lead ever listed, keyed by ID, with its decision
 (`open`, `picked`, `dismissed`, `expired`) and first-seen time, plus
-per-Source state. Deleting `.intake/` makes the next run list everything
+per-Source state (`etag`, `last_modified`, `newest`). Deleting `.intake/` makes the next run list everything
 again.
 
 ## Subscribe function

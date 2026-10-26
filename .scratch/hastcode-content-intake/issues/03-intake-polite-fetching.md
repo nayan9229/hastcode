@@ -6,7 +6,7 @@ Spec: `../spec.md` ("Intake"). Research section 5 (validators verified on Kubern
 
 **Blocked by:** 02 (Intake tracer)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Intake-seam tests: second request carries the stored validators; a 304 is handled; a Source without validators is fetched in full; User-Agent asserted; a failing Source reported while others list Leads; a silent Source flagged; a hanging Source times out
-- [ ] Run exits non-zero only on Watchlist errors, not on individual Source failures
+- [x] Intake-seam tests: second request carries the stored validators; a 304 is handled; a Source without validators is fetched in full; User-Agent asserted; a failing Source reported while others list Leads; a silent Source flagged; a hanging Source times out
+- [x] Run exits non-zero only on Watchlist errors, not on individual Source failures
