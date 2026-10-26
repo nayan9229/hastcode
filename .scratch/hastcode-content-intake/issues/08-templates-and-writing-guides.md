@@ -8,8 +8,12 @@ Note from ticket 10 (generated hero card): no Piece needs a hand-made image. Wit
 
 **Blocked by:** 07 (First four pieces)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Four templates and four writing guides exist and each cites the piece it was drawn from
-- [ ] Each template's section headings match what the build's editorial gates require for that kind (a skeleton built from it passes the structural gates once filled)
-- [ ] CLAUDE.md points to them
+- [x] Four templates and four writing guides exist and each cites the piece it was drawn from
+- [x] Each template's section headings match what the build's editorial gates require for that kind (a skeleton built from it passes the structural gates once filled)
+- [x] CLAUDE.md points to them
+
+Resolution: `docs/editorial/{case-study,concept,comparison,brief}-template.md` and `…-writing-guide.md`, each drawn from and citing its ticket-07 piece, with a "What the first one taught us" section from the 07 check lists. Every guide carries the sourcing, quoting, diagram, code-licence, "we infer", TODO(author)-placement, hero-card and `verified:` rules; the Brief guide adds the 3-day Lead rule (counted from the first post), 250 words, the two sections, our own "Why it matters", and `explainers` = the linked slugs. Templates leave `hero`/`hero_alt` commented out (ticket 10 note). Each guide states its skeleton H2s in a "The skeleton" block; the template's `## ` lines are the same list, for 09. `builder/kind_templates_test.go` fills all four and builds them clean in production; a copy filled into a scratch content tree also built with zero errors through `cmd/builder` in preview and production. CLAUDE.md and README point to them.
+
+Not changed (content is out of scope), for the Author: the published Brief has no AI-assistance note and two quotes, and three of the four descriptions exceed 150 characters (162–166); the guides now ask for the note, one quote and 150 characters.

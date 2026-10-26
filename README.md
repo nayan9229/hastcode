@@ -612,6 +612,12 @@ in `docs/editorial/checkpoint-note-template.md` (the ADR-0005 metrics and
 pass rule). The Friday roundup is an ordinary Brief linking the week's
 Profiles (`builder/roundup_brief_test.go` proves the Brief gates take it).
 
+The other kinds have the same pair: `docs/editorial/<kind>-template.md`
+and `docs/editorial/<kind>-writing-guide.md` for `case-study`, `concept`,
+`comparison` and `brief`. Each template's H2s are the skeleton `make lead`
+writes; `builder/kind_templates_test.go` fills all four and builds them
+under every gate.
+
 ## Repo Profiles: fetching a Fact Pack
 
 A Repo Profile (ADR-0005) renders its fact sections from a Fact Pack: the
