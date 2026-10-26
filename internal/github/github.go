@@ -34,7 +34,7 @@ const (
 	// APIURL is the public REST API.
 	APIURL = "https://api.github.com"
 	// UserAgent identifies the fetch command on every request, as GitHub's
-	// terms ask.
+	// terms ask: NewClient's default for Client.UserAgent.
 	UserAgent = "hastcode-fetch/1 (+https://hastcode.com; Repo Profile Fact Packs)"
 	// DefaultMaxWait bounds one backoff. A longer wait (a primary limit
 	// that resets in an hour) stops the command with a RateLimitError
@@ -62,6 +62,9 @@ type Client struct {
 	BaseURL string
 	// Token is sent as a Bearer token on every request.
 	Token string
+	// UserAgent is sent on every request: UserAgent (the fetch command)
+	// unless another caller names itself (Intake sends its own).
+	UserAgent string
 	// HTTP makes the requests.
 	HTTP *http.Client
 	// MaxWait bounds a single backoff (DefaultMaxWait).
@@ -84,12 +87,13 @@ func NewClient(getenv func(string) string) (*Client, error) {
 	}
 	return &Client{
 		BaseURL: APIURL,
-		Token:   token,
-		HTTP:    &http.Client{Timeout: 30 * time.Second},
-		MaxWait: DefaultMaxWait,
-		Retries: DefaultRetries,
-		Sleep:   sleep,
-		Now:     time.Now,
+		Token:     token,
+		UserAgent: UserAgent,
+		HTTP:      &http.Client{Timeout: 30 * time.Second},
+		MaxWait:   DefaultMaxWait,
+		Retries:   DefaultRetries,
+		Sleep:     sleep,
+		Now:       time.Now,
 	}, nil
 }
 
@@ -227,7 +231,7 @@ func (c *Client) do(ctx context.Context, path, etag string) (int, http.Header, [
 	req.Header.Set("Accept", "application/vnd.github+json")
 	req.Header.Set("X-GitHub-Api-Version", apiVersion)
 	req.Header.Set("Authorization", "Bearer "+c.Token)
-	req.Header.Set("User-Agent", UserAgent)
+	req.Header.Set("User-Agent", c.UserAgent)
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return 0, nil, nil, err

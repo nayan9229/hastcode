@@ -16,7 +16,8 @@ func init() { registerFetcher(RepositorySource, githubFetcher{}) }
 
 // githubFetcher fetches a repository Source: its releases, through the
 // GitHub REST API with the Fact Pack fetcher's client (internal/github:
-// the one GITHUB_TOKEN, its User-Agent, its rate-limit handling). Never
+// the one GITHUB_TOKEN, its rate-limit handling), sending Intake's own
+// User-Agent (http.go). Never
 // the github.com web pages, releases.atom included (research §5.3; ADR-0005
 // calls the REST API the sanctioned path).
 //
@@ -85,8 +86,8 @@ func (githubFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sou
 
 // githubClient is the Fact Pack fetcher's GitHub client, pointed at
 // GitHubURL, with the token read through Getenv: a missing token is an
-// error for repository Sources only (Run reports each as failed). It keeps
-// the client's User-Agent, the one make fetch sends.
+// error for repository Sources only (Run reports each as failed). It sends
+// Intake's UserAgent, not the fetch command's, so GitHub sees who polls.
 func (in *Intake) githubClient() (*github.Client, error) {
 	getenv := in.Getenv
 	if getenv == nil {
@@ -97,6 +98,7 @@ func (in *Intake) githubClient() (*github.Client, error) {
 		return nil, err
 	}
 	client.BaseURL = cmp.Or(in.GitHubURL, github.APIURL)
+	client.UserAgent = UserAgent
 	// Each request gets Intake's timeout (http.go) over Intake's transport;
 	// the client's own retries and rate-limit waits sit between requests.
 	client.HTTP = &http.Client{Transport: in.httpClient().Transport, Timeout: in.timeout()}

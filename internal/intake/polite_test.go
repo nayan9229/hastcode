@@ -17,18 +17,26 @@ import (
 
 func TestRun_IdentifiesItselfAsHastCodeWithAContactAddress(t *testing.T) {
 	feeds := newFeedServer(t)
-	in := newIntake(t, exampleWatchlist(t, feeds))
+	in, gh := newIntakeWithGitHub(t, exampleWatchlist(t, feeds))
 
 	mustRun(t, in)
 
+	userAgents := map[string]string{}
 	for _, path := range []string{"/rss.xml", "/atom.xml"} {
 		reqs := feeds.requestsTo(path)
 		if len(reqs) != 1 {
 			t.Fatalf("%s requested %d times, want once", path, len(reqs))
 		}
-		ua := reqs[0].UserAgent()
-		if !strings.Contains(ua, "HastCode") || !strings.Contains(ua, "mira-vance@hastcode.com") {
-			t.Errorf("%s User-Agent = %q, want one naming HastCode and mira-vance@hastcode.com", path, ua)
+		userAgents[path] = reqs[0].UserAgent()
+	}
+	reqs := gh.requestLog()
+	if len(reqs) != 1 {
+		t.Fatalf("GitHub got %d requests, want one (the repository Source)", len(reqs))
+	}
+	userAgents["GitHub "+reqs[0].URI] = reqs[0].Header.Get("User-Agent")
+	for to, ua := range userAgents {
+		if !strings.Contains(ua, "HastCode-Intake") || !strings.Contains(ua, "mira-vance@hastcode.com") {
+			t.Errorf("%s User-Agent = %q, want Intake's, naming HastCode-Intake and mira-vance@hastcode.com", to, ua)
 		}
 	}
 }
