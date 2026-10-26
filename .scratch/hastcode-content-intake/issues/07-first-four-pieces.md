@@ -67,3 +67,14 @@ Check before verifying:
 6. Builders' Library URLs now redirect to builder.aws.com.
 7. The lost-writes inference.
 8. Replace the hero.
+
+## Draft: Brief, GitHub Dependabot fan-out (`briefs/github-dependabot-fan-out`)
+
+Lead `wnzcpeld` (GitHub status, incident first posted 2026-10-23 14:58 UTC, resolved 18:51 UTC). Links the metastable-failures Concept. 173 words, draft, placeholder hero. One labelled inference: capacity alone did not clear the backlog quickly (the report does not say so directly). Freshness: the 3-day rule ends 2026-10-26 between 14:58 and 18:51 UTC depending on which post counts; drafted 17:30 UTC.
+
+Check before verifying:
+1. Both quotes verbatim against the incident report.
+2. "Updates from 15:39 to 16:43 UTC describe more processing capacity rolling out".
+3. Whether "the durable fix was not more consumers but a separate lane with a fixed rate" reads as fair to the report.
+4. The metastable link is a lesson by analogy: the report never says "metastable".
+5. Replace the hero.
