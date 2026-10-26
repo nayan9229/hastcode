@@ -7,8 +7,9 @@ description: "Structured concurrency ties concurrent tasks to the block that sta
 kind: concept
 vertical: languages-runtimes
 tags: ["concurrency", "java", "virtual-threads", "cancellation", "error-handling"]
-published: "2026-10-26T18:49:55Z"
-reviewed: "2026-10-26T18:49:55Z"
+published: "2026-10-26T19:10:34Z"
+verified: 2026-10-26
+reviewed: "2026-10-26T19:10:34Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 In JDK 19, OpenJDK shipped a class called `StructuredTaskScope` as an [incubating API](https://openjdk.org/jeps/428). It was [re-incubated in JDK 20](https://openjdk.org/jeps/437), became a [preview API in JDK 21](https://openjdk.org/jeps/453), and was [previewed again in every release through JDK 27](https://openjdk.org/jeps/543#History). Along the way `fork` [stopped returning a `Future`](https://openjdk.org/jeps/453), the public constructors gave way to [static factory methods](https://openjdk.org/jeps/505), and `join()` gained a [type parameter for the exception it throws](https://openjdk.org/jeps/533). On 21 October 2026, Inside Java announced that [JEP 543 is targeted to JDK 28](https://inside.java/2026/10/21/jep543-target-jdk28/), and the JEP proposes to [finalize the API "without further change"](https://openjdk.org/jeps/543#History). Nine releases reshaped the API's surface. What every one of those JEPs kept, almost word for word, was its opening promise: treat related tasks running in different threads as [a single unit of work](https://openjdk.org/jeps/543#Summary).
@@ -31,8 +31,6 @@ In JDK 19, OpenJDK shipped a class called `StructuredTaskScope` as an [incubatin
 - What to do: replace fire-and-forget submissions with a scope, choose a failure policy, and make subtasks respond to interruption. The cost: the rules are [enforced at run time](https://openjdk.org/jeps/543#Structured-use-is-enforced), and a subtask that ignores interrupts can [delay closing the scope indefinitely](https://openjdk.org/jeps/543#Cancellation).
 
 ## A concurrent task returns to the block that started it
-
-TODO(author): verify every claim against its source, then set verified: and remove draft: true and this line.
 
 JEP 543, by Alan Bateman, Viktor Klang and Ron Pressler, states the principle in one sentence: ["If a task splits into concurrent subtasks then they all return to the same place, namely the task's code block."](https://openjdk.org/jeps/543#Structured-concurrency)
 
