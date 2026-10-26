@@ -6,8 +6,8 @@ Spec: `../spec.md` ("Intake", stories 17–19, 24).
 
 **Blocked by:** 02 (Intake tracer)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Intake-seam tests: dismissed Lead absent from later queues; Lead expires at 7 days and not at 6; covered marking from a fixture content tree; summary counts per Vertical and kind
-- [ ] Seen-state records each Lead's decision (open, picked, dismissed, expired) and first-seen date
-- [ ] README documents dismissing and expiry
+- [x] Intake-seam tests: dismissed Lead absent from later queues; Lead expires at 7 days and not at 6; covered marking from a fixture content tree; summary counts per Vertical and kind
+- [x] Seen-state records each Lead's decision (open, picked, dismissed, expired) and first-seen date
+- [x] README documents dismissing and expiry

@@ -6,7 +6,7 @@
 // Entry points, one file each, wrapped by cmd/intake:
 //
 //	Run      intake.go     make intake                validate the Watchlist, fetch every Source, record new Leads, rewrite the queue
-//	Dismiss  dismiss.go    make lead-dismiss ID=…     hide a Lead for good (ticket 05)
+//	Dismiss  dismiss.go    make lead-dismiss ID=…     hide a Lead for good
 //	Pick     pick.go       make lead ID=…             turn a Lead into a draft skeleton (ticket 09)
 //
 // The rest, also one concern per file:
@@ -17,6 +17,8 @@
 //	http.go        the HTTP GET a feed fetch makes
 //	lead.go        Lead and its ID
 //	state.go       the seen-state file (state.json): every Lead ever listed and per-Source state
+//	expire.go      expiry: open Leads undecided for ExpireAfter (7 days) become Expired
+//	covered.go     covered Leads: links a Piece already cites, read from the content tree, normalised
 //	queue.go       the queue file (queue.md) the Author reads, regenerated from state each run
 //	summary.go     the run summary printed after a run
 package intake
@@ -74,6 +76,19 @@ type Report struct {
 	// Skipped are the Sources this run did not fetch, with why (a GitHub
 	// repository Source until its fetcher exists).
 	Skipped []SkippedSource
+	// Expired is how many open Leads this run expired (ExpireAfter).
+	Expired int
+	// NewByVertical counts New per Vertical, every Vertical in display
+	// order, zeros included, so a starving Vertical shows.
+	NewByVertical []Count
+	// NewByKind counts New per suggested kind, every kind (Kinds).
+	NewByKind []Count
+}
+
+// Count is how many new Leads one Vertical or kind got.
+type Count struct {
+	Name string
+	New  int
 }
 
 // SkippedSource is a Source a run did not fetch.
@@ -123,16 +138,23 @@ func (in *Intake) Run(ctx context.Context) (*Report, error) {
 		}
 		in.logf("fetched %s: %d items, %d new", src.Name, len(fetched.Items), added)
 	}
+	report.Expired = st.expire(now)
 	if err := st.save(in.StateDir); err != nil {
 		return nil, err
 	}
+	covered, err := in.coveredLinks()
+	if err != nil {
+		return nil, err
+	}
 	q := in.queue(st, newIDs, now)
+	q.covered = covered
 	for _, l := range q.leads() {
 		if newIDs[l.ID] {
 			report.New = append(report.New, l)
 		}
 	}
 	report.Open = len(q.leads())
+	report.NewByVertical, report.NewByKind = in.countNew(report.New)
 	report.QueueFile, err = q.write(in.StateDir)
 	if err != nil {
 		return nil, err

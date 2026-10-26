@@ -3,7 +3,7 @@
 // intake`, `make lead-dismiss ID=…` and `make lead ID=…` run it.
 //
 //	go run ./cmd/intake                         run: list new Leads in .intake/queue.md
-//	go run ./cmd/intake -dismiss <id>           hide a Lead for good (ticket 05)
+//	go run ./cmd/intake -dismiss <id>           hide a Lead for good
 //	go run ./cmd/intake -pick <id> [-kind k] [-vertical v]
 //	                                            start a draft skeleton from a Lead (ticket 09)
 //

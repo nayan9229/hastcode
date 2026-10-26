@@ -19,6 +19,8 @@ type queue struct {
 	now    time.Time
 	groups []queueGroup
 	isNew  map[string]bool // Lead IDs this run listed first
+	// covered are the normalised links Pieces already cite (covered.go).
+	covered map[string]bool
 }
 
 type queueGroup struct {
@@ -81,7 +83,7 @@ func (q *queue) write(dir string) (string, error) {
 
 // render is the queue file. One line per Lead, under its Vertical:
 //
-//   - `id` [Title](link) · Source · kind · 2026-10-24 (1 day old) · new
+//   - `id` [Title](link) · Source · kind · 2026-10-24 (1 day old) · new · covered
 func (q *queue) render() string {
 	var b strings.Builder
 	all := q.leads()
@@ -100,6 +102,9 @@ func (q *queue) render() string {
 			fmt.Fprintf(&b, "- `%s` [%s](%s) · %s · %s · %s", l.ID, escapeLinkText(l.Title), l.Link, l.Source, l.Kind, q.dateAndAge(l))
 			if q.isNew[l.ID] {
 				b.WriteString(" · new")
+			}
+			if q.covered[normaliseLink(l.Link)] {
+				b.WriteString(" · covered")
 			}
 			b.WriteString("\n")
 		}
