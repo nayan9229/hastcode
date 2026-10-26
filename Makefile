@@ -92,11 +92,11 @@ refresh:
 # `make intake`: check every Source on the Source Watchlist (sources.yaml)
 # and list the new Leads in $(INTAKE_STATE)/queue.md (ADR-0007). Local
 # only, like a Refresh; never in GitHub Actions. The queue and the
-# seen-state live in $(INTAKE_STATE), gitignored; nothing is written under
-# $(CONTENT). `make lead-dismiss ID=…` hides a Lead for good; `make lead
-# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one. Repository
-# Sources need GITHUB_TOKEN (the REST API, as for `make fetch`). See README
-# "Intake".
+# seen-state live in $(INTAKE_STATE), gitignored; intake and lead-dismiss
+# write nothing else. `make lead-dismiss ID=…` hides a Lead for good; `make lead
+# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one, the only write
+# under $(CONTENT) (ticket 09). Repository Sources need GITHUB_TOKEN (the
+# REST API, as for `make fetch`). See README "Intake".
 INTAKE_STATE ?= .intake
 WATCHLIST    ?= sources.yaml
 INTAKE_FLAGS  = -watchlist $(WATCHLIST) -config $(CONFIG) -content $(CONTENT) -state $(INTAKE_STATE)
