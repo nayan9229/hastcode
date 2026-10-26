@@ -47,7 +47,7 @@ Order of work (refining ADR-0007's "format before pipeline"): the gate and the l
 
 ### Picking and dismissing
 
-21. As the Author, I want `make lead ID=…` to turn a Lead into a draft skeleton at the right content path with frontmatter (kind, Vertical, author mira-vance, draft: true, published left for me), the Source link already in Sources, and the kind's empty section headings, so that drafting starts from structure, not a blank file.
+21. As the Author, I want `make lead ID=…` to turn a Lead into a draft skeleton at the right content path with frontmatter (kind, Vertical, author mira-vance, draft: true, a provisional published date for me to set), the Source link already in Sources, and the kind's empty section headings, so that drafting starts from structure, not a blank file.
 22. As the Author, I want to override the suggested kind or Vertical when picking, so that a Source's default never forces the wrong format.
 23. As the Author, I want picking a Lead older than 3 days as a Brief refused with a clear message, so that Briefs stay timely.
 24. As the Author, I want `make lead-dismiss ID=…` to hide a Lead for good, so that the queue only holds open decisions.
@@ -98,7 +98,7 @@ Order of work (refining ADR-0007's "format before pipeline"): the gate and the l
 
 ### Picking
 
-- Pick writes a skeleton at the kind's content path with frontmatter (title from the Lead, kind, Vertical, author mira-vance, draft: true, no published date, no verified), a Sources section holding the Lead's link, and the kind's section headings from its template, then marks the Lead picked. Refuses an existing slug, and refuses kind brief when the Lead is older than 3 days by the run clock.
+- Pick writes a skeleton at the kind's content path with frontmatter (title from the Lead, kind, Vertical, author mira-vance, draft: true, a provisional `published` (and `reviewed` for an Explainer) equal to the pick time in UTC, which the Author resets when publishing, because the parser requires a date, no verified, no hero), a Sources section holding the Lead's link (a Brief: `source_url`), and the kind's section headings from its template, with the template's TODO(author) hints and no prose, then marks the Lead picked. Refuses an existing slug, and refuses kind brief when the Lead is older than 3 days by the run clock. Picking a Brief names the Explainer(s) it links (`make lead ID=… KIND=brief EXPLAINER=slug[,slug]`, `PickOptions.Explainers`): refused without one or for a slug not in the content tree; the skeleton's `explainers` are exactly those slugs, each linked in "Why it matters" (orchestrator decision, resolving ticket 08's notes).
 - Pick lands only after the per-kind templates exist (see order of work); until then it is out of reach by design.
 
 ### Verification gate

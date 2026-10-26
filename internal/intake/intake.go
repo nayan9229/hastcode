@@ -4,7 +4,7 @@
 //
 // What writes where: Run and Dismiss write only under StateDir (the
 // seen-state and the queue) and only read the content tree; they never
-// write outside StateDir. Pick (ticket 09) is the only entry point that
+// write outside StateDir. Pick is the only entry point that
 // writes outside StateDir, and only under ContentDir: one draft skeleton
 // per pick.
 //
@@ -12,7 +12,7 @@
 //
 //	Run      intake.go     make intake                validate the Watchlist, fetch every Source, record new Leads, rewrite the queue
 //	Dismiss  dismiss.go    make lead-dismiss ID=…     hide a Lead for good
-//	Pick     pick.go       make lead ID=…             turn a Lead into a draft skeleton (ticket 09)
+//	Pick     pick.go       make lead ID=…             turn a Lead into a draft skeleton from its kind's template
 //
 // The rest, also one concern per file:
 //
@@ -58,8 +58,11 @@ type Intake struct {
 	StateDir string
 	// ContentDir is the content tree. Run reads it (covered Leads); Run
 	// and Dismiss refuse a StateDir inside it, so neither writes under it.
-	// Pick (ticket 09) is its only writer: one draft skeleton per pick.
+	// Pick is its only writer: one draft skeleton per pick.
 	ContentDir string
+	// Templates is the directory of the per-kind templates Pick fills
+	// (<kind>-template.md); default DefaultTemplates.
+	Templates string
 	// HTTP makes the feed requests; default http.DefaultClient. When set,
 	// the GitHub requests use it too.
 	HTTP *http.Client

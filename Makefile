@@ -94,8 +94,9 @@ refresh:
 # only, like a Refresh; never in GitHub Actions. The queue and the
 # seen-state live in $(INTAKE_STATE), gitignored; intake and lead-dismiss
 # write nothing else. `make lead-dismiss ID=…` hides a Lead for good; `make lead
-# ID=… [KIND=…] [VERTICAL=…]` starts a draft skeleton from one, the only write
-# under $(CONTENT) (ticket 09). Repository Sources need GITHUB_TOKEN (the
+# ID=… [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]]` starts a draft skeleton
+# from one (a Brief names the Explainers it links), the only write under
+# $(CONTENT). Repository Sources need GITHUB_TOKEN (the
 # REST API, as for `make fetch`). See README "Intake".
 INTAKE_STATE ?= .intake
 WATCHLIST    ?= sources.yaml
@@ -114,8 +115,8 @@ lead-dismiss: generate
 	@test -n "$(ID)" || { echo "usage: make lead-dismiss ID=<id> (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
 	go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
 lead: generate
-	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
-	go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)"
+	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]] (IDs are in $(INTAKE_STATE)/queue.md; a Brief needs EXPLAINER=)" >&2; exit 2; }
+	go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)" -explainer "$(EXPLAINER)"
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)

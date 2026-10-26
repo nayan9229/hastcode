@@ -14,8 +14,8 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 
 ## The flow
 
-1. **Pick a Lead** from that morning's `make intake` queue (at most two Leads a day), then `make lead ID=<id> KIND=brief`. The skeleton is this template, with the Lead's title in `title` and its link in `source_url`. To start by hand, copy [the template](brief-template.md) to `content/briefs/<slug>.md` on a branch. The slug names the event (`github-dependabot-fan-out`). Keep `draft: true`.
-2. **Find the Explainer** the event teaches. If none exists yet, the Lead is not a Brief today.
+1. **Pick a Lead** from that morning's `make intake` queue (at most two Leads a day), then, with the Explainer it teaches in hand (step 2), `make lead ID=<id> KIND=brief EXPLAINER=<slug>` (several: `EXPLAINER=a,b`). The skeleton is this template, with the Lead's title in `title`, its link in `source_url`, the named Explainers in `explainers` and linked in "Why it matters", and `published` set to the pick time: provisional, set it when you publish. To start by hand, copy [the template](brief-template.md) to `content/briefs/<slug>.md` on a branch. The slug names the event (`github-dependabot-fan-out`). Keep `draft: true`.
+2. **Find the Explainer** the event teaches. If none exists yet, the Lead is not a Brief today: `make lead` refuses a Brief without `EXPLAINER=`, or naming an Explainer that does not exist.
 3. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
 4. **Write the check list.** In the ticket or pull request, list every quote, time and inference for the Author to check against the Source.
 5. **Preview.** `make dev`, then push the branch for a Preview. Check the generated title card reads right.

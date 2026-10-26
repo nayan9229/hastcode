@@ -227,7 +227,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client two commands share: the fetch command (Fact Packs) and Intake (repository Sources' releases). `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset; `Client.UserAgent` defaults to the fetch command's `UserAgent`, Intake sets its own), `Get(ctx, path, v)` (Bearer token, the client's User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `GetIfNoneMatch(ctx, path, etag, v)` (`Get` as a conditional request: a 304 returns `notModified`; Intake's releases request), `LastPage(header)`. |
-| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, GitHubURL, Getenv, Timeout, MaxAge, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadVerticals` (site.yaml's Verticals in display order, `verticals.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher` and `Entry`, what a Source published before Intake decides it is a Lead; `fetch_feed.go`: RSS 2.0 and Atom; `fetch_github.go`: repository Sources' releases through `internal/github`, the first page conditional on the stored ETag, paged to the age cutoff); the conditional HTTP GET with User-Agent and timeout (`http.go`); per-Source validators and newest item (`source_state.go`); failed and silent Sources (`source_health.go`); `Lead` and its ID (`lead.go`); the age cutoff (`MaxAge`, `DefaultMaxAge`, `ParseMaxAge`) and the Run loop (`intake.go`); the seen-state `state.json`, decisions including `too-old` (`state.go`); 7-day expiry (`expire.go`); covered Leads from the content tree's cited links, normalised (`covered.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). Run and Dismiss write only under the state directory; Pick (ticket 09) is the only writer under the content tree. `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers (helpers: "Tests" under Conventions). See "Intake". |
+| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, Templates, HTTP, GitHubURL, Getenv, Timeout, MaxAge, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadVerticals` (site.yaml's Verticals in display order, `verticals.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher` and `Entry`, what a Source published before Intake decides it is a Lead; `fetch_feed.go`: RSS 2.0 and Atom; `fetch_github.go`: repository Sources' releases through `internal/github`, the first page conditional on the stored ETag, paged to the age cutoff); the conditional HTTP GET with User-Agent and timeout (`http.go`); per-Source validators and newest item (`source_state.go`); failed and silent Sources (`source_health.go`); `Lead` and its ID (`lead.go`); the age cutoff (`MaxAge`, `DefaultMaxAge`, `ParseMaxAge`) and the Run loop (`intake.go`); the seen-state `state.json`, decisions including `too-old` (`state.go`); 7-day expiry (`expire.go`); covered Leads from the content tree's cited links, normalised (`covered.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). Run and Dismiss write only under the state directory; Pick is the only writer under the content tree: one skeleton from the kind's template (`PickOptions{Kind, Vertical, Explainers}`, `BriefMaxAge`, `DefaultTemplates`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers (helpers: "Tests" under Conventions). See "Intake". |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -502,14 +502,19 @@ Decisions"): the Build seam, the Subscribe HTTP seam, the Fetch seam
 (`internal/factpack` against an in-process GitHub), the Intake seam
 (`internal/intake`'s `Run`/`Dismiss`/`Pick` against `httptest` publishers,
 a temp state directory and a fixed clock, asserting on the queue file,
-the state and the run summary; helpers sit beside the tests that need
+the state, the run summary and the picked skeleton, which
+`pick_build_test.go` also builds through `internal/buildtest` in preview
+and production; helpers sit beside the tests that need
 them, package `intake_test`: `helpers_test.go` has the feed server
 (`newFeedServer`), `exampleWatchlist`/`writeWatchlist`, `newIntake`,
 `mustRun`, `readQueue`, `withoutID`, `titles`; `fakegithub_test.go` the
 fake GitHub (`newFakeGitHub`, paginated releases), `newIntakeWithGitHub`,
 `tokenEnv`; `run_test.go` `readQueueAfterRun`, `filesUnder`;
 `expire_test.go` `at` (moves the clock), `readState`; `polite_test.go`
-`conditionalFeed`, `statusRecorder`; `github_test.go` `roundTripFunc`) and the hero card's
+`conditionalFeed`, `statusRecorder`; `github_test.go` `roundTripFunc`;
+`pick_test.go` `newPickIntake` (empty temp content tree, the real
+templates, one run done), `leadID`, `mustPick`, `readSkeleton`,
+`withExplainer`, `requireRefused`; `pick_build_test.go` `pickedTree`) and the hero card's
 text seam (`views.HeroCardText`, below). Build-seam tests live in `builder/` as package
 `builder_test`, import only `builder` and `internal/buildtest`, and assert on
 parsed output. Helpers in `internal/buildtest`:
@@ -738,9 +743,10 @@ GitHub Actions.
 ```sh
 make intake                   # list new Leads in .intake/queue.md (MAX_AGE=30d: a wider one-off run)
 make lead-dismiss ID=opu7b35z # hide a Lead for good
-make lead ID=opu7b35z         # start a draft skeleton (ticket 09: not built yet)
-# same as: go run ./cmd/intake [-max-age 30d | -dismiss ID | -pick ID [-kind K] [-vertical V]]
-#          -watchlist sources.yaml -config site.yaml -content content -state .intake
+make lead ID=opu7b35z         # start a draft skeleton (KIND=… VERTICAL=… override the Source's)
+make lead ID=kp36dgi3 KIND=brief EXPLAINER=metastable-failures  # a Brief names the Explainer(s) it links
+# same as: go run ./cmd/intake [-max-age 30d | -dismiss ID | -pick ID [-kind K] [-vertical V] [-explainer S[,S]]]
+#          -watchlist sources.yaml -config site.yaml -content content -state .intake [-templates docs/editorial]
 ```
 
 **The Watchlist** is `sources.yaml` at the repository root, committed and
@@ -834,6 +840,39 @@ open 7 days (168 hours) or more after it was first seen `expired`; a Lead
 first seen 6 days 23 hours earlier stays. Only the first-seen time counts,
 not the publication date, so an old item first listed today gets its full
 week.
+
+**Picking** (`make lead ID=…`, `Intake.Pick`) turns an open Lead into a
+draft skeleton, the only write Intake makes under the content tree. The
+skeleton is the kind's template (`docs/editorial/<kind>-template.md`,
+`-templates`) with the Lead filled in and no prose written: the title from
+the Lead, `kind` and `vertical` (the Source's, or `KIND=`/`VERTICAL=`), a
+provisional `published` (and `reviewed` for an Explainer) at the pick time
+in UTC, which the Author sets when publishing, `author: mira-vance`,
+`draft: true`, no `verified` and no `hero` (the build draws the title card),
+every template heading in order, the template's `TODO(author)` hints left
+for the Author, and the Lead's link as the one line in `## Sources`. An
+Explainer lands at `content/explainers/<vertical>/<slug>.md`, a Brief at
+`content/briefs/<slug>.md`, the slug made from the Lead's title (rename the
+file to retitle it). A Brief has the Lead's link in `source_url`, and needs
+`EXPLAINER=slug[,slug]`: each must be an existing Explainer, written to
+`explainers` and linked in "Why it matters". The Lead becomes `picked`, so
+no later queue shows it. Refused, writing nothing: an unknown or non-open
+Lead; an unknown kind or Vertical; a slug any Piece already uses (slugs are
+site-wide); a Brief without `EXPLAINER=`, naming an Explainer that does not
+exist, or from a Lead more than 3 days (72 hours) old by its date
+(published, else first seen) at the pick clock, which can still be picked
+as an Explainer. The skeleton builds in preview (`make dev`) with one
+`author-placeholder` warning per file; a production build leaves it out
+while it is a draft and fails on any `TODO(author)` once it is not.
+
+**The daily rhythm**: run `make intake` each morning, read the queue, pick
+at most two Leads (`make lead`), and dismiss the rest you will not write
+(`make lead-dismiss`); what is left open expires after 7 days. **The
+planned pace** is 5 Explainers a week (2 Case Studies, 2 Concepts, 1
+Comparison) and 5 Briefs a week, with every Vertical getting a new
+Explainer in the first two weeks, which reaches the launch gate in about
+four weeks. The run summary's per-Vertical and per-kind counts show which
+Vertical or kind is starving.
 
 **Covered Leads**: a run reads (never writes) the content tree's Pieces,
 `content/explainers/` and `content/briefs/`, drafts included, and collects
