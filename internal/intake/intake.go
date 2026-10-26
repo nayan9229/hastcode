@@ -23,6 +23,8 @@
 //	fetch_github.go  repository Sources: releases through the GitHub REST API (internal/github), never github.com pages
 //	http.go        the HTTP GET a feed fetch makes
 //	lead.go        Lead and its ID
+//	slug.go        slugs: slugify (a Lead's title to a slug), isSlug, and pieceFile (the Piece using a slug, by exact path)
+//	skeleton.go    a pick's draft skeleton: the kind's template filled for the Lead, written only as a new file
 //	state.go       the seen-state file (state.json): every entry ever seen, by Lead ID, and per-Source state
 //	source_state.go   SourceState: a Source's validators (ETag, Last-Modified) and newest entry date
 //	source_health.go  failed and silent Sources in the Report and the run summary
