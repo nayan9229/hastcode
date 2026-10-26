@@ -20,7 +20,10 @@ const DefaultWatchlist = "sources.yaml"
 // Kinds a Source may suggest for its Leads: the three Explainer kinds a
 // Lead can become, and a Brief. Repo Profiles are chosen by other means
 // (docs/editorial/repo-profile-selection.md).
-var Kinds = []string{string(content.CaseStudy), string(content.Concept), string(content.Comparison), "brief"}
+var Kinds = []string{string(content.CaseStudy), string(content.Concept), string(content.Comparison), briefKind}
+
+// briefKind is the kind a Lead becomes when it is picked as a Brief.
+const briefKind = "brief"
 
 // SourceType is how a Source is fetched: the key of the fetcher registry
 // (fetch.go).

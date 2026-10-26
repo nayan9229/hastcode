@@ -416,6 +416,8 @@ func TestPick_RefusesAnUnknownLead(t *testing.T) {
 	}
 }
 
+// toStrings is a parsed YAML sequence of strings (v as yaml.v3 decodes it
+// into any) as a []string: "" for a non-string item, nil for a non-sequence.
 func toStrings(v any) []string {
 	items, _ := v.([]any)
 	var out []string

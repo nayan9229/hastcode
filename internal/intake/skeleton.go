@@ -22,7 +22,7 @@ func (p pick) skeleton(tmpl string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if p.kind == brief {
+	if p.isBrief() {
 		body, err = p.briefBody(body)
 	} else {
 		body, err = p.explainerBody(body)
@@ -42,15 +42,13 @@ func (p pick) frontmatter(fm string) (string, error) {
 		"title":     quote(p.lead.Title),
 		"published": published,
 	}
-	if p.kind == brief {
+	dates := "published is the pick time, provisional: set it"
+	if p.isBrief() {
 		values["source_url"] = quote(p.lead.Link)
 		values["explainers"] = "[" + strings.Join(p.explainers, ", ") + "]"
 	} else {
 		values["vertical"] = p.vertical
 		values["reviewed"] = published
-	}
-	dates := "published is the pick time, provisional: set it"
-	if p.kind != brief {
 		dates = "published and reviewed are the pick time, provisional: set them"
 	}
 	lines := []string{

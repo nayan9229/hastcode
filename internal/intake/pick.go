@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -20,9 +21,6 @@ const DefaultTemplates = "docs/editorial"
 // seen) against the pick clock, and still be picked as a Brief: 3 days
 // (docs/editorial/brief-writing-guide.md, "A fresh Lead").
 const BriefMaxAge = 72 * time.Hour
-
-// brief is the kind a Lead becomes when it is picked as a Brief.
-const brief = "brief"
 
 // PickOptions override what a pick copies from the Lead's Source.
 type PickOptions struct {
@@ -112,6 +110,10 @@ type pick struct {
 	now        time.Time
 }
 
+// isBrief reports whether p makes a Brief rather than an Explainer: the
+// one fork in what a pick checks and writes.
+func (p pick) isBrief() bool { return p.kind == briefKind }
+
 // planPick applies the options to the Lead and checks every refusal that
 // needs no template.
 func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, error) {
@@ -132,7 +134,7 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 		return p, fmt.Errorf("intake: slug %q is already used by %s; a pick never overwrites a Piece", p.slug, existing)
 	}
 
-	if p.kind != brief {
+	if !p.isBrief() {
 		if len(opts.Explainers) > 0 {
 			return p, fmt.Errorf("intake: only a Brief names the Explainers it links (EXPLAINER=), not a %s", p.kind)
 		}
@@ -142,7 +144,7 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 		if !slices.ContainsFunc(in.Verticals, func(v Vertical) bool { return v.Slug == p.vertical }) {
 			return p, fmt.Errorf("intake: unknown Vertical %q (want a site.yaml Vertical slug)", p.vertical)
 		}
-		p.path = "explainers/" + p.vertical + "/" + p.slug + ".md"
+		p.path = path.Join(explainersDir, p.vertical, p.slug+".md")
 		return p, nil
 	}
 
@@ -151,8 +153,9 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 	}
 	p.vertical = ""
 	if age := now.Sub(lead.date()); age > BriefMaxAge {
-		return p, fmt.Errorf("intake: Lead %s is %s old (dated %s); a Brief needs a Lead at most 3 days (72 hours) old. Pick it as an Explainer (KIND=case-study, concept or comparison) or dismiss it",
-			lead.ID, plural(int(age.Hours()), "hour"), lead.date().UTC().Format(time.RFC3339))
+		return p, fmt.Errorf("intake: Lead %s is %s old (dated %s); a Brief needs a Lead at most %s (%s) old. Pick it as an Explainer (KIND=case-study, concept or comparison) or dismiss it",
+			lead.ID, plural(int(age.Hours()), "hour"), lead.date().UTC().Format(time.RFC3339),
+			plural(int(BriefMaxAge/(24*time.Hour)), "day"), plural(int(BriefMaxAge.Hours()), "hour"))
 	}
 	if len(opts.Explainers) == 0 {
 		return p, errors.New("intake: a Brief links the Explainer that teaches its lesson: name it (EXPLAINER=slug[,slug]); if none exists yet, the Lead is not a Brief today")
@@ -165,14 +168,14 @@ func (in *Intake) planPick(lead Lead, opts PickOptions, now time.Time) (pick, er
 		if err != nil {
 			return p, err
 		}
-		if !strings.HasPrefix(filepath.ToSlash(file), "explainers/") {
+		if !strings.HasPrefix(file, explainersDir+"/") {
 			return p, fmt.Errorf("intake: no Explainer %q in %s; a Brief links an existing Explainer", slug, in.ContentDir)
 		}
 		if !slices.Contains(p.explainers, slug) {
 			p.explainers = append(p.explainers, slug)
 		}
 	}
-	p.path = "briefs/" + p.slug + ".md"
+	p.path = path.Join(briefsDir, p.slug+".md")
 	return p, nil
 }
 

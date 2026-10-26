@@ -60,16 +60,16 @@ func isSlug(s string) bool {
 // joined into exact paths, never matched as a pattern.
 func (in *Intake) pieceFile(slug string) (string, error) {
 	var candidates []string
-	verticals, err := os.ReadDir(filepath.Join(in.ContentDir, "explainers"))
+	verticals, err := os.ReadDir(filepath.Join(in.ContentDir, explainersDir))
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return "", err
 	}
 	for _, v := range verticals {
 		if v.IsDir() {
-			candidates = append(candidates, path.Join("explainers", v.Name(), slug+".md"))
+			candidates = append(candidates, path.Join(explainersDir, v.Name(), slug+".md"))
 		}
 	}
-	candidates = append(candidates, path.Join("briefs", slug+".md"))
+	candidates = append(candidates, path.Join(briefsDir, slug+".md"))
 	for _, rel := range candidates {
 		info, err := os.Stat(filepath.Join(in.ContentDir, filepath.FromSlash(rel)))
 		if errors.Is(err, fs.ErrNotExist) {

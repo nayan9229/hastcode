@@ -13,10 +13,16 @@ import (
 	"hastcode.com/site/internal/content"
 )
 
-// pieceDirs are the content directories holding Pieces: Explainers (Repo
-// Profiles among them, with their Fact Packs beside) and Briefs. Pages are
-// not Pieces and cover nothing.
-var pieceDirs = []string{"explainers", "briefs"}
+// The content directories holding Pieces: Explainers (Repo Profiles among
+// them, with their Fact Packs beside) under explainersDir/<vertical>/, and
+// Briefs under briefsDir. Pages are not Pieces and cover nothing.
+const (
+	explainersDir = "explainers"
+	briefsDir     = "briefs"
+)
+
+// pieceDirs are the content directories holding Pieces.
+var pieceDirs = []string{explainersDir, briefsDir}
 
 // coveredLinks reads the content tree and returns the normalised link of
 // every page a Piece already cites: each URL in a Piece's Markdown (its
