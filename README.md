@@ -200,7 +200,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_validate_repo_profile_skeleton.go` | The Repo Profile skeleton: the one place the nine written headings are spelled (`repoProfileHeadings`) and where the fact sections are placed (`repoProfileFactSections`: Signals after Architecture, Changelog after Alternatives). Rules `repo-profile-sections` (a missing, extra or reordered H2, naming the heading and its position), `repo-profile-fact-section` (a hand-written Signals or Changelog) and `repo-profile-faq` (five to eight `###` questions). See "Repo Profiles" under Conventions. Tests: `builder/repo_profile_skeleton_test.go`. |
 | `internal/factpack/`, `cmd/fetch/` | The fetch command (ADR-0005): `Fetcher{GitHub, CacheDir, Now, Log}` with `Fetch(ctx, repo, markdownFile)` (ten REST calls at most, `assemble.go`; file flags from the trees, `files.go`; the Fact Pack written beside the Markdown in a stable layout, `write.go`) and `Refresh(ctx, contentDir)` (`refresh.go`; what changed, fetched-at aside, `diff.go`), whose `RefreshReport.ExitStatus()` is the command's exit status (`ExitChanged` 3 when a Fact Pack was rewritten, `ExitNothingChanged` 0). `cmd/fetch` is flags and exit codes only. Tests: `internal/factpack/*_test.go` against the in-process GitHub of `fake_test.go`. See "Repo Profiles: fetching a Fact Pack". |
 | `internal/github/` | The GitHub REST client the fetch command uses: `NewClient(getenv)` (token from `GITHUB_TOKEN`, refused when unset), `Get(ctx, path, v)` (Bearer token, identifying User-Agent, `Retry-After` and primary rate-limit headers honoured with a bounded backoff, 202 and 5xx retried a bounded number of times, `RateLimitError` when the wait exceeds the bound), `LastPage(header)`. |
-| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, GitHubURL, Getenv, Timeout, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom; `fetch_github.go`: repository Sources' releases through `internal/github`, conditional on the stored ETag); the conditional HTTP GET with User-Agent and timeout (`http.go`); per-Source validators and newest item (`source_state.go`); failed and silent Sources (`source_health.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
+| `internal/intake/`, `cmd/intake/` | Intake (ADR-0007): `Intake{Watchlist, Verticals, StateDir, ContentDir, HTTP, GitHubURL, Getenv, Timeout, Now, Log}` with `Run(ctx) (*Report, error)` (`intake.go`), `Dismiss(ctx, id)` (`dismiss.go`) and `Pick(ctx, id, PickOptions)` (`pick.go`); `LoadWatchlist` and its validation (`watchlist.go`); a fetcher per Source type registered from its own file's `init` (`fetch.go`: `registerFetcher`; `fetch_feed.go`: RSS 2.0 and Atom; `fetch_github.go`: repository Sources' releases through `internal/github`, conditional on the stored ETag); the conditional HTTP GET with User-Agent and timeout (`http.go`); per-Source validators and newest item (`source_state.go`); failed and silent Sources (`source_health.go`); `Lead` and its ID (`lead.go`); the seen-state `state.json` (`state.go`); 7-day expiry (`expire.go`); covered Leads from the content tree's cited links, normalised (`covered.go`); the queue `queue.md` (`queue.go`); the run summary (`summary.go`). `cmd/intake` is flags and exit codes only. Tests: `internal/intake/*_test.go` against `httptest` publishers. See "Intake". |
 | `internal/markdown/` | goldmark `Parse` -> `*Document` (AST + source) and `Render(doc)`. Steps inspect/rewrite the AST between the two. `doc.Diagrams()` finds ```` ```mermaid ```` fences (title from a leading `%% title:` line); `doc.ReplaceDiagram(d, html)` swaps one for builder HTML; `doc.InsertHTMLAfterSection(heading, html)` places builder HTML at the end of an H2 section (a Repo Profile's fact sections). |
 | `internal/mermaid/` | Mermaid -> SVG: one batch Node process (`render.mjs`, embedded) per build, type/syntax checks, post-processing, on-disk cache by source hash, `PrefixIDs`. |
 | `internal/views/` | templ components + view-model structs (`models.go`). |
@@ -692,7 +692,7 @@ GitHub Actions.
 
 ```sh
 make intake                   # list new Leads in .intake/queue.md
-make lead-dismiss ID=opu7b35z # hide a Lead for good (ticket 05: not built yet)
+make lead-dismiss ID=opu7b35z # hide a Lead for good
 make lead ID=opu7b35z         # start a draft skeleton (ticket 09: not built yet)
 # same as: go run ./cmd/intake [-dismiss ID | -pick ID [-kind K] [-vertical V]]
 #          -watchlist sources.yaml -config site.yaml -content content -state .intake
@@ -761,11 +761,44 @@ release to a full one, the next run lists it.
 `.intake/queue.md` is the queue the Author reads: every open Lead grouped
 by Vertical (site.yaml order), newest first, one line each (ID, title
 linked, Source, kind, date and age, `new` on the run that first listed
-it), rewritten from the state on every run. `.intake/state.json` is the
+it, `covered` when a Piece already cites its link), rewritten from the state on every run. `.intake/state.json` is the
 seen-state: every Lead ever listed, keyed by ID, with its decision
 (`open`, `picked`, `dismissed`, `expired`) and first-seen time, plus
 per-Source state (`etag`, `last_modified`, `newest`). Deleting `.intake/` makes the next run list everything
 again.
+
+**Deciding** keeps the queue to open decisions only. `make lead-dismiss
+ID=…` marks an open Lead `dismissed` in the seen-state for good: no later
+queue shows it and no run lists it again (the current `queue.md` is
+rewritten by the next run). An unknown ID, or a Lead already picked,
+dismissed or expired, is refused. **Expiry**: a run marks every Lead still
+open 7 days (168 hours) or more after it was first seen `expired`; a Lead
+first seen 6 days 23 hours earlier stays. Only the first-seen time counts,
+not the publication date, so an old item first listed today gets its full
+week.
+
+**Covered Leads**: a run reads (never writes) the content tree's Pieces,
+`content/explainers/` and `content/briefs/`, drafts included, and collects
+every link they cite: each URL in a Piece's Markdown (frontmatter `sources`
+and body) and each of a Fact Pack's `sources`. A Lead whose link matches one
+is marked `· covered` at the end of its queue line, so the same story is not
+written twice. Links match after normalising: `http` and `https` alike, host
+lower-case without `www.` or a default port, no `#fragment`, no tracking
+parameters (`utm_*`, `fbclid`, `gclid`, `mc_cid`, `mc_eid`, `ref`,
+`source`), the rest of the query sorted, no trailing slash. Pages
+(`content/pages/`) are not Pieces and cover nothing.
+
+**The run summary** prints the new and open counts and the queue's path,
+then the new Leads per Vertical (site.yaml order) and per suggested kind,
+zeros included so a starving Vertical shows, how many Leads expired, every
+Source skipped, then the `failed` and `silent` Sources (above):
+
+```text
+4 new Leads, 9 open: .intake/queue.md
+new by Vertical: Distributed Systems 2, Databases & Storage 2, Languages & Runtimes 0
+new by kind: case-study 2, concept 2, comparison 0, brief 0
+expired 3 Leads left open 7 days
+```
 
 ## Subscribe function
 

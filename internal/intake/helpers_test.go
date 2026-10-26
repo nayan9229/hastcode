@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"sync"
 	"testing"
@@ -172,6 +173,7 @@ type queuedLead struct {
 	Kind     string
 	Date     string // "2026-10-24 (1 day old)"
 	New      bool
+	Covered  bool // marked covered: a Piece already cites its link
 }
 
 // readQueue parses the queue file of in's state directory.
@@ -205,7 +207,8 @@ func readQueue(t *testing.T, in *intake.Intake) []queuedLead {
 		leads = append(leads, queuedLead{
 			Vertical: vertical, ID: id, Title: title, Link: link,
 			Source: fields[0], Kind: fields[1], Date: fields[2],
-			New: len(fields) > 3 && fields[3] == "new",
+			New:     len(fields) > 3 && fields[3] == "new",
+			Covered: slices.Contains(fields[3:], "covered"),
 		})
 	}
 	if err := sc.Err(); err != nil {
