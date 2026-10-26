@@ -83,7 +83,7 @@ type Client struct {
 func NewClient(getenv func(string) string) (*Client, error) {
 	token := getenv(EnvToken)
 	if token == "" {
-		return nil, fmt.Errorf("%s is not set: the fetch command reads one GitHub token from that variable (GitHub Actions provides it; locally, create a fine-grained personal access token with read access to public repositories) and refuses to run unauthenticated, where GitHub allows 60 requests an hour", EnvToken)
+		return nil, fmt.Errorf("%s is not set: export it in your shell or put it in .env (make loads .env); locally, use a fine-grained personal access token with read access to public repositories. Unauthenticated, GitHub allows only 60 requests an hour, so the GitHub API is never called without it", EnvToken)
 	}
 	return &Client{
 		BaseURL:   APIURL,

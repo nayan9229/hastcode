@@ -66,7 +66,7 @@ adapt:
 # `make prune-images PRUNE_FLAGS=--delete`. See README "Image Store".
 PRUNE_FLAGS ?=
 prune-images: generate
-	go run ./cmd/prune -content $(CONTENT) -config $(CONFIG) $(PRUNE_FLAGS)
+	$(LOAD_ENV) go run ./cmd/prune -content $(CONTENT) -config $(CONFIG) $(PRUNE_FLAGS)
 
 # `make fetch REPO=owner/name MD=content/explainers/<vertical>/<slug>.md`:
 # write the Repo Profile's Fact Pack beside its Markdown and the README
@@ -84,10 +84,10 @@ REPO ?=
 MD   ?=
 fetch:
 	mkdir -p $(dir $(FETCH_BIN)) && go build -o $(FETCH_BIN) ./cmd/fetch
-	$(FETCH_BIN) -repo "$(REPO)" -markdown "$(MD)"
+	$(LOAD_ENV) $(FETCH_BIN) -repo "$(REPO)" -markdown "$(MD)"
 refresh:
 	mkdir -p $(dir $(FETCH_BIN)) && go build -o $(FETCH_BIN) ./cmd/fetch
-	$(FETCH_BIN) -refresh -content $(CONTENT)
+	$(LOAD_ENV) $(FETCH_BIN) -refresh -content $(CONTENT)
 
 # `make intake`: check every Source on the Source Watchlist (sources.yaml)
 # and list the new Leads in $(INTAKE_STATE)/queue.md (ADR-0007). Local
@@ -107,16 +107,21 @@ VERTICAL ?=
 # MAX_AGE=30d widens the age cutoff for one run (default 14 days: older
 # entries are recorded as seen, never listed).
 MAX_AGE  ?=
+# LOAD_ENV: read .env (written by scripts/setup-deploy.sh, gitignored) for
+# the targets that need secrets such as GITHUB_TOKEN or the R2 keys. Values
+# already exported in your shell win over .env.
+LOAD_ENV = saved="$$(export -p)"; set -a; [ ! -f .env ] || . ./.env; set +a; eval "$$saved";
+
 intake: generate
-	go run ./cmd/intake $(INTAKE_FLAGS) $(if $(MAX_AGE),-max-age "$(MAX_AGE)")
+	$(LOAD_ENV) go run ./cmd/intake $(INTAKE_FLAGS) $(if $(MAX_AGE),-max-age "$(MAX_AGE)")
 # Both refuse to start without ID= (the command refuses an empty ID too),
 # so a forgotten ID is a usage error, never a full run.
 lead-dismiss: generate
 	@test -n "$(ID)" || { echo "usage: make lead-dismiss ID=<id> (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
-	go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
+	$(LOAD_ENV) go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
 lead: generate
 	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]] (IDs are in $(INTAKE_STATE)/queue.md; a Brief needs EXPLAINER=)" >&2; exit 2; }
-	go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)" -explainer "$(EXPLAINER)"
+	$(LOAD_ENV) go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)" -explainer "$(EXPLAINER)"
 
 dev:
 	$(MAKE) build MODE=$(DEV_MODE)

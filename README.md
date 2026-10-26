@@ -79,7 +79,7 @@ the real newsletter's key at the DNS flip and the test newsletter's key
 before it; the Vercel project (QA) and `.env` (`make dev`) get the test
 newsletter's key.
 An `images.store: r2` build reads the R2 credentials (see "Image Store").
-The fetch command reads `GITHUB_TOKEN` (see "Repo Profiles: fetching a
+`make fetch`, `make refresh`, `make intake`, `make lead`, `make lead-dismiss` and `make prune-images` load `.env` (values already exported in your shell win). The fetch command reads `GITHUB_TOKEN` (see "Repo Profiles: fetching a
 Fact Pack").
 CI's GitHub secrets and variables are listed under "Deploying". `make build`
 itself also reads `MODE`, `FLAGS`, `OUT` from the environment (the QA
