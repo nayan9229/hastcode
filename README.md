@@ -756,8 +756,8 @@ with the same `GITHUB_TOKEN` and rate-limit handling as `make fetch`, but
 Intake's own User-Agent (above), and `Intake.Timeout` per request; never a github.com page,
 `releases.atom` included (research §5.3). The token is needed only when the
 Watchlist has a repository Source; without it each one is printed as
-`failed <Source>: GITHUB_TOKEN is not set …` and the feeds still run. The
-request is conditional: the ETag of the last answer goes back as
+`failed <Source>: GITHUB_TOKEN is not set …` and the feeds still run. The first
+page's request is conditional: the ETag of its last answer goes back as
 `If-None-Match`, and an unchanged list answers 304, which GitHub does not
 count against the rate limit when authenticated. A release is a Lead titled
 by its name (else its tag), linked to its release page, dated by
