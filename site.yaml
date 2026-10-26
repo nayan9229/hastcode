@@ -5,7 +5,7 @@ site_url: https://hastcode.com
 # Admin > Data streams > the hastcode.com web stream > "G-...". Production
 # and QA builds fail (analytics-config) while it is blank; Previews and
 # make dev never carry analytics.
-ga_measurement_id: ""
+ga_measurement_id: "G-MTPNK68PBD"
 # Ads: one flag switches every ad slot from an empty fixed-height
 # placeholder to an AdSense unit. Off in v1; adsense_client (ca-pub-...)
 # is required when ads_enabled is true.
