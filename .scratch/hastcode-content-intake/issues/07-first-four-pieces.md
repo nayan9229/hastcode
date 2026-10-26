@@ -78,3 +78,7 @@ Check before verifying:
 3. Whether "the durable fix was not more consumers but a separate lane with a fixed rate" reads as fair to the report.
 4. The metastable link is a lesson by analogy: the report never says "metastable".
 5. Replace the hero.
+
+## Status 2026-10-26
+
+All four un-drafted at the Author's request without `verified:` (published 2026-10-26, outside the gate's date rule). Remaining for this ticket: the Author checks each list above and adds `verified:`. Tickets 08 and 09 proceed from the four pieces as written.
