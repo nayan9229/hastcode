@@ -10,7 +10,7 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 - **"Why it matters" is HastCode's own analysis**, never the Source restated or reworded: the architectural cause, the lesson for the Reader's own systems, and the link into an Explainer. It is at least as long as "What happened".
 - **`explainers` lists exactly the slugs the body links**, at least one, no more (`brief-explainer-link`). Link an Explainer by its bare slug (`[metastable failures](metastable-failures)`) or its path (`/distributed-systems/metastable-failures/`). Every Brief needs an Explainer to point at, so Brief volume follows Explainer volume (ADR-0007).
 - **`source_url` is the Lead's link**: the first-party page the Brief is about (`brief-source`). A Brief has no Sources section; every other page it cites is linked inline, and may also go in the optional `sources` frontmatter.
-- **Inside the six Verticals.** Cover what the Reader would want anyway; a story that is only trending is a warning sign, not a Brief.
+- **Inside the six Verticals.** Cover what the Reader would want anyway; a Lead that is only trending is a warning sign, not a Brief.
 
 ## The flow
 
@@ -24,7 +24,7 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 
 ## Ground every claim
 
-- **First-party Sources only.** The company's own announcement, incident report, status page, release notes or engineering post. Never another outlet's story about it.
+- **First-party Sources only.** The company's own announcement, incident report, status page, release notes or engineering post. Never another site's coverage of it.
 - **Every claim is linked**, inline where it is made, to the first-party page that supports it.
 - **Say "we infer"** in the sentence that reads more into the Source than it states ("We infer from the timeline that capacity alone did not clear the backlog quickly; the report does not say so directly.").
 - **Quote short and credited.** One short quote at most, only where the exact words matter, in quotation marks, credited and linked, followed by our own analysis. State the headline facts in our own words; never reproduce the Source's lede or summary paragraph (research §4.5: a Brief that substitutes for its Source fails both copyright's market test and Google's scraping policy).

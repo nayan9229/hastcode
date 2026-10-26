@@ -65,7 +65,7 @@ Aim for 2,000 to 2,800 words, each H2 under 250 words (`section-length` warns ab
 | Search | Where it goes |
 |---|---|
 | "{A} vs {B}" | Title `{A} vs {B}: {what the choice turns on}` for two options |
-| "{A} vs {B} vs {C}", "{topic} in {A}, {B} and {C}" | Title `{topic} in {A}, {B} and {C}: {the question}`, e.g. the first Comparison |
+| "{A} vs {B} vs {C}", "{subject} in {A}, {B} and {C}" | Title `{subject} in {A}, {B} and {C}: {the question}`, e.g. the first Comparison |
 | "when to use {A}", "{A} or {B} for {use}" | The "when each wins" section, headed in the Reader's words |
 
 The title stays under about 70 characters; the first Comparison's 85 is too long for a search result. The description is one sentence of 150 characters or fewer naming the options and the question; the first one's ran to 164.

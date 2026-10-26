@@ -19,6 +19,7 @@ explainers: ["TODO(author): the slug of every Explainer the body links, and no o
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
+# sources: [{title: "The page's title", url: "https://example.com/page"}]
 draft: true
 ---
 

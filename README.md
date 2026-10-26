@@ -513,8 +513,9 @@ fake GitHub (`newFakeGitHub`, paginated releases), `newIntakeWithGitHub`,
 `expire_test.go` `at` (moves the clock), `readState`; `polite_test.go`
 `conditionalFeed`, `statusRecorder`; `github_test.go` `roundTripFunc`;
 `pick_test.go` `newPickIntake` (empty temp content tree, the real
-templates, one run done), `leadID`, `mustPick`, `readSkeleton`,
-`withExplainer`, `requireRefused`; `pick_build_test.go` `pickedTree`) and the hero card's
+templates, one run done), `leadID`, `mustPick`, `readSkeleton` (a parsed
+`skeleton`, whose `.section` returns one H2's text), `withExplainer`,
+`requireRefused`, `toStrings`; `pick_build_test.go` `pickedTree`) and the hero card's
 text seam (`views.HeroCardText`, below). Build-seam tests live in `builder/` as package
 `builder_test`, import only `builder` and `internal/buildtest`, and assert on
 parsed output. Helpers in `internal/buildtest`:
