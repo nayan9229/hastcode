@@ -747,7 +747,11 @@ ago)`: a candidate to retire from the Watchlist.
 
 **Repository Sources** (`repository: owner/name`) are read through the
 GitHub REST API with the Fact Pack fetcher's client (`internal/github`):
-one `GET /repos/{owner}/{name}/releases?per_page=10` per Source per run,
+`GET /repos/{owner}/{name}/releases?per_page=10`, then the next page
+(`&page=2`, …) while the last one was full and its newest non-draft
+release, prereleases included, is within the age cutoff, at most 5 pages
+(so a release-candidate stream cannot push a full release off the first
+page; a quiet repository costs one request),
 with the same `GITHUB_TOKEN` and rate-limit handling as `make fetch`, but
 Intake's own User-Agent (above), and `Intake.Timeout` per request; never a github.com page,
 `releases.atom` included (research §5.3). The token is needed only when the

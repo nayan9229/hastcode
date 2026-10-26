@@ -1,6 +1,10 @@
 package intake
 
-import "time"
+import (
+	"cmp"
+	"net/http"
+	"time"
+)
 
 // SourceState is what Intake keeps about one Source between runs, keyed by
 // the Source's name in state.json "sources". Its fetcher returns it
@@ -17,4 +21,11 @@ type SourceState struct {
 	// fetcher returns, and flags the Source silent when it is more than
 	// SilentAfter old.
 	Newest time.Time `json:"newest,omitzero"`
+}
+
+// revalidated is a stored validator after a 304: the value the 304
+// repeats under name when it sends one (it may be fresher, RFC 9110
+// §15.4.5), else the stored one.
+func revalidated(h http.Header, name, stored string) string {
+	return cmp.Or(h.Get(name), stored)
 }

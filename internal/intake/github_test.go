@@ -1,7 +1,9 @@
 package intake_test
 
 import (
+	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -166,6 +168,49 @@ func TestRun_NeverRequestsGitHubWebPages(t *testing.T) {
 	}
 	if len(hosts) != 6 {
 		t.Errorf("Intake made %d requests, want 6 (three Sources, two runs)", len(hosts))
+	}
+}
+
+// A busy release-candidate stream can fill the newest page of releases:
+// the run reads further pages until one's newest non-draft release is
+// older than the age cutoff, so the full release behind them is listed.
+func TestRun_PagesPastPrereleasesToTheFullReleaseBehindThem(t *testing.T) {
+	feeds := newFeedServer(t)
+	in, gh := newIntakeWithGitHub(t, exampleWatchlist(t, feeds))
+	var releases []string
+	add := func(id int, name string, prerelease bool, published string) {
+		releases = append(releases, fmt.Sprintf(`{"id": %d, "tag_name": %q, "name": %q,
+  "html_url": "https://github.com/example/runtime/releases/tag/%s", "draft": false,
+  "prerelease": %t, "published_at": %q}`, id, name, name, name, prerelease, published))
+	}
+	for i := range 10 { // page 1: ten release candidates this week
+		add(500-i, fmt.Sprintf("v3.1.0-rc.%d", 10-i), true, fmt.Sprintf("2026-10-%02dT10:00:00Z", 25-i/2))
+	}
+	add(480, "v3.0.0", false, "2026-10-19T10:00:00Z") // page 2: the full release, then older ones
+	for i := range 19 { // the rest of page 2 and all of page 3: last spring's
+		add(470-i, fmt.Sprintf("v2.%d.0", 19-i), false, fmt.Sprintf("2026-04-%02dT10:00:00Z", 28-i))
+	}
+	for i := range 10 { // page 4: never needed
+		add(400-i, fmt.Sprintf("v1.%d.0", 10-i), false, "2025-06-01T10:00:00Z")
+	}
+	gh.setReleases("example/runtime", []byte("["+strings.Join(releases, ",\n")+"]"))
+
+	mustRun(t, in)
+
+	if got := titles(languagesLeads(t, readQueue(t, in))); !slices.Equal(got, []string{"v3.0.0"}) {
+		t.Errorf("queue's releases = %q, want only v3.0.0 (candidates are not Leads, last spring's are past the cutoff)", got)
+	}
+	var uris []string
+	for _, r := range gh.requestLog() {
+		uris = append(uris, r.URI)
+	}
+	want := []string{
+		"/repos/example/runtime/releases?per_page=10",
+		"/repos/example/runtime/releases?per_page=10&page=2",
+		"/repos/example/runtime/releases?per_page=10&page=3", // page 2's newest full release is recent
+	}
+	if !slices.Equal(uris, want) {
+		t.Errorf("GitHub requests = %q, want %q (page 3's newest release is past the cutoff: stop)", uris, want)
 	}
 }
 

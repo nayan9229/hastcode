@@ -55,16 +55,11 @@ func (in *Intake) get(ctx context.Context, url string, prev SourceState) (respon
 		return response{}, err
 	}
 	defer resp.Body.Close()
-	etag, lastModified := resp.Header.Get("ETag"), resp.Header.Get("Last-Modified")
 	switch resp.StatusCode {
 	case http.StatusNotModified:
 		st := prev
-		if etag != "" {
-			st.ETag = etag
-		}
-		if lastModified != "" {
-			st.LastModified = lastModified
-		}
+		st.ETag = revalidated(resp.Header, "ETag", prev.ETag)
+		st.LastModified = revalidated(resp.Header, "Last-Modified", prev.LastModified)
 		return response{NotModified: true, State: st}, nil
 	case http.StatusOK:
 	default:
@@ -78,7 +73,7 @@ func (in *Intake) get(ctx context.Context, url string, prev SourceState) (respon
 		return response{}, fmt.Errorf("GET %s: body over %d bytes", url, maxFeedBytes)
 	}
 	st := prev
-	st.ETag, st.LastModified = etag, lastModified
+	st.ETag, st.LastModified = resp.Header.Get("ETag"), resp.Header.Get("Last-Modified")
 	return response{Body: body, State: st}, nil
 }
 

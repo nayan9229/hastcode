@@ -17,14 +17,21 @@ func init() { registerFetcher(RepositorySource, githubFetcher{}) }
 // githubFetcher fetches a repository Source: its releases, through the
 // GitHub REST API with the Fact Pack fetcher's client (internal/github:
 // the one GITHUB_TOKEN, its rate-limit handling), sending Intake's own
-// User-Agent (http.go). Never
-// the github.com web pages, releases.atom included (research §5.3; ADR-0005
-// calls the REST API the sanctioned path).
+// User-Agent (http.go). Never the github.com web pages, releases.atom
+// included (research §5.3; ADR-0005 calls the REST API the sanctioned
+// path).
 //
-// One request per Source per run: the newest releasesPerPage releases.
-// Each published full release is an item keyed on its release id, titled
+// Each published full release is an entry keyed on its release id, titled
 // by its name (else its tag), linked to its release page, dated by
 // published_at.
+//
+// Paging: the first page (releasesPerPage, newest first) is conditional on
+// the stored ETag; a 304 means nothing changed. Otherwise the fetcher
+// reads further pages while the page it just read was full and its newest
+// non-draft release (prereleases included) is within the run's age cutoff
+// (Intake.MaxAge), at most maxReleasePages: a busy release-candidate
+// stream cannot push a full release off the first page, and an old
+// repository costs one request.
 //
 // Prerelease rule: prereleases (and drafts) are not Leads. A release
 // candidate is not news a Reader can act on, and projects that cut them
@@ -33,9 +40,12 @@ func init() { registerFetcher(RepositorySource, githubFetcher{}) }
 // promote that same release to a full one, the next run lists it then.
 type githubFetcher struct{}
 
-// releasesPerPage is how many releases one request reads: more than any
-// watched project publishes between two daily runs.
-const releasesPerPage = 10
+const (
+	// releasesPerPage is how many releases one request reads.
+	releasesPerPage = 10
+	// maxReleasePages bounds the requests per repository Source per run.
+	maxReleasePages = 5
+)
 
 // release is the part of GitHub's release object a Lead needs.
 type release struct {
@@ -53,35 +63,62 @@ func (githubFetcher) fetch(ctx context.Context, in *Intake, src Source, prev Sou
 	if err != nil {
 		return Fetched{}, err
 	}
-	var releases []release
-	path := fmt.Sprintf("/repos/%s/releases?per_page=%d", src.Repository, releasesPerPage)
-	header, notModified, err := client.GetIfNoneMatch(ctx, path, prev.ETag, &releases)
-	if err != nil {
-		return Fetched{}, err
-	}
-	if notModified {
-		// Nothing new; a 304 may carry a fresher ETag (RFC 9110 §15.4.5).
-		prev.ETag = cmp.Or(header.Get("ETag"), prev.ETag)
-		return Fetched{State: prev}, nil
-	}
+	cutoff := in.now().Add(-in.maxAge())
 	state := prev
-	state.ETag = header.Get("ETag")
 	var items []Item
-	for _, r := range releases {
-		if r.Draft || r.Prerelease {
-			continue
+	for page := 1; page <= maxReleasePages; page++ {
+		path := fmt.Sprintf("/repos/%s/releases?per_page=%d", src.Repository, releasesPerPage)
+		etag := prev.ETag // only the first page is conditional
+		if page > 1 {
+			path += fmt.Sprintf("&page=%d", page)
+			etag = ""
 		}
-		item := Item{
-			Key:   strconv.FormatInt(r.ID, 10),
-			Title: oneLine(cmp.Or(r.Name, r.TagName)),
-			Link:  r.HTMLURL,
+		var releases []release
+		header, notModified, err := client.GetIfNoneMatch(ctx, path, etag, &releases)
+		if err != nil {
+			return Fetched{}, err
 		}
-		if r.PublishedAt != nil {
-			item.Published = r.PublishedAt.UTC()
+		if notModified {
+			state.ETag = revalidated(header, "ETag", prev.ETag)
+			return Fetched{State: state}, nil
 		}
-		items = append(items, item)
+		if page == 1 {
+			state.ETag = header.Get("ETag")
+		}
+		for _, r := range releases {
+			if !r.Draft && !r.Prerelease {
+				items = append(items, r.item())
+			}
+		}
+		if newest := newestRelease(releases); len(releases) < releasesPerPage || newest.Before(cutoff) {
+			break
+		}
 	}
 	return Fetched{Items: items, State: state}, nil
+}
+
+func (r release) item() Item {
+	item := Item{
+		Key:   strconv.FormatInt(r.ID, 10),
+		Title: oneLine(cmp.Or(r.Name, r.TagName)),
+		Link:  r.HTMLURL,
+	}
+	if r.PublishedAt != nil {
+		item.Published = r.PublishedAt.UTC()
+	}
+	return item
+}
+
+// newestRelease is the latest published_at of a page's non-draft releases,
+// prereleases included; zero when none has one.
+func newestRelease(releases []release) time.Time {
+	var newest time.Time
+	for _, r := range releases {
+		if !r.Draft && r.PublishedAt != nil && r.PublishedAt.After(newest) {
+			newest = *r.PublishedAt
+		}
+	}
+	return newest
 }
 
 // githubClient is the Fact Pack fetcher's GitHub client, pointed at
