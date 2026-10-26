@@ -12,3 +12,19 @@ Spec: `../spec.md` ("Format before pipeline"). ADR-0007. Voice: `docs/editorial/
 - [ ] One Case Study, one Concept, one Comparison drafted, verified by the Author (`verified:` set by the Author only), passing every build gate
 - [ ] One Brief from a Lead ≤ 3 days old, linking one of them, verified by the Author
 - [ ] Notes on what worked and what did not, per kind, for ticket 08
+
+## Proposals (2026-10-26, from the first real Intake run, 189 Leads)
+
+| Kind | Lead | Source | Vertical |
+|---|---|---|---|
+| Case Study | **`pk4mvo2l` Single-tenant Titus: VM-level isolation on a multi-tenant container platform** | Netflix TechBlog | Infrastructure & Cloud |
+| Case Study | `g7w5f2tx` How D1 scales to millions of databases | Cloudflare blog | Databases & Storage |
+| Case Study | `rdsbakwp` 2026 World Cup: reliability at scale | Meta Production Engineering | Distributed Systems |
+| Concept | **`2asmegc4` Metastability and Lost Writes** (metastable failures) | Marc Brooker | Distributed Systems |
+| Concept | `zkmxgotq` Push-Based KV Transfer for Disaggregated Inference | vLLM blog | AI/ML Systems |
+| Concept | `5ldu3gbw` JEP 543: Structured Concurrency | Inside Java | Languages & Runtimes |
+| Comparison | **`dwrxqhav` Better HTTP/1 connection reuse → HTTP/1.1 vs HTTP/2 vs HTTP/3 connection reuse** | Go blog | APIs & Networking |
+| Comparison | `oqyj2tvr` Shard design → hash vs range vs directory sharding | PlanetScale | Databases & Storage |
+| Comparison | `xtsbvhnf` Elastic Expert Parallelism → tensor vs pipeline vs expert parallelism | vLLM blog | AI/ML Systems |
+
+**Author's picks (2026-10-26):** Titus (Case Study), metastable failures (Concept), HTTP connection reuse (Comparison). Bold above.
