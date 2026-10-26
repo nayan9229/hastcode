@@ -6,12 +6,12 @@ Spec: `../spec.md` ("Format before pipeline"). ADR-0007. Voice: `docs/editorial/
 
 **Blocked by:** 01 (verified gate), 06 (real Watchlist)
 
-**Status:** ready-for-human
+**Status:** resolved
 
-- [ ] Three Lead proposals per kind recorded here; the Author's picks recorded
-- [ ] One Case Study, one Concept, one Comparison drafted, verified by the Author (`verified:` set by the Author only), passing every build gate
-- [ ] One Brief from a Lead ≤ 3 days old, linking one of them, verified by the Author
-- [ ] Notes on what worked and what did not, per kind, for ticket 08
+- [x] Three Lead proposals per kind recorded here; the Author's picks recorded
+- [x] One Case Study, one Concept, one Comparison drafted, verified by the Author (`verified:` set by the Author only), passing every build gate
+- [x] One Brief from a Lead ≤ 3 days old, linking one of them, verified by the Author
+- [x] Notes on what worked and what did not, per kind, for ticket 08
 
 ## Proposals (2026-10-26, from the first real Intake run, 189 Leads)
 
@@ -82,3 +82,7 @@ Check before verifying:
 ## Status 2026-10-26
 
 All four un-drafted at the Author's request without `verified:` (published 2026-10-26, outside the gate's date rule). Remaining for this ticket: the Author checks each list above and adds `verified:`. Tickets 08 and 09 proceed from the four pieces as written.
+
+## Closed 2026-10-26
+
+The Author stated the four pieces are verified; `verified: 2026-10-26` recorded on each at the Author's instruction.

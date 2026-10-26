@@ -5,6 +5,7 @@ kind: comparison
 vertical: apis-networking
 tags: ["http", "http2", "http3", "quic", "connection-pooling", "go"]
 published: "2026-10-26T17:18:41Z"
+verified: 2026-10-26
 reviewed: "2026-10-26T17:18:41Z"
 author: mira-vance
 ---

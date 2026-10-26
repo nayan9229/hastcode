@@ -3,6 +3,7 @@ title: "GitHub's Dependabot backlog: a queue flooded by its own fan-out"
 description: "On 23 October a fan-out of Dependabot alert events saturated the queue that also carries repository-push events. GitHub's fix was to isolate and throttle the fan-out."
 tags: [queues, backpressure, incidents, github]
 published: "2026-10-26T18:00:00Z"
+verified: 2026-10-26
 author: mira-vance
 source_url: https://www.githubstatus.com/incidents/71y513kjvbzh
 explainers: [metastable-failures]

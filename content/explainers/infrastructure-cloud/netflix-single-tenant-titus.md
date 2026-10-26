@@ -5,6 +5,7 @@ kind: case-study
 vertical: infrastructure-cloud
 tags: ["containers", "multi-tenancy", "kubernetes", "isolation", "netflix"]
 published: "2026-10-26T17:18:00Z"
+verified: 2026-10-26
 reviewed: "2026-10-26T17:18:00Z"
 author: mira-vance
 ---

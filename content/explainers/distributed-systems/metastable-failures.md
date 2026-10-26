@@ -5,6 +5,7 @@ kind: concept
 vertical: distributed-systems
 tags: ["metastability", "retries", "load-shedding", "overload", "reliability"]
 published: "2026-10-26T12:00:00Z"
+verified: 2026-10-26
 reviewed: "2026-10-26T12:00:00Z"
 author: mira-vance
 ---
