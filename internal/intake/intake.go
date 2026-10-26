@@ -36,12 +36,6 @@ import (
 	"time"
 )
 
-// Vertical is a Vertical Intake files Leads under (site.yaml "verticals").
-type Vertical struct {
-	Slug string
-	Name string
-}
-
 // Intake holds what every entry point needs. Tests build one directly;
 // cmd/intake fills it from flags and site.yaml.
 type Intake struct {

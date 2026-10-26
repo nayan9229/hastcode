@@ -105,9 +105,13 @@ KIND     ?=
 VERTICAL ?=
 intake: generate
 	go run ./cmd/intake $(INTAKE_FLAGS)
+# Both refuse to start without ID= (the command refuses an empty ID too),
+# so a forgotten ID is a usage error, never a full run.
 lead-dismiss: generate
+	@test -n "$(ID)" || { echo "usage: make lead-dismiss ID=<id> (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
 	go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
 lead: generate
+	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
 	go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)"
 
 dev:

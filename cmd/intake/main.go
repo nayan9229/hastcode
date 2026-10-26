@@ -8,14 +8,15 @@
 //	                                            start a draft skeleton from a Lead (ticket 09)
 //
 // The Verticals come from -config (site.yaml). The queue and the
-// seen-state live in -state, a local gitignored directory; Intake writes
-// nothing under -content. Repository Sources read GITHUB_TOKEN, as the
-// fetch command does; a feed-only Watchlist needs none. All logic is in
-// internal/intake; main is flags and exit codes:
+// seen-state live in -state, a local gitignored directory; a run and a
+// dismiss write nothing else, and nothing under -content. Repository
+// Sources read GITHUB_TOKEN, as the fetch command does; a feed-only
+// Watchlist needs none. All logic is in internal/intake; main is flags and
+// exit codes:
 //
 //	0  done, even when Sources failed (each is named in the summary)
 //	1  the run failed: an invalid Watchlist, the state, I/O, interrupted
-//	2  usage: bad flags, unreadable site config
+//	2  usage: bad flags (an empty -dismiss or -pick ID included), unreadable site config
 package main
 
 import (
@@ -24,9 +25,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"slices"
 
-	"hastcode.com/site/builder"
 	"hastcode.com/site/internal/intake"
 )
 
@@ -36,50 +35,68 @@ const (
 	exitUsage  = 2
 )
 
-func main() {
-	watchlist := flag.String("watchlist", intake.DefaultWatchlist, "the Source Watchlist file")
-	config := flag.String("config", "site.yaml", "site config; its verticals are the ones a Source may name")
-	contentDir := flag.String("content", "content", "content directory; Intake never writes under it")
-	stateDir := flag.String("state", ".intake", "local state directory (gitignored): the queue and the seen-state")
-	dismiss := flag.String("dismiss", "", "dismiss the Lead with this ID for good")
-	pick := flag.String("pick", "", "pick the Lead with this ID: write its draft skeleton")
-	kind := flag.String("kind", "", "with -pick: override the Lead's suggested kind")
-	vertical := flag.String("vertical", "", "with -pick: override the Lead's Vertical")
-	flag.Parse()
-
-	os.Exit(run(*watchlist, *config, *contentDir, *stateDir, *dismiss, *pick, intake.PickOptions{Kind: *kind, Vertical: *vertical}))
+// options are the command's flags.
+type options struct {
+	watchlist, config, contentDir, stateDir string
+	// dismiss and pick are the Lead IDs given with -dismiss and -pick;
+	// set records which of the two flags appeared at all, so an empty ID
+	// (`make lead-dismiss` without ID=) is a usage error, never a run.
+	dismiss, pick string
+	set           map[string]bool
+	pickOptions   intake.PickOptions
 }
 
-func run(watchlist, config, contentDir, stateDir, dismiss, pick string, opts intake.PickOptions) int {
+func main() {
+	var o options
+	flag.StringVar(&o.watchlist, "watchlist", intake.DefaultWatchlist, "the Source Watchlist file")
+	flag.StringVar(&o.config, "config", "site.yaml", "site config; its verticals are the ones a Source may name")
+	flag.StringVar(&o.contentDir, "content", "content", "content directory; a run and a dismiss never write under it")
+	flag.StringVar(&o.stateDir, "state", ".intake", "local state directory (gitignored): the queue and the seen-state")
+	flag.StringVar(&o.dismiss, "dismiss", "", "dismiss the Lead with this ID for good")
+	flag.StringVar(&o.pick, "pick", "", "pick the Lead with this ID: write its draft skeleton")
+	flag.StringVar(&o.pickOptions.Kind, "kind", "", "with -pick: override the Lead's suggested kind")
+	flag.StringVar(&o.pickOptions.Vertical, "vertical", "", "with -pick: override the Lead's Vertical")
+	flag.Parse()
+	o.set = map[string]bool{}
+	flag.Visit(func(f *flag.Flag) { o.set[f.Name] = true })
+
+	os.Exit(run(o))
+}
+
+func run(o options) int {
 	switch {
 	case flag.NArg() > 0:
 		return usage(fmt.Sprintf("unexpected argument %q", flag.Arg(0)))
-	case dismiss != "" && pick != "":
+	case o.set["dismiss"] && o.set["pick"]:
 		return usage("-dismiss and -pick are exclusive")
-	case pick == "" && (opts.Kind != "" || opts.Vertical != ""):
+	case o.set["dismiss"] && o.dismiss == "":
+		return usage("-dismiss needs a Lead ID (make lead-dismiss ID=<id>)")
+	case o.set["pick"] && o.pick == "":
+		return usage("-pick needs a Lead ID (make lead ID=<id>)")
+	case !o.set["pick"] && (o.pickOptions.Kind != "" || o.pickOptions.Vertical != ""):
 		return usage("-kind and -vertical go with -pick")
 	}
-	cfg, err := builder.LoadConfig(config)
+	verticals, err := intake.LoadVerticals(o.config)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "error:", err)
 		return exitUsage
 	}
 	in := &intake.Intake{
-		Watchlist:  watchlist,
-		Verticals:  verticals(cfg),
-		StateDir:   stateDir,
-		ContentDir: contentDir,
+		Watchlist:  o.watchlist,
+		Verticals:  verticals,
+		StateDir:   o.stateDir,
+		ContentDir: o.contentDir,
 		Log:        os.Stdout,
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	switch {
-	case dismiss != "":
-		err = in.Dismiss(ctx, dismiss)
-	case pick != "":
+	case o.set["dismiss"]:
+		err = in.Dismiss(ctx, o.dismiss)
+	case o.set["pick"]:
 		var file string
-		if file, err = in.Pick(ctx, pick, opts); err == nil {
+		if file, err = in.Pick(ctx, o.pick, o.pickOptions); err == nil {
 			fmt.Println("wrote", file)
 		}
 	default:
@@ -93,17 +110,6 @@ func run(watchlist, config, contentDir, stateDir, dismiss, pick string, opts int
 		return exitFailed
 	}
 	return exitOK
-}
-
-// verticals are site.yaml's Verticals in their display order.
-func verticals(cfg builder.Config) []intake.Vertical {
-	vs := slices.Clone(cfg.Verticals)
-	slices.SortStableFunc(vs, func(a, b builder.Vertical) int { return a.Order - b.Order })
-	var out []intake.Vertical
-	for _, v := range vs {
-		out = append(out, intake.Vertical{Slug: v.Slug, Name: v.Name})
-	}
-	return out
 }
 
 func usage(msg string) int {
