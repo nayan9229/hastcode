@@ -5,21 +5,21 @@ import (
 	"strings"
 )
 
-// The title card (ticket 10) is the hero of a Case Study, Concept,
-// Comparison or Brief that names no `hero`: drawn at build time from the
-// Piece's title, kind and Vertical on the light brand palette with the Go
-// fonts, like the hero card and the OG badge, so no Piece needs a
-// hand-made image. The builder feeds the PNG through the hero pipeline as
-// if it were a sourced file.
+// The title card is the hero of a Case Study, Concept, Comparison or Brief
+// that names no `hero`: drawn at build time from the Piece's title, kind
+// and Vertical on the light brand palette with the Go fonts, like the hero
+// card and the OG badge, so no Piece needs a hand-made image. The builder
+// feeds the PNG through the hero pipeline as if it were a sourced file.
 //
-// It is the hero card's canvas (1600x900, accent band along the bottom,
-// wordmark at the top) with the title in its middle: the kind and Vertical
-// as an eyebrow, the title under it, the accent rule under the title. The
-// eyebrow, title and rule are centred as one block below the wordmark,
-// and every line keeps within heroCardSafeWidth and off the edges the
-// 1200x630 crop trims, so every crop the hero pipeline cuts keeps the
-// whole text. Only the title, kind and Vertical are drawn, so the same
-// Piece always gives the same bytes and a retitled one new bytes.
+// It is the shared card canvas (card.go: 1600x900, accent band along the
+// bottom, wordmark at the top) with the title in its middle: the kind and
+// Vertical as an eyebrow in the link ink, the title under it, the accent
+// rule under the title. The eyebrow, title and rule are centred as one
+// block below the wordmark, and every line keeps within cardSafeWidth and
+// off the edges the 1200x630 crop trims, so every crop the hero pipeline
+// cuts keeps the whole text. Only the title, kind and Vertical are drawn,
+// so the same Piece always gives the same bytes and a retitled one new
+// bytes.
 
 // TitleCard is what a title card shows.
 type TitleCard struct {
@@ -63,9 +63,9 @@ const (
 // Vertical, upper case, shrunk then cut), the title (the largest size at
 // which it wraps into titleCardTitleLines lines, cut with an ellipsis at
 // the smallest) and the rule under it.
-func titleCardRuns(c TitleCard) ([]heroCardRun, image.Rectangle) {
+func titleCardRuns(c TitleCard) ([]cardRun, image.Rectangle) {
 	mono := goMonoBold()
-	fg, accent := hexColour(lightPalette.fg), hexColour(lightPalette.link)
+	fg, link := hexColour(lightPalette.fg), hexColour(lightPalette.link)
 
 	eyebrowText, eyebrowFace := fitText(drawable(strings.ToUpper(titleCardEyebrow(c)), mono), mono, titleCardEyebrowMaxSize, titleCardEyebrowMinSize)
 
@@ -73,7 +73,7 @@ func titleCardRuns(c TitleCard) ([]heroCardRun, image.Rectangle) {
 	var lines []string
 	size := float64(titleCardTitleMaxSize)
 	for ; ; size -= 4 {
-		lines = wrapText(title, newFace(mono, size), heroCardSafeWidth, titleCardTitleLines)
+		lines = wrapText(title, newFace(mono, size), cardSafeWidth, titleCardTitleLines)
 		if strings.Join(lines, " ") == title || size-4 < titleCardTitleMinSize {
 			break
 		}
@@ -83,22 +83,20 @@ func titleCardRuns(c TitleCard) ([]heroCardRun, image.Rectangle) {
 	capHeight := int(size * 0.75)
 	ruleGap := int(size * 0.55) // below the last baseline, clear of descenders
 
-	height := titleCardEyebrowCap + titleCardEyebrowGap + capHeight + (len(lines)-1)*lineHeight + ruleGap + heroCardRuleHeight
+	height := titleCardEyebrowCap + titleCardEyebrowGap + capHeight + (len(lines)-1)*lineHeight + ruleGap + cardRuleHeight
 	top := titleCardBlockTop + (titleCardBlockBottom-titleCardBlockTop-height)/2
 
-	runs := []heroCardRun{{text: wordmark, y: titleCardWordmarkY, wordmark: true}}
+	runs := []cardRun{{text: wordmark, y: titleCardWordmarkY, wordmark: true}}
 	y := top + titleCardEyebrowCap
-	runs = append(runs, heroCardRun{text: eyebrowText, face: eyebrowFace, colour: accent, y: y})
+	runs = append(runs, cardRun{text: eyebrowText, face: eyebrowFace, colour: link, y: y})
 	y += titleCardEyebrowGap + capHeight
 	for i, line := range lines {
 		if i > 0 {
 			y += lineHeight
 		}
-		runs = append(runs, heroCardRun{text: line, face: titleFace, colour: fg, y: y})
+		runs = append(runs, cardRun{text: line, face: titleFace, colour: fg, y: y})
 	}
-	ruleY := y + ruleGap
-	rule := image.Rect((heroCardWidth-heroCardRuleWidth)/2, ruleY, (heroCardWidth+heroCardRuleWidth)/2, ruleY+heroCardRuleHeight)
-	return runs, rule
+	return runs, centredRule(y + ruleGap)
 }
 
 // titleCardEyebrow is "Case Study · Distributed Systems", or the kind
