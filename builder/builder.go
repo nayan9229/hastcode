@@ -50,9 +50,10 @@ type Config struct {
 	// slot position: after-tldr, after-what-happened, after-body. Each is
 	// required when AdsEnabled, or the slot would stay an empty box.
 	AdSenseSlots map[string]string `yaml:"adsense_slots"`
-	// PlausibleDomain is the Plausible analytics site; blank omits the
-	// analytics script.
-	PlausibleDomain string `yaml:"plausible_domain"`
+	// GAMeasurementID is the Google Analytics 4 web data stream's
+	// Measurement ID ("G-..."), ADR-0008. Required for Production builds
+	// (rule analytics-config); preview builds carry no analytics.
+	GAMeasurementID string `yaml:"ga_measurement_id"`
 	// AdsTxt are the /ads.txt records (IAB Authorized Digital Sellers),
 	// one per line, verbatim: "<ad system domain>, <account id>,
 	// DIRECT|RESELLER[, <certification authority id>]", plus "#" comments

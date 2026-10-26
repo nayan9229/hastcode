@@ -12,27 +12,28 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
-// Spec story 61: total client JS ≤ 60 KB per page. This test is the
-// authority for that budget, not Lighthouse CI: Lighthouse has to block
-// Plausible on previews (so its runs are never counted as pageviews) and
-// its resource-summary counts compressed transfer
-// bytes. Here every script a page loads initially is summed uncompressed:
-// inline code, same-origin files from the output, and an upper bound for
-// each third-party script. Pagefind loads only on interaction, so it is
-// not initial JS.
+// Spec story 61: client JS ≤ 60 KB per page. This test is the authority
+// for that budget, not Lighthouse CI (which blocks third-party hosts on
+// previews and counts compressed transfer bytes). Here every first-party
+// script a page loads initially is summed uncompressed: inline code and
+// same-origin files from the output. Since ADR-0008 the budget bounds our
+// own code only: gtag.js alone is ~449 KB, and the third-party scripts in
+// exemptThirdPartyScripts are named exemptions; any other third-party
+// script fails. Pagefind loads only on interaction, so it is not initial JS.
 const jsBudget = 60 * 1024
 
-// thirdPartyScriptBytes are upper bounds for the uncompressed size of the
-// third-party scripts the site may load, since their bytes are not in the
-// build output. Plausible's script.js measured 2,841 bytes uncompressed
-// (1,283 gzipped) on 2026-10-21; 4 KB leaves headroom for its updates.
-var thirdPartyScriptBytes = map[string]int{
-	"https://plausible.io/js/script.js": 4 * 1024,
+// exemptThirdPartyScripts are the URL prefixes of the third-party scripts a
+// page may load outside the budget (ADR-0008), each without blocking parsing.
+var exemptThirdPartyScripts = []string{
+	"https://www.googletagmanager.com/gtag/js?id=",
+	"https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=",
 }
 
 func TestJSBudget_EveryPageStaysWithin60KB(t *testing.T) {
-	cfg := buildtest.Config() // v1 production shape: analytics on, ads off
-	cfg.PlausibleDomain = "hastcode.com"
+	cfg := buildtest.Config()
+	cfg.AdsEnabled = true
+	cfg.AdSenseClient = "ca-pub-1234567890123456"
+	cfg.AdSenseSlots = map[string]string{"after-tldr": "1", "after-what-happened": "2", "after-body": "3"}
 	out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
 
 	pages := 0
@@ -58,8 +59,9 @@ func TestJSBudget_EveryPageStaysWithin60KB(t *testing.T) {
 	}
 }
 
-// pageJSBytes sums a page's executable scripts: inline code, same-origin
-// files from the output, and the known size of each third-party script.
+// pageJSBytes sums a page's first-party executable scripts: inline code and
+// same-origin files from the output. Exempt third-party scripts add
+// nothing; any other third-party script is an error.
 func pageJSBytes(t *testing.T, outDir string, html []byte) int {
 	t.Helper()
 	doc, err := goquery.NewDocumentFromReader(bytes.NewReader(html))
@@ -83,11 +85,12 @@ func pageJSBytes(t *testing.T, outDir string, html []byte) int {
 			}
 			total += int(info.Size())
 		default:
-			n, known := thirdPartyScriptBytes[src]
-			if !known {
-				t.Errorf("third-party script %s has no size budget", src)
+			for _, prefix := range exemptThirdPartyScripts {
+				if strings.HasPrefix(src, prefix) {
+					return
+				}
 			}
-			total += n
+			t.Errorf("third-party script %s is neither first-party nor a named exemption (ADR-0008)", src)
 		}
 	})
 	return total

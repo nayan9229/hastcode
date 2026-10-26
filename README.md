@@ -240,6 +240,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
+| `internal/views/analytics.go`, `layout_analytics.templ` | Google Analytics 4 (ADR-0008): the inline snippet (`analyticsSnippet`: regional `analytics_storage` consent defaults, the host guard with Google's `ga-disable-<id>` opt-out, the config) and the deferred gtag.js. Validated by `builder/step_validate_analytics_config.go` (rule `analytics-config`). Tests: `builder/ads_analytics_test.go`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (inlined in every page's `<head>`, ADR-0006) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
@@ -249,7 +250,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/step_render_search.go`, `step_write_search_index.go` | The noindex `/search/` page and the Pagefind post-step (rule `search-index`) that indexes the written output into `/pagefind/`. |
 | `internal/pagefind/` | Runs the Pagefind CLI (`node node_modules/pagefind/lib/runner/bin.cjs --site …`) and reads the bundle's page count. |
 | `internal/views/page_search.templ`, `search.js` | Search page and its inline lazy loader (Pagefind modular UI on first focus). |
-| `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Plausible domain. |
+| `builder/chrome.go` | `s.page(urlPath, title, description)`: every page's `views.Page` incl. canonical, default Open Graph, header/footer nav, ads flag and Google Analytics 4 config. |
 | `builder/head.go` | Head + JSON-LD shared by page types: `s.articlePage(articleHead{Type, URL, Headline, …, Breadcrumbs})` (Article/NewsArticle + BreadcrumbList + og:type article with the 1200x630 hero crop + visible breadcrumb), and the schema builders `s.person(author)`, `s.organization()`, `s.breadcrumbs(links)`, `s.absURL(path)`. |
 | `internal/schema/` | schema.org JSON-LD node types (`Article` with `TypeArticle`/`TypeNewsArticle`, `Person`, `Organization`, `BreadcrumbList`, `WebSite` + `NewSearchAction`; `SoftwareSourceCode` for Repo Profiles only). Plain data; `views.StructuredData` marshals each `Page.StructuredData` block into `<head>`. |
 | `internal/vercel/` | Build Output API writer (`static/` files, `config.json` with `Route`s) and `NewRouter`, the local router that applies a built `config.json`'s routes. |
@@ -263,7 +264,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `cmd/target/` | `go run ./cmd/target <name\|code\|tag>` prints `target=`, `code=`, `tag_prefix=`: how `scripts/publish.sh` and `scripts/publish-gate.sh` spell a Target. |
 | `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
 | `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
-| `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `plausible_domain` (blank = no analytics), `ads_enabled`, `adsense_client` (required when ads are on), `adsense_slots` (AdSense ad unit id per slot position `after-tldr`, `after-what-happened`, `after-body`; required for Production and QA builds when ads are on; Previews and `make dev` never carry ads), `ads_txt` (records written verbatim to `/ads.txt`; malformed lines fail with `ads-txt`; empty = no file), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
+| `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `ga_measurement_id` (Google Analytics 4 Measurement ID `G-…`, ADR-0008; Production and QA builds fail with `analytics-config` while blank or malformed; Previews and `make dev` never carry analytics), `ads_enabled`, `adsense_client` (required when ads are on), `adsense_slots` (AdSense ad unit id per slot position `after-tldr`, `after-what-happened`, `after-body`; required for Production and QA builds when ads are on; Previews and `make dev` never carry ads), `ads_txt` (records written verbatim to `/ads.txt`; malformed lines fail with `ads-txt`; empty = no file), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
 
 Planned homes for parallel tickets: editorial gates -> `builder/step_validate_*.go`;
@@ -283,7 +284,7 @@ the build with rule `build-step`. Phases run in order: `phaseLoad` -> `phaseVali
 load fact packs 22 (Repo Profiles), load static pages 25, load briefs 25,
 exclude drafts (production only; Explainers
 and Briefs) 30, draw hero cards 35 (every Explainer and Brief without
-`hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, references 10, Brief references 12,
+`hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, analytics config 7, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
 skeleton 32, Brief skeleton 35, section-length warning 40, verified gate 45, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
@@ -313,8 +314,8 @@ sitemaps are written in the write phase, after the gate, so their entries
 stay). Otherwise it is a `broken-link`
 error naming the page and the target, attributed to the page's content
 file ("" for home and listings), and the page is removed from the output.
-Header and footer links are checked on every page, so the About, Contact
-and Editorial Policy pages must exist (`buildtest.NewTree()` includes them).
+Header and footer links are checked on every page, so the About, Contact,
+Editorial Policy and Privacy pages must exist (`buildtest.NewTree()` includes them).
 Brief Explainer links and `related` slugs are checked earlier, at the
 source, under the same rule.
 
@@ -464,17 +465,19 @@ a comment naming the partial, one declaration block per line. The inline
 scripts are the theme toggle (≤ 1 KB, in `<head>`), the newsletter form's
 enhancement (≤ 1 KB, inside `.newsletter`) and the search page's loader
 (≤ 1.5 KB, `search.js`; Pagefind itself loads only on interaction, so it is
-not part of any page's initial JS); analytics and Pagefind are the
+not part of any page's initial JS); the Google Analytics 4 snippet and
+gtag.js (Production builds only) and Pagefind are the
 only other scripts allowed (`TestThemeToggle_IsTheOnlyScriptAndUnder1KB`,
 `TestNewsletter_EnhancementScriptIsSmall`), plus the AdSense library and its
-per-unit push only when `ads_enabled`. Total client JS per page stays
-≤ 60 KB **uncompressed, analytics included**: the authority is the
-Build-seam test `TestJSBudget_EveryPageStaysWithin60KB`, which sums every
-script a page loads initially (inline code, same-origin files, and an
-upper bound for each third-party script: Plausible 4 KB, measured 2,841
-bytes). Give any new third-party script a size there. Lighthouse CI's
-script check is only a secondary guard (it measures compressed transfer
-and must block Plausible on previews).
+per-unit push only when `ads_enabled`. First-party client JS per page
+stays ≤ 60 KB **uncompressed**: the authority is the Build-seam test
+`TestJSBudget_EveryPageStaysWithin60KB`, which sums every first-party
+script a page loads initially (inline code and same-origin files).
+Third-party scripts are outside the budget only as named exemptions in
+that test, gtag.js and the AdSense library (ADR-0008: gtag.js alone is
+~449 KB); any other third-party script fails it. Lighthouse CI's script
+check is only a secondary guard (it measures compressed transfer and
+blocks Google's analytics and ad hosts on previews).
 
 **Weight, ads, analytics.** Every page written through `s.writePage` is
 checked against the 50 KB uncompressed HTML gate, not counting the shared
@@ -490,11 +493,18 @@ layout shift; it carries `data-pagefind-ignore="all"`. Article layouts
 render the body in two halves (`Document.SplitAfterSection` +
 `markdown.RenderBlocks`: after "TL;DR" for an Explainer, after "What
 happened" for a Brief) with the first slot between them and the second
-after `.e-content`. Plausible comes
-from `layout_analytics.templ` in every `<head>` when `plausible_domain` is set,
-in production builds only: preview builds (Previews, `make dev`) carry no
-analytics, so their visits are never counted and Lighthouse CI measures the
-page's own code (ADR-0006).
+after `.e-content`. Google Analytics 4 comes from `layout_analytics.templ`
+(snippet in `internal/views/analytics.go`) at the end of every `<head>`, in
+production builds only (ADR-0008): an inline snippet that sets consent
+`analytics_storage` defaults (denied in the EEA, UK and Switzerland until
+the AdSense GDPR message grants it, granted elsewhere; ad consent is left to
+AdSense) and configures `ga_measurement_id`,
+then `gtag.js` with `defer`. The snippet reports only on `site_url`'s host;
+on any other host (the QA Target) it sets Google's `ga-disable-<id>` opt-out
+instead. Preview builds (Previews, `make dev`) carry no analytics, so their
+visits are never counted and Lighthouse CI measures the page's own code
+(ADR-0006). The site sets cookies (Google Analytics, AdSense); `/privacy/`
+says so and is linked from every page's footer.
 Everything must work without JS.
 
 **Tests.** Five seams are tested, and only these (spec "Testing
@@ -1480,10 +1490,10 @@ Then **Lighthouse CI** (`lighthouserc.json`) runs against that URL: home,
 Budgets, mobile emulation with simulated throttling: LCP ≤ 1500 ms
 (median of 3 runs), CLS 0 (worst run), first-party script transfer
 (compressed) ≤ 60 KB as a secondary guard; the spec's total-JS budget
-(uncompressed, analytics included) is enforced by `make test`. A miss
+(first-party, uncompressed, ADR-0008) is enforced by `make test`. A miss
 fails the check; reports are the `lighthouse-reports` artefact (never
 public storage: previews hold drafts). Preview builds carry no analytics
-(ADR-0006); Lighthouse also blocks Plausible and ad hosts as a backstop.
+(ADR-0006); Lighthouse also blocks Google's analytics and ad hosts as a backstop.
 Found on the first Preview (ADR-0006): Lighthouse's simulation makes LCP
 wait for every request that starts before it, including a deferred
 analytics script and the favicon, so neither may be requested during first
@@ -1560,9 +1570,9 @@ scripts/setup-deploy.sh --from 13   # e.g. once the content threshold is met
 | 10 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false` | `.env` `VERCEL_TOKEN`; GitHub secrets and variable |
 | 11 | Push `main` (tests only) | |
 | 12 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
-| 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
+| 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the Google Analytics 4 Measurement ID in `site.yaml` (stops if missing, ADR-0008), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
 | 14 | Production DNS flip: Worker secret to the real newsletter's key; delete the old @ and `www` records; attach hastcode.com and www.hastcode.com to the Worker as custom domains; Redirect Rule `www` -> apex | |
-| 15 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Plausible hostnames, Search Console and Bing sitemaps | GitHub variable |
+| 15 | Go live: `INDEXNOW_ENABLED=true`, delete the `hastcode-indexnow-*` caches (the page manifest only), `scripts/publish.sh cf`, the live checklist; Google Analytics 4 property, AdSense consent mode for analytics and AdSense link, Search Console and Bing sitemaps | GitHub variable |
 | 16 | First `make prune-images PRUNE_FLAGS=--delete` by hand (against a dummy `prune-check.txt`) and the R2 billing checks. Skipped while `images.store` is `local` | |
 
 What only a live run can verify, and the stage that checks it (each line

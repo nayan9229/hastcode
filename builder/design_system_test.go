@@ -154,28 +154,30 @@ func TestStylesheet_DefinesBrandPaletteForLightDarkAndOverride(t *testing.T) {
 }
 
 func TestThemeToggle_IsTheOnlyScriptAndUnder1KB(t *testing.T) {
-	analytics := buildtest.Config()
-	analytics.PlausibleDomain = "hastcode.com"
+	preview := buildtest.Config()
+	preview.Mode = builder.Preview
 	ads := buildtest.Config()
-	ads.PlausibleDomain = "hastcode.com"
 	ads.AdsEnabled = true
 	ads.AdSenseClient = "ca-pub-1234567890123456"
 	ads.AdSenseSlots = map[string]string{"after-tldr": "1", "after-what-happened": "2", "after-body": "3"}
 
-	for name, cfg := range map[string]builder.Config{"default": buildtest.Config(), "analytics": analytics, "ads": ads} {
+	for name, cfg := range map[string]builder.Config{"production": buildtest.Config(), "preview": preview, "ads": ads} {
 		t.Run(name, func(t *testing.T) {
 			out := buildtest.MustBuild(t, cfg, buildtest.ValidTree())
-			requireOnlyAllowedScripts(t, buildtest.Page(t, out, explainerPath), cfg.AdsEnabled)
+			requireOnlyAllowedScripts(t, buildtest.Page(t, out, explainerPath), cfg)
 		})
 	}
 }
 
 // requireOnlyAllowedScripts: the theme toggle is the one inline script of
-// our own; the only other scripts allowed are Plausible (analytics),
-// Pagefind (search) and, only when ads are enabled, the AdSense library
-// and its one-line per-unit push.
-func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled bool) {
+// our own; the only other scripts allowed are Pagefind (search), in
+// Production builds the Google Analytics 4 snippet and gtag.js (ADR-0008),
+// and, only when ads are on, the AdSense library and its one-line
+// per-unit push.
+func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, cfg builder.Config) {
 	t.Helper()
+	production := cfg.Mode != builder.Preview
+	adsEnabled := cfg.AdsEnabled && production
 	const adsensePush = "(adsbygoogle=window.adsbygoogle||[]).push({});"
 
 	// Executable scripts only: JSON-LD blocks are data, not code.
@@ -195,7 +197,7 @@ func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled b
 		}
 		if src, ok := s.Attr("src"); ok {
 			switch {
-			case src == "https://plausible.io/js/script.js":
+			case production && src == gtagSrc:
 			case strings.HasPrefix(src, "/pagefind/"):
 			case adsEnabled && strings.HasPrefix(src, "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="):
 			default:
@@ -204,6 +206,9 @@ func requireOnlyAllowedScripts(t *testing.T, doc *goquery.Document, adsEnabled b
 			return
 		}
 		if adsEnabled && strings.TrimSpace(s.Text()) == adsensePush {
+			return
+		}
+		if production && strings.HasPrefix(s.Text(), "window.dataLayer=") && s.Next().AttrOr("src", "") == gtagSrc {
 			return
 		}
 		inline = append(inline, s)

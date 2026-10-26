@@ -2,6 +2,7 @@ package builder
 
 import (
 	"cmp"
+	"net/url"
 	"slices"
 
 	"hastcode.com/site/internal/views"
@@ -16,13 +17,13 @@ func (s *site) page(urlPath, title, description string) views.Page {
 	badge := views.OGBadge()
 	badge.URL = s.absURL(s.imageURL(badge.URL))
 	return views.Page{
-		Title:           title,
-		Description:     description,
-		Canonical:       s.absURL(urlPath),
-		Social:          views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
-		Chrome:          s.chrome(),
-		Ads:             views.Ads{Enabled: s.adsOn(), Client: s.cfg.AdSenseClient, Slots: s.cfg.AdSenseSlots},
-		PlausibleDomain: s.analyticsDomain(),
+		Title:       title,
+		Description: description,
+		Canonical:   s.absURL(urlPath),
+		Social:      views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
+		Chrome:      s.chrome(),
+		Ads:         views.Ads{Enabled: s.adsOn(), Client: s.cfg.AdSenseClient, Slots: s.cfg.AdSenseSlots},
+		Analytics:   s.analytics(),
 	}
 }
 
@@ -33,14 +34,30 @@ func (s *site) adsOn() bool {
 	return s.cfg.AdsEnabled && s.cfg.Mode != Preview
 }
 
-// analyticsDomain is the Plausible domain pages carry: none in preview
-// builds (Previews and make dev), whose visits are not Readers' and which
-// Lighthouse CI measures without third-party scripts (ADR-0006).
-func (s *site) analyticsDomain() string {
-	if s.cfg.Mode == Preview {
+// analyticsOn reports whether pages carry Google Analytics 4 (ADR-0008):
+// never in preview builds (Previews and make dev), whose visits are not
+// Readers' and which Lighthouse CI measures without third-party scripts
+// (ADR-0006). Production builds must configure it (checkAnalyticsConfig).
+func (s *site) analyticsOn() bool {
+	return s.cfg.Mode != Preview
+}
+
+// analytics is the Google Analytics 4 configuration pages carry; Host is
+// site_url's host, the only one that reports.
+func (s *site) analytics() views.Analytics {
+	if !s.analyticsOn() {
+		return views.Analytics{}
+	}
+	return views.Analytics{MeasurementID: s.cfg.GAMeasurementID, Host: s.siteHost()}
+}
+
+// siteHost is site_url's host name ("hastcode.com"); "" if it has none.
+func (s *site) siteHost() string {
+	u, err := url.Parse(s.cfg.SiteURL)
+	if err != nil {
 		return ""
 	}
-	return s.cfg.PlausibleDomain
+	return u.Hostname()
 }
 
 // sortedVerticals are the configured Verticals in their configured order.
@@ -58,6 +75,7 @@ func (s *site) chrome() views.Chrome {
 			{Name: "About", URL: aboutURL},
 			{Name: "Contact", URL: contactURL},
 			{Name: "Editorial Policy", URL: editorialPolicyURL},
+			{Name: "Privacy", URL: privacyURL},
 		},
 		Feeds: []views.Link{
 			{Name: "RSS (all)", URL: siteFeedURL},

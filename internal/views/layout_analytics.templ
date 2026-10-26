@@ -1,9 +1,12 @@
 package views
 
-// Analytics is the Plausible script: cookieless, so no consent banner.
-// Omitted entirely when no domain is configured (tests, local builds).
-templ Analytics(domain string) {
-	if domain != "" {
-		<script defer data-domain={ domain } src="https://plausible.io/js/script.js"></script>
+// AnalyticsScripts is Google Analytics 4 (ADR-0008): a small inline
+// snippet, then gtag.js deferred so it never runs before the page has
+// parsed. Omitted entirely when no Measurement ID is configured (preview
+// builds).
+templ AnalyticsScripts(a Analytics) {
+	if a.MeasurementID != "" {
+		@templ.Raw("<script>" + analyticsSnippet(a) + "</script>")
+		<script defer src={ gtagURL(a.MeasurementID) }></script>
 	}
 }

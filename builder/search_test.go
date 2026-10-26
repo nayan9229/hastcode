@@ -172,7 +172,9 @@ func TestSearchPage_LoadsPagefindLazily(t *testing.T) {
 
 	var loader string
 	doc.Find("script").Each(func(_ int, s *goquery.Selection) {
-		if src, ok := s.Attr("src"); ok {
+		// gtag.js (ADR-0008) is the one external script every Production
+		// page carries; nothing else may load up front.
+		if src, ok := s.Attr("src"); ok && src != gtagSrc {
 			t.Errorf("search page loads %s up front; Pagefind must load on first focus", src)
 		}
 		if strings.Contains(s.Text(), "data-pagefind-bundle") {

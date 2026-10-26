@@ -6,7 +6,7 @@
         "formFactor": "mobile",
         "throttlingMethod": "simulate",
         "onlyCategories": ["performance"],
-        "blockedUrlPatterns": ["*plausible.io*", "*googlesyndication.com*", "*doubleclick.net*"]
+        "blockedUrlPatterns": ["*googletagmanager.com*", "*google-analytics.com*", "*googlesyndication.com*", "*doubleclick.net*"]
       }
     },
     "assert": {

@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-10-25
 supersedes: ADR-0003
+amended-by: ADR-0008 (Google Analytics 4 replaces Plausible; the rules for Previews stand)
 ---
 
 # Inline the stylesheet, embed the favicon, keep analytics out of Previews
