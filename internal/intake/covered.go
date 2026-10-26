@@ -1,7 +1,6 @@
 package intake
 
 import (
-	"encoding/json"
 	"errors"
 	"io/fs"
 	"net/url"
@@ -10,6 +9,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"hastcode.com/site/internal/content"
 )
 
 // pieceDirs are the content directories holding Pieces: Explainers (Repo
@@ -19,8 +20,10 @@ var pieceDirs = []string{"explainers", "briefs"}
 
 // coveredLinks reads the content tree and returns the normalised link of
 // every page a Piece already cites: each URL in a Piece's Markdown (its
-// frontmatter Sources and its body) and each of a Fact Pack's Sources.
-// It only reads; Intake never writes under the content tree. No content
+// frontmatter Sources and its body) and each of the Sources of the Fact
+// Pack beside it (content.FactPackFile), if any. A Fact Pack that does not
+// parse is logged and skipped (the build reports it, rule fact-pack); any
+// other JSON file is not read. It only reads the content tree. No content
 // tree covers nothing.
 func (in *Intake) coveredLinks() (map[string]bool, error) {
 	covered := map[string]bool{}
@@ -32,20 +35,18 @@ func (in *Intake) coveredLinks() (map[string]bool, error) {
 			if errors.Is(err, fs.ErrNotExist) && d == nil {
 				return fs.SkipDir
 			}
-			if err != nil || d.IsDir() {
+			if err != nil || d.IsDir() || filepath.Ext(file) != ".md" {
 				return err
 			}
-			var links []string
-			switch filepath.Ext(file) {
-			case ".md":
-				links, err = markdownLinks(file)
-			case ".json":
-				links, err = factPackSources(file)
-			}
+			links, err := markdownLinks(file)
 			if err != nil {
 				return err
 			}
-			for _, link := range links {
+			factPackLinks, err := in.factPackSources(content.FactPackFile(file))
+			if err != nil {
+				return err
+			}
+			for _, link := range append(links, factPackLinks...) {
 				covered[normaliseLink(link)] = true
 			}
 			return nil
@@ -76,25 +77,30 @@ func markdownLinks(file string) ([]string, error) {
 	return links, nil
 }
 
-// factPackSources are a Fact Pack's Sources (merged into its Repo
-// Profile's). A JSON file that is not a Fact Pack yields none.
-func factPackSources(file string) ([]string, error) {
+// factPackSources are the Sources of the Fact Pack file (merged into its
+// Repo Profile's), none when there is no such file. One that does not
+// parse is logged and skipped.
+func (in *Intake) factPackSources(file string) ([]string, error) {
 	data, err := os.ReadFile(file)
+	if errors.Is(err, fs.ErrNotExist) {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	var pack struct {
-		Sources []string `json:"sources"`
-	}
-	if json.Unmarshal(data, &pack) != nil {
+	pack, err := content.ParseFactPack(data)
+	if err != nil {
+		in.logf("covered: skipping %s: %v", file, err)
 		return nil, nil
 	}
 	return pack.Sources, nil
 }
 
 // trackingParams are query parameters that name where a reader came from,
-// not which page: utm_* and these.
-var trackingParams = []string{"fbclid", "gclid", "mc_cid", "mc_eid", "ref", "source"}
+// not which page: utm_* and these. `source` is one only as source=rss
+// (Medium-hosted feeds tag their links so); any other value is kept, as it
+// may select the page.
+var trackingParams = []string{"fbclid", "gclid", "mc_cid", "mc_eid", "ref"}
 
 // normaliseLink is the form two links to the same page share: http and
 // https alike, host lower-case without "www." or a default port, no
@@ -110,8 +116,10 @@ func normaliseLink(link string) string {
 		host += ":" + port
 	}
 	q := u.Query()
-	for k := range q {
-		if strings.HasPrefix(strings.ToLower(k), "utm_") || slices.Contains(trackingParams, strings.ToLower(k)) {
+	for k, v := range q {
+		key := strings.ToLower(k)
+		feedTag := key == "source" && len(v) == 1 && strings.EqualFold(v[0], "rss")
+		if strings.HasPrefix(key, "utm_") || slices.Contains(trackingParams, key) || feedTag {
 			q.Del(k)
 		}
 	}

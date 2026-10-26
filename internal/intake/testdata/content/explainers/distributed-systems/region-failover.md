@@ -11,5 +11,7 @@ sources:
 
 Covers the region outage through its Sources entry: a different scheme,
 host case, `www.`, trailing slash, tracking parameters and fragment from the
-Lead's link. A near miss that must not count:
-[five years later](https://engineering.example.com/posts/raft-five-years-later).
+Lead's link. Near misses that must not count: another page,
+[five years later](https://engineering.example.com/posts/raft-five-years-later),
+and the same path with a `source` that is not `rss` (it may name a page),
+[the archive copy](https://engineering.example.com/posts/raft-five-years?source=archive).

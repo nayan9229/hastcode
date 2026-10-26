@@ -1,8 +1,10 @@
 package intake_test
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -22,8 +24,8 @@ func TestRun_MarksLeadsAPieceAlreadyCitesAsCovered(t *testing.T) {
 
 	want := map[string]bool{
 		"How we lost a region for 40 minutes": true,  // Sources entry, normalised
-		"Raft in production: five years on":   false, // only a near miss and a page cite it
-		"Inside the write-ahead log":          true,  // a Brief's body
+		"Raft in production: five years on":   false, // only near misses (one ?source=archive) and a page cite it
+		"Inside the write-ahead log":          true,  // a Brief's body, with ?source=rss (a feed's tag, dropped)
 		"Why our B-tree pages are 8 KiB":      true,  // a Fact Pack's Sources
 	}
 	if len(got) != len(want) {
@@ -39,6 +41,38 @@ func TestRun_MarksLeadsAPieceAlreadyCitesAsCovered(t *testing.T) {
 	}
 	if after := filesUnder(t, fixtureContent); !slices.Equal(before, after) {
 		t.Errorf("content tree changed by a run:\nbefore %q\n after %q", before, after)
+	}
+}
+
+func TestRun_SkipsABrokenFactPackWithALogLine(t *testing.T) {
+	feeds := newFeedServer(t)
+	contentDir := t.TempDir()
+	dir := filepath.Join(contentDir, "explainers", "databases-storage")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for name, body := range map[string]string{
+		"example-db.md":   "---\ntitle: example/db\nkind: repo-profile\n---\n",
+		"example-db.json": `{"slug": "example/db", "sources": ["https://db.example.org/blog/btree-pages"], "stray": 1}`,
+		// Not a Fact Pack (no Markdown beside it): never read as one.
+		"notes.json": `{"sources": ["https://db.example.org/blog/wal"]}`,
+	} {
+		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	in := newIntake(t, exampleWatchlist(t, feeds))
+	in.ContentDir = contentDir
+	var log strings.Builder
+	in.Log = &log
+
+	for _, l := range readQueueAfterRun(t, in) {
+		if l.Covered {
+			t.Errorf("%q marked covered by a broken Fact Pack or a stray JSON file", l.Title)
+		}
+	}
+	if !strings.Contains(log.String(), "example-db.json") {
+		t.Errorf("log does not name the skipped Fact Pack:\n%s", log.String())
 	}
 }
 

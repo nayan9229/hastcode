@@ -791,12 +791,15 @@ week.
 **Covered Leads**: a run reads (never writes) the content tree's Pieces,
 `content/explainers/` and `content/briefs/`, drafts included, and collects
 every link they cite: each URL in a Piece's Markdown (frontmatter `sources`
-and body) and each of a Fact Pack's `sources`. A Lead whose link matches one
-is marked `· covered` at the end of its queue line, so the same story is not
-written twice. Links match after normalising: `http` and `https` alike, host
-lower-case without `www.` or a default port, no `#fragment`, no tracking
-parameters (`utm_*`, `fbclid`, `gclid`, `mc_cid`, `mc_eid`, `ref`,
-`source`), the rest of the query sorted, no trailing slash. Pages
+and body) and each of the `sources` of the Fact Pack beside it (parsed as
+the build does; one that does not parse is logged and skipped, and no other
+JSON file is read). A Lead whose link matches one is marked `· covered` at
+the end of its queue line, so the same source page is not written up twice.
+Links match after normalising: `http` and `https` alike, host lower-case
+without `www.` or a default port, no `#fragment`, no tracking parameters
+(`utm_*`, `fbclid`, `gclid`, `mc_cid`, `mc_eid`, `ref`, and `source=rss`,
+which Medium-hosted feeds append; any other `source` value is kept, as it
+may select the page), the rest of the query sorted, no trailing slash. Pages
 (`content/pages/`) are not Pieces and cover nothing.
 
 **The run summary** prints the new and open counts and the queue's path,

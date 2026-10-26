@@ -1,4 +1,4 @@
 {
-  "repo": "example/db",
+  "slug": "example/db",
   "sources": ["https://db.example.org/blog/btree-pages"]
 }
