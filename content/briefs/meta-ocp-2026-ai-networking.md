@@ -1,11 +1,10 @@
 ---
 # Skeleton from Lead fd3v3vtj (Meta Engineering, ML Applications), picked 2026-10-27.
-# Follow docs/editorial/brief-writing-guide.md and replace every
-# TODO(author) line. published is the pick time, provisional: set it
-# when you publish. verified: is the Author's alone (ADR-0007).
-title: "Meta Networking at the 2026 OCP Global Summit: Open Innovation for Scale-Up, Scale-Out, and Scale-Across AI Networks"
-description: "TODO(author): one sentence, 150 characters at most: what happened and the lesson."
-tags: ["TODO(author): two to four lower-case tags"]
+# Follow docs/editorial/brief-writing-guide.md. published is the pick time,
+# provisional: set it when you publish. verified: is the Author's alone (ADR-0007).
+title: "Meta's OCP 2026 networking: three fabrics for three kinds of traffic"
+description: "At the 2026 OCP Global Summit, Meta showed separate scale-up, scale-out and scale-across networks, each built for the traffic it carries."
+tags: [datacenter-networking, ai-infrastructure, ethernet, meta]
 published: "2026-10-27T17:47:56Z"
 author: mira-vance
 source_url: "https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/"
@@ -16,7 +15,7 @@ explainers: [meta-prometheus-supercluster]
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-# sources: [{title: "The page's title", url: "https://example.com/page"}]
+sources: [{title: "Inside Prometheus: Meta's Journey to a Gigawatt-Scale Supercluster", url: "https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/"}]
 draft: true
 ---
 
@@ -24,8 +23,8 @@ draft: true
 
 ## What happened
 
-TODO(author): the facts in our own words, each linked to the Source: who, what, when (with time zone). One short credited quote at most, only where the exact words matter.
+On 26 October, Meta [published the slides and videos](https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/) of its networking talks at the 2026 OCP Global Summit. For scale-up inside the rack, it showed Tahan, an Ethernet switch for its MTIA 300 system. For scale-out, its Flattened Planar Fabric connects each GPU to eight network planes and flattens a three-tier Clos to two. For scale-across, its BAG super-spine joins buildings, campuses and regions. Its MetaRoCE RDMA transport is going open source.
 
 ## Why it matters
 
-TODO(author): our own analysis, never the Source restated: the architectural cause, the lesson for a Reader's systems, and a link to the Explainer that teaches it, as [the idea](meta-prometheus-supercluster). Say "we infer" for anything the Source does not state.
+We infer that Meta runs three networks, not one, because training traffic is not uniform; the talks post does not say so. Meta's [Prometheus post](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/) says latency- and bandwidth-sensitive operations concentrate within a model replica, while traffic between replicas tolerates more latency. On our reading, that lets each tier trade bandwidth against distance differently: densest in the rack, flatter across a building, longest between sites. The [MetaRoCE talk](https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/) shows the stakes: collective operations run only as fast as the slowest node. Our Case Study on [Prometheus](meta-prometheus-supercluster) walks through each tier and its cost. For your own systems, map where traffic actually flows first, then spend on the hot paths and oversubscribe the cold ones.
