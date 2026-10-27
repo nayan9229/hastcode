@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-10-26
+amended: 2026-10-27 (the daily cap moves from picking to Publishing; drafts come in Author-approved waves)
 ---
 
 # Content intake produces Leads, not Pieces
@@ -8,7 +9,7 @@ date: 2026-10-26
 HastCode needs a steady supply of Case Studies, Concepts, Comparisons and Briefs to reach the launch gate (ADR-0001: ≥30 Explainers across all six Verticals, ≥20 Briefs) and then sustain 5 Explainers and 5 Briefs a week. Research (`docs/research/content-source-intake.md`) found supply is not the limit: 77 verified first-party feeds produced ~1,700 items in 90 days. The limits are Google's spam policies, which name "scraping feeds … to generate many pages" and say "attribution … doesn't replace the need for original effort", copyright on diagrams, and the Author's verification time. We decided:
 
 - **Intake lists Leads; it never writes a Piece.** A local `make intake` checks the committed **Source Watchlist** (`sources.yaml`: 6 Sources per Vertical plus 11 incident feeds to start, each with a default Vertical and kind) with conditional GETs, and GitHub releases through the REST API with the existing token. It lists new Leads with the Source's suggested kind and Vertical; no AI classification. The Lead queue and seen-state are local and gitignored.
-- **The Author picks; drafting is a separate step.** `make lead ID=…` writes a draft skeleton (frontmatter, Source link, the kind's empty headings, no prose); a Claude session drafts into it with the house-byline voice guide and the kind's writing guide. At most two Leads a day are picked; undecided Leads dismiss after 7 days.
+- **The Author picks; drafting is a separate step.** `make lead ID=…` writes a draft skeleton (frontmatter, Source link, the kind's empty headings, no prose); a Claude session drafts into it with the house-byline voice guide and the kind's writing guide. Undecided Leads dismiss after 7 days. *Amended 2026-10-27:* the cap of two a day applies to **Publishing**, not picking: at most two Pieces drawn from Leads are Published a day. Drafts are private, and the spam-policy risk this cap guards against starts only when a Piece goes live. Picking and drafting run in waves the Author approves pick by pick, every draft stays `draft: true`, and Publish still waits on the Author's `verified:` date. The first wave was agreed on 2026-10-27; its picks wait on the Author.
 - **Briefs come from Leads at most 3 days old**, and stand on their "why it matters" analysis, never on the Source's summary.
 - **Diagrams are always redrawn** in Mermaid from the facts, with the original linked; a Source's images are never copied.
 - **Nothing ships unverified.** Production builds require `verified: <date>` on every non-draft Piece published after 2026-10-26. Only the Author sets it, after checking every claim against its Source; an agent never does (CLAUDE.md). The ten earlier Repo Profiles are outside the date rule until the review queue is cleared.
