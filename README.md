@@ -879,7 +879,8 @@ as an Explainer. The skeleton builds in preview (`make dev`) with one
 while it is a draft and fails on any `TODO(author)` once it is not.
 
 **The daily rhythm**: run `make intake` each morning, read the queue, pick
-at most two Leads (`make lead`), and dismiss the rest you will not write
+Leads (`make lead`; drafts come in waves the Author approves, and at most
+two Pieces from Leads are Published a day, ADR-0007 as amended), and dismiss the rest you will not write
 (`make lead-dismiss`); what is left open expires after 7 days. **The
 planned pace** is 5 Explainers a week (2 Case Studies, 2 Concepts, 1
 Comparison) and 5 Briefs a week, with every Vertical getting a new
