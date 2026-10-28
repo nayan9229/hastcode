@@ -7,9 +7,9 @@ description: "Expert parallelism serves mixture-of-experts models by spreading w
 kind: concept
 vertical: ai-ml-systems
 tags: ["expert-parallelism", "mixture-of-experts", "llm-inference", "gpu", "load-balancing"]
-published: "2026-10-27T17:47:17Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:17Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

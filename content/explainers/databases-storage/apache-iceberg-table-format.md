@@ -7,9 +7,9 @@ description: "An open table format such as Apache Iceberg turns immutable files 
 kind: concept
 vertical: databases-storage
 tags: ["iceberg", "open-table-formats", "object-storage", "snapshots", "parquet"]
-published: "2026-10-27T17:47:18Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:18Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

@@ -8,9 +8,9 @@ description: "How Meta's Prometheus trains on hundreds of thousands of GPUs acro
 kind: case-study
 vertical: ai-ml-systems
 tags: ["ai-infrastructure", "gpu-clusters", "datacenter-networking", "reliability", "meta"]
-published: "2026-10-27T17:47:14Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:14Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

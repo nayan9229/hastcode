@@ -8,9 +8,9 @@ description: "How Meta's thin orchestrator routes agent work by fixed rules to 1
 kind: case-study
 vertical: ai-ml-systems
 tags: ["ai-agents", "llm", "orchestration", "context-engineering", "meta"]
-published: "2026-10-27T17:47:15Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:15Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

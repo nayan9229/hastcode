@@ -8,9 +8,9 @@ description: "How Cloudflare Hyperdrive pools and caches MySQL for Workers, and 
 kind: case-study
 vertical: apis-networking
 tags: ["mysql", "connection-pooling", "caching", "wire-protocol", "cloudflare"]
-published: "2026-10-27T17:47:15Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:15Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

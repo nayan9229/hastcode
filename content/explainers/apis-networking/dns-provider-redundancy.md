@@ -8,9 +8,9 @@ description: "One DNS provider, a primary with a secondary, or two primaries: ho
 kind: comparison
 vertical: apis-networking
 tags: ["dns", "zone-transfer", "dnssec", "multi-provider", "resilience"]
-published: "2026-10-27T17:47:20Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:20Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

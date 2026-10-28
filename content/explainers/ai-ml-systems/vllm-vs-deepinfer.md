@@ -8,9 +8,9 @@ description: "vLLM and DeepInfer both serve DeepSeek-V4.1-Flash: who ran each be
 kind: comparison
 vertical: ai-ml-systems
 tags: ["llm-inference", "vllm", "mixture-of-experts", "expert-parallelism", "gpu-serving"]
-published: "2026-10-27T17:47:19Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:19Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

@@ -8,9 +8,9 @@ description: "How GitHub's Spokes narrows its write lock from a repository to on
 kind: case-study
 vertical: infrastructure-cloud
 tags: ["git", "replication", "quorum", "object-storage", "github"]
-published: "2026-10-27T17:47:16Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:16Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

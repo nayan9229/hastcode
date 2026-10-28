@@ -8,9 +8,9 @@ description: "How Netflix's TimeSeries tiers old data by reading Cassandra's own
 kind: case-study
 vertical: databases-storage
 tags: ["cassandra", "tiered-storage", "s3", "time-series", "netflix"]
-published: "2026-10-27T17:47:15Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:15Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

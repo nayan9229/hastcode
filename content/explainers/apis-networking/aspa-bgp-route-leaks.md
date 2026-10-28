@@ -8,9 +8,9 @@ description: "ASPA lets a network sign the list of its transit providers, so rou
 kind: concept
 vertical: apis-networking
 tags: ["bgp", "rpki", "aspa", "route-leaks", "routing-security"]
-published: "2026-10-27T17:47:18Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:18Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

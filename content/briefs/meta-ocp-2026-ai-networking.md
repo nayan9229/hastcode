@@ -5,7 +5,7 @@
 title: "Meta's OCP 2026 networking: three fabrics for three kinds of traffic"
 description: "At the 2026 OCP Global Summit, Meta showed separate scale-up, scale-out and scale-across networks, each built for the traffic it carries."
 tags: [datacenter-networking, ai-infrastructure, ethernet, meta]
-published: "2026-10-27T17:47:56Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
 author: mira-vance
 source_url: "https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/"

@@ -8,9 +8,9 @@ description: "How Fly.io's Sprites Block Device turns a bucket into a Linux disk
 kind: case-study
 vertical: infrastructure-cloud
 tags: ["storage", "object-storage", "block-devices", "filesystems", "fly-io"]
-published: "2026-10-27T17:47:16Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:16Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

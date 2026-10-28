@@ -7,9 +7,9 @@ description: "Kueue keeps a Kubernetes Job suspended until its whole request fit
 kind: concept
 vertical: infrastructure-cloud
 tags: ["kubernetes", "kueue", "batch", "quota", "scheduling"]
-published: "2026-10-27T17:47:19Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:19Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.

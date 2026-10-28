@@ -7,9 +7,9 @@ description: "Off-heap memory keeps Java data outside the garbage-collected heap
 kind: concept
 vertical: languages-runtimes
 tags: ["java", "off-heap-memory", "ffm-api", "memory-management", "native-interop"]
-published: "2026-10-27T17:47:17Z"
+published: "2026-10-28T12:54:21Z"
 verified: 2026-10-28
-reviewed: "2026-10-27T17:47:17Z"
+reviewed: "2026-10-28T12:54:21Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
