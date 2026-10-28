@@ -9,6 +9,7 @@ kind: case-study
 vertical: ai-ml-systems
 tags: ["ai-agents", "llm", "orchestration", "context-engineering", "meta"]
 published: "2026-10-27T17:47:15Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:15Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 The orchestrator in charge of Meta's data-pipeline agents is [1,300 lines long, routes more than 20 workflows to 14 specialised AI agents, and "performs zero domain work itself"](https://engineering.fb.com/2026/10/19/ml-applications/thin-orchestrator-ai-agent-architecture/). Meta got there by taking knowledge away: its first design was one agent that knew everything, and in production it started to hallucinate.

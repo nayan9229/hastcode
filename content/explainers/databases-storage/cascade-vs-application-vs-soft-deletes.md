@@ -9,6 +9,7 @@ kind: comparison
 vertical: databases-storage
 tags: ["postgresql", "mysql", "foreign-keys", "soft-deletes", "logical-replication"]
 published: "2026-10-27T17:47:19Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:19Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 In a scenario PlanetScale's Tom Pang walks through ("Then one day, you get paged"), a schema change that adds one nullable column leaves nearly all writes to most tables timing out, because the `ALTER TABLE` is [stuck behind a very large `ON DELETE CASCADE`](https://planetscale.com/blog/i-dont-like-delete-cascade#cascade-plus-migration-equals-outage) and new queries pile up behind the `ALTER TABLE`. In larger environments, the same post says, PlanetScale has seen "hundreds of gigabytes of WAL written by a single transaction." The delete was one line of SQL. The question is who removes the rows that point at it: the database through a cascade, your application through explicit deletes, or nobody yet, through a soft delete. We answer the same four questions for all three, from the PostgreSQL and MySQL documentation and PlanetScale's own posts.

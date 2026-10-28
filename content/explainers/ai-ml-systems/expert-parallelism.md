@@ -8,6 +8,7 @@ kind: concept
 vertical: ai-ml-systems
 tags: ["expert-parallelism", "mixture-of-experts", "llm-inference", "gpu", "load-balancing"]
 published: "2026-10-27T17:47:17Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:17Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 On 19 October 2026, the vLLM team put a number on what it costs to add four GPUs to a running model. Restarting vLLM to scale DeepSeek V4 Pro ["from 16 to 20 GB200 GPUs stopped serving for 197 seconds"](https://vllm.ai/blog/2026-10-19-elastic-ep-near-zero-downtime). The project's [first version of Elastic Expert Parallelism](https://vllm.ai/blog/2026-05-14-elastic-expert-parallelism), from May, avoided the restart, yet still [paused serving for 100 seconds scaling up and 56 seconds scaling back down](https://vllm.ai/blog/2026-10-19-elastic-ep-near-zero-downtime). The new version cut the pause to [0.82 seconds up and 1.96 seconds down](https://vllm.ai/blog/2026-10-19-elastic-ep-near-zero-downtime#scale-up-and-scale-down-timings). Why should four new GPUs disturb the sixteen already serving? Because in this deployment no GPU holds the whole model. Each holds a share of the experts, and every token's route through the model depends on who holds which.

@@ -8,6 +8,7 @@ kind: concept
 vertical: ai-ml-systems
 tags: ["llm-inference", "kv-cache", "latency", "gpu", "vllm"]
 published: "2026-10-27T17:47:17Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:17Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 Put a 13-billion-parameter model on one 80 GB NVIDIA A100, ask that 90% of requests meet both a first-token deadline and a per-token deadline, and the GPU manages [about 1.6 requests per second](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf). The DistServe team at Peking University, UC San Diego and StepFun measured that, then split the work. A GPU doing only the first phase of each request reached [5.6 requests per second, and one doing only the second reached 10](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf). Two GPUs on the first phase and one on the second would, ideally, serve 10 requests per second: [3.3 per GPU, 2.1 times](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf) what the shared GPU managed. The model was the same and so was the hardware. The two halves of every request had been getting in each other's way.

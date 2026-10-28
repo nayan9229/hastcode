@@ -6,6 +6,7 @@ title: "Meta's OCP 2026 networking: three fabrics for three kinds of traffic"
 description: "At the 2026 OCP Global Summit, Meta showed separate scale-up, scale-out and scale-across networks, each built for the traffic it carries."
 tags: [datacenter-networking, ai-infrastructure, ethernet, meta]
 published: "2026-10-27T17:47:56Z"
+verified: 2026-10-28
 author: mira-vance
 source_url: "https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/"
 explainers: [meta-prometheus-supercluster]
@@ -16,7 +17,6 @@ explainers: [meta-prometheus-supercluster]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "Inside Prometheus: Meta's Journey to a Gigawatt-Scale Supercluster", url: "https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

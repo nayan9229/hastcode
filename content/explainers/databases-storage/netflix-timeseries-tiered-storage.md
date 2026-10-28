@@ -9,6 +9,7 @@ kind: case-study
 vertical: databases-storage
 tags: ["cassandra", "tiered-storage", "s3", "time-series", "netflix"]
 published: "2026-10-27T17:47:15Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:15Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Netflix's TimeSeries Abstraction now keeps [over 15 PB of compressed data in Cassandra cold storage](https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60), and a chart of the rollout shows disk usage falling [from 80% to 7%](https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60). The cold tier is not a new copy of the data. Cassandra reads it straight out of the disaster-recovery backups Netflix was already writing to S3.

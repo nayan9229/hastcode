@@ -8,6 +8,7 @@ kind: concept
 vertical: distributed-systems
 tags: ["latency", "percentiles", "histograms", "observability", "benchmarking"]
 published: "2026-10-27T17:47:18Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:18Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [metastable-failures]
-draft: true
 ---
 
 In a 30-second benchmark against a local Apache server, Gil Tene [suspended the server for 1.4 seconds](https://github.com/giltene/wrk2/blob/master/README.md) by pressing ^Z on its process. His load generator, wrk2, sent 2,000 requests per second throughout and recorded every response in two histograms. Measured the way many load generators do, from the moment each request was actually sent, the run had a median of 3.02 ms, a 99th percentile of 6.04 ms and a mean of 6.588 ms. Measured from the moment each request [should have been sent](https://github.com/giltene/wrk2/blob/master/README.md), the same run had a median of 8.61 ms, a 99th percentile of 1.27 s and a mean of 63.66 ms. Tene's README calls that 99th percentile ["200x (!!!) larger"](https://github.com/giltene/wrk2/blob/master/README.md). Same server, same requests, same data structure underneath both columns: an HdrHistogram. On 26 October 2026, PostgreSQL's news page announced [pg_hdr_histogram 1.0.0](https://www.postgresql.org/about/news/pg_hdr_histogram-100-exact-percentiles-in-postgresql-3418/), which puts that data structure in a database column.

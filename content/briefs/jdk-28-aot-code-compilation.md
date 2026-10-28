@@ -7,6 +7,7 @@ title: "OpenJDK's JEP 544: cached compiled code, with the JIT as fallback"
 description: "JEP 544, targeted to JDK 28, caches compiled code from a training run. The lesson: ship precomputed work, keep the slow path as the fallback."
 tags: [jvm, aot-compilation, project-leyden, startup]
 published: "2026-10-27T17:47:49Z"
+verified: 2026-10-28
 author: mira-vance
 source_url: "https://inside.java/2026/10/25/jep544-target-jdk28/"
 explainers: [jvm-warmup-and-aot-compilation]
@@ -17,7 +18,6 @@ explainers: [jvm-warmup-and-aot-compilation]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "JEP 544: Ahead-of-Time Code Compilation", url: "https://openjdk.org/jeps/544"}, {title: "JDK 28", url: "https://openjdk.org/projects/jdk/28/"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

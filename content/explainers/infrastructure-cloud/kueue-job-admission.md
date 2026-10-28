@@ -8,6 +8,7 @@ kind: concept
 vertical: infrastructure-cloud
 tags: ["kubernetes", "kueue", "batch", "quota", "scheduling"]
 published: "2026-10-27T17:47:19Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:19Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 In a [walkthrough on the Kubernetes blog](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/), Utkarsh Raj, René Dudfield and Kevin Hannon submit a Job that runs [three Pods with one CPU each](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#step-3-compare-the-workload-s-request-with-its-assignment): three CPUs and 600 MiB of memory in all. The queue it enters offers [two CPUs and two Pod slots](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#step-5-inspect-clusterqueue-capacity-and-usage). Minutes pass. The Job is still suspended, with no application logs and possibly no Pod to inspect. Nothing has failed. Kueue, the controller in front of the Job, has compared the whole request with the queue's quota, found it does not fit, and [kept the Job suspended](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#what-we-learned-without-leaving-headlamp) until quota frees up or the queue changes. The first question, the authors write, is not why the Pod is pending but ["Has Kueue admitted the Workload?"](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/)
@@ -36,7 +36,7 @@ Kueue's documentation defines admission as ["the process of allowing a Workload 
 
 In our words: admission is a gate in front of the job controller. Until a Job passes it, Kubernetes creates no Pods for it, so there is nothing for the scheduler to place. The Lead frames the split as two questions. Kueue asks whether a Workload should start now, ["considering queue policy, quota, ResourceFlavors, admission checks, and other waiting Workloads"](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#first-separate-admission-from-pod-scheduling). The scheduler asks, only after admission, which nodes can run the Pods.
 
-The step at the heart of admission is **quota reservation**: Kueue [locks the resources a Workload needs](https://kueue.sigs.k8s.io/docs/concepts/#quota-reservation) in a ClusterQueue. It is sometimes called workload scheduling, the docs note, but it is not the same thing as Pod scheduling.
+The step at the heart of admission is **quota reservation**: Kueue [locks the resources a Workload needs](https://kueue.sigs.k8s.io/docs/concepts/#quota-reservation) in a ClusterQueue.
 
 What does not count: a Pod stuck in `Pending` after its Workload was admitted. That Pod is waiting on node capacity, affinity, taints, volumes or an image pull, which the Lead assigns to the [scheduling branch of the investigation](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#if-the-workload-is-admitted-switch-views), not to Kueue.
 
@@ -50,28 +50,26 @@ Kueue adds a small set of APIs. Each is defined in its own docs:
 - A **ResourceFlavor** represents [a variation of a resource](https://kueue.sigs.k8s.io/docs/concepts/resource_flavor/), such as spot versus on-demand machines or different GPU models, tied to nodes through labels, taints and tolerations.
 - A **Cohort** is [a group of ClusterQueues that can borrow unused quota](https://kueue.sigs.k8s.io/docs/concepts/#cohort) from each other.
 
-Most of Kueue's operations [centre on the ClusterQueue](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#resource-model); the ResourceFlavor and LocalQueue are mainly organisational wrappers.
-
 ## The admission path, from suspended Job to running Pods
 
 ```mermaid
 %% title: Kueue admission: a suspended Job waits until its whole request fits quota
 flowchart TD
-  J["Job sent to a LocalQueue, kept suspended"] --> W["Workload: sum of all Pod requests"]
-  W --> F{"Fits ClusterQueue quota, or can borrow from the Cohort?"}
+  J["Job in a LocalQueue, suspended"] --> W["Workload: sum of Pod requests"]
+  W --> F{"Fits quota, or can borrow from Cohort?"}
   F -->|"no"| P["QuotaReserved False: Pending"]
   P -->|"quota frees up"| F
   F -->|"yes"| R["Quota reserved"]
   R --> C{"Admission checks Ready?"}
   C -->|"yes"| A["Admitted: Job unsuspended"]
-  A --> K["Job controller creates Pods; kube-scheduler places them"]
+  A --> K["Pods created; kube-scheduler places them"]
 ```
 
 Walk it with the Lead's numbers. A Job names its LocalQueue with the [`kueue.x-k8s.io/queue-name` label](https://kueue.sigs.k8s.io/docs/tasks/run/jobs/#1-define-the-job); it need not be created suspended, because Kueue manages suspension through a webhook. Kueue creates a Workload and totals its request as [each Pod's requests multiplied by the Pod count](https://kueue.sigs.k8s.io/docs/concepts/workload/#resource-requests). The Lead's Job has [`parallelism: 3`](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#step-3-compare-the-workload-s-request-with-its-assignment) and one CPU per Pod, so it asks for three Pods, three CPUs and 600 MiB.
 
 The ClusterQueue then tries its flavors in order and assigns [the first with enough unused nominal quota](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#flavors-and-resources) in the ClusterQueue or its Cohort. The Lead's queue has two CPUs and two Pod slots. Three does not fit two, so the Workload takes the "no" branch, and the Job stays suspended.
 
-Had it fit, Kueue would reserve the quota, wait for [every admission check to report Ready](https://kueue.sigs.k8s.io/docs/concepts/admission/), and admit. In the 2022 post's example, admission is a [single update to the Job](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#example-use-case): `.spec.suspend` becomes false, and the chosen flavor's labels are added to the Pod template's `nodeSelector`. The current docs add that Kueue also adds the flavor's [tolerations](https://kueue.sigs.k8s.io/docs/concepts/resource_flavor/#resourceflavor-tolerations-for-automatic-scheduling) once the Workload is admitted. From there the job controller and kube-scheduler work as they always do.
+Had it fit, Kueue would reserve the quota, wait for [every admission check to report Ready](https://kueue.sigs.k8s.io/docs/concepts/admission/), and admit. In the 2022 post's example, admission is a [single update to the Job](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#example-use-case): `.spec.suspend` becomes false, and the chosen flavor's labels are added to the Pod template's `nodeSelector`.
 
 ## Why is my Job still pending? The Workload's conditions say
 
@@ -86,7 +84,7 @@ Kueue's troubleshooting guide starts where the Lead does: [look at the Workload 
 
 ## Where admission shows up: Ray, Kubeflow, autoscaled GPUs and many clusters
 
-Admission is not only for `batch/v1` Jobs. Kueue's overview lists [built-in integrations](https://kueue.sigs.k8s.io/docs/overview/#in-tree-integrations) for JobSet, Kubeflow training jobs, RayJob and RayCluster, plain Pods and Pod groups, and serving workloads such as Deployments and StatefulSets. Any other job API can take part by [creating a Workload for itself](https://kueue.sigs.k8s.io/docs/concepts/workload/#custom-workloads); the 2022 post names the two things such an API must offer, [a suspend field and mutable scheduling directives](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#overview).
+Admission is not only for `batch/v1` Jobs. Kueue's overview lists [built-in integrations](https://kueue.sigs.k8s.io/docs/overview/#in-tree-integrations) for JobSet, Kubeflow training jobs, RayJob and RayCluster, plain Pods and Pod groups, and serving workloads such as Deployments and StatefulSets. Any other job API can take part by [creating a Workload for itself](https://kueue.sigs.k8s.io/docs/concepts/workload/#custom-workloads).
 
 Quota is a logical count, and the [ProvisioningRequest admission check](https://kueue.sigs.k8s.io/docs/concepts/admission_check/provisioning_request/) adds a physical one through cluster-autoscaler. The docs walk a training job that needs 16 GPUs. The ClusterQueue has 32 GPUs of quota, so Kueue reserves 16, then creates a ProvisioningRequest. Cluster-autoscaler scales up four nodes with four GPUs each and reports `Provisioned=true`; Kueue marks the check Ready and admits the Workload, and the docs' outcome is that the job ["starts immediately with all 16 GPUs available"](https://kueue.sigs.k8s.io/docs/concepts/admission_check/provisioning_request/).
 
@@ -94,9 +92,9 @@ Quota is a logical count, and the [ProvisioningRequest admission check](https://
 
 ## Why plain Kubernetes needed a queue in front of the job controller
 
-The default behaviour is reasonable on a quiet cluster. Once a Job is created, explain Abdullah Gharaibeh and Aldo Culquicondor of Google in the 2022 post that introduced Kueue, ["the job-controller instantly creates the pods and kube-scheduler continuously attempts to assign the pods to nodes"](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue). With spare nodes, that is the fastest path to a running Job. At scale, the authors write, it ["can work the control plane to death"](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue), and there is no way to say which jobs get resources first, in what order, or how to share fairly.
+The default behaviour is reasonable on a quiet cluster. Once a Job is created, explain Abdullah Gharaibeh and Aldo Culquicondor of Google in the 2022 post that introduced Kueue, ["the job-controller instantly creates the pods and kube-scheduler continuously attempts to assign the pods to nodes"](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue). At scale, the authors write, it ["can work the control plane to death"](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue), and there is no way to say which jobs get resources first, in what order, or how to share fairly.
 
-The built-in tool for sharing, ResourceQuota, works at the wrong moment for this. It limits [aggregate consumption per namespace](https://kubernetes.io/docs/concepts/policy/resource-quotas/), and a create or update that would exceed it is [rejected with HTTP 403 Forbidden](https://kubernetes.io/docs/concepts/policy/resource-quotas/#how-kubernetes-resourcequotas-work). The Kueue authors' summary: quotas are [enforced on resource creation, and there is no queueing](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue) of requests.
+The built-in tool for sharing, ResourceQuota, works at the wrong moment for this. It limits [aggregate consumption per namespace](https://kubernetes.io/docs/concepts/policy/resource-quotas/), and a create or update that would exceed it is [rejected with HTTP 403 Forbidden](https://kubernetes.io/docs/concepts/policy/resource-quotas/#how-kubernetes-resourcequotas-work).
 
 The other way out, a separate batch scheduler, could [replace kube-scheduler or the job controller](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#why-kueue), which the authors saw as an operational burden and a source of fragmented job APIs. So Kueue's design principle is to [avoid duplicating mature components](https://kueue.sigs.k8s.io/docs/overview/#why-use-kueue): cluster-autoscaler, kube-scheduler and kube-controller-manager keep autoscaling, Pod placement and job lifecycle. To make that possible, the team [added two knobs to the Job API](https://kubernetes.io/blog/2022/10/04/introducing-kueue/#overview): `suspend`, to say when a Job starts, and mutable scheduling directives, to say where its Pods may go.
 
@@ -114,7 +112,7 @@ The cost is that quota is only an accounting promise. Quota reservation confirms
 
 A ClusterQueue's **nominal quota** is what it owns. In a Cohort, ClusterQueues can [borrow each other's unused nominal quota](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#cohort). The docs' [example](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#borrowing-example) pairs `team-a-cq`, with 9 CPUs, and `team-b-cq`, with 12. While team B has nothing admitted, team A can admit Workloads totalling 12 + 9 = 21 CPUs.
 
-Two limits bound that. A [`borrowingLimit`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#borrowinglimit) of 1 on team A caps it at 9 + 1 = 10 CPUs. A [`lendingLimit`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#lendinglimit) of 1 on team B has the same effect from the lender's side. A Cohort can also hold [its own shared quota](https://kueue.sigs.k8s.io/docs/concepts/cohort/#configuring-quotas), and Cohorts can nest into a tree with [fair-sharing weights](https://kueue.sigs.k8s.io/docs/concepts/cohort/#hierarchical-cohorts): in the docs' example, weights of 0.75 and 0.25 steer two organisations towards 75% and 25% of common resources.
+Two limits bound that. A [`borrowingLimit`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#borrowinglimit) of 1 on team A caps it at 9 + 1 = 10 CPUs. A [`lendingLimit`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#lendinglimit) of 1 on team B has the same effect from the lender's side. A Cohort can also hold [its own shared quota](https://kueue.sigs.k8s.io/docs/concepts/cohort/#configuring-quotas), and Cohorts can nest into a tree with [fair-sharing weights](https://kueue.sigs.k8s.io/docs/concepts/cohort/#hierarchical-cohorts).
 
 Borrowing is not ownership. When team B has pending Workloads and team A has used its nominal quota, Kueue [admits team B's Workloads first](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#borrowing-example). With `reclaimWithinCohort` enabled, a pending Workload can [preempt Workloads in other ClusterQueues](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#preemption) that are using more than their nominal quota. The cost of borrowed capacity is that it can be taken back. One detail catches people out: to borrow a resource, a ClusterQueue [must define nominal quota for it, even if that is 0](https://kueue.sigs.k8s.io/docs/concepts/cohort/#configuring-quotas).
 
@@ -122,7 +120,7 @@ Borrowing is not ownership. When team B has pending Workloads and team A has use
 
 Within a ClusterQueue, Workloads are ordered [by priority, then by creation time](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#queueing-strategy). The strategy decides what happens when the head does not fit. Under `StrictFIFO`, older Workloads that cannot be admitted [block newer ones, even if those fit](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#queueing-strategy). Under `BestEffortFIFO`, the default, they do not. Priority comes from the Job's Pod priority, or from a [WorkloadPriorityClass](https://kueue.sigs.k8s.io/docs/concepts/workload/#priority) that sets queueing priority without touching Pod priority.
 
-Preemption is off unless you enable it. The ClusterQueue's [`withinClusterQueue`, `reclaimWithinCohort` and `borrowWithinCohort`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#preemption) policies all default to `Never`; `LowerPriority` lets a pending Workload evict lower-priority ones. Kueue uses [heuristics to preempt as few Workloads as possible](https://kueue.sigs.k8s.io/docs/concepts/preemption/), and its docs include a [proof that two Workloads cannot keep preempting each other](https://kueue.sigs.k8s.io/docs/concepts/fair_sharing/#proof-that-two-workloads-wont-preempt-each-other) under Fair Sharing.
+Preemption is off unless you enable it. The ClusterQueue's [`withinClusterQueue`, `reclaimWithinCohort` and `borrowWithinCohort`](https://kueue.sigs.k8s.io/docs/concepts/cluster_queue/#preemption) policies all default to `Never`; `LowerPriority` lets a pending Workload evict lower-priority ones. Kueue uses [heuristics to preempt as few Workloads as possible](https://kueue.sigs.k8s.io/docs/concepts/preemption/).
 
 The costs are concrete. `StrictFIFO` trades utilisation for predictable order. Preemption suspends the Job again, and Kubernetes [terminates and deletes its running Pods](https://kueue.sigs.k8s.io/docs/tasks/troubleshooting/troubleshooting_jobs/#is-my-job-suspended). Those Pods get a SIGTERM and their grace period, and they [do not count towards the Job's completions](https://kubernetes.io/docs/concepts/workloads/controllers/job/#suspending-a-job), so a preemptible Job needs to save its progress.
 
@@ -138,7 +136,7 @@ The costs are concrete. `StrictFIFO` trades utilisation for predictable order. P
 
 The first thing it gives you is a rule that splits every investigation in two. The Lead's version: [not admitted, look at Kueue; admitted but Pods `Pending`, look at the Job, Pods, nodes and scheduler](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#if-the-workload-is-admitted-switch-views). A Job with no Pods stops being a mystery and becomes a condition message, a LocalQueue and a ClusterQueue to compare.
 
-The second is a queue you can see into. Kueue's on-demand visibility API, available since v0.6.0, lists pending Workloads with their [position in the ClusterQueue and in the LocalQueue](https://kueue.sigs.k8s.io/docs/tasks/manage/monitor_pending_workloads/pending_workloads_on_demand/#local-queue-visibility-via-kubectl), which the docs say can help users estimate when their jobs will start. The alpha [Kueue plugin for Headlamp](https://github.com/headlamp-k8s/plugins/tree/main/kueue) shows the same objects as linked, read-only pages.
+The second is a queue you can see into. Kueue's on-demand visibility API, available since v0.6.0, lists pending Workloads with their [position in the ClusterQueue and in the LocalQueue](https://kueue.sigs.k8s.io/docs/tasks/manage/monitor_pending_workloads/pending_workloads_on_demand/#local-queue-visibility-via-kubectl), which the docs say can help users estimate when their jobs will start.
 
 You can reproduce the Lead's case on a test cluster. The plugin repository ships [sample Cohort, ClusterQueue, LocalQueue, ResourceFlavor and Job manifests](https://github.com/headlamp-k8s/plugins/tree/main/kueue/test-files/deploy). As the Lead [suggests](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#optional-reproduce-the-pending-scenario), give a ClusterQueue two CPUs and two Pod slots, submit a three-Pod Job with one CPU per Pod, and read the Workload's `QuotaReserved` condition. Kueue keeps the Job suspended [until quota becomes available or the queue configuration changes](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#what-we-learned-without-leaving-headlamp), so we infer that raising both quotas to three would let it start. On a shared cluster, a Job that waits with a clear reason, in a known place in line, is the system working as designed.
 
@@ -156,7 +154,7 @@ You can reproduce the Lead's case on a test cluster. The plugin repository ships
 - Kueue, ["Cohort"](https://kueue.sigs.k8s.io/docs/concepts/cohort/).
 - Kueue, ["Admission Check"](https://kueue.sigs.k8s.io/docs/concepts/admission_check/) and ["ProvisioningRequest"](https://kueue.sigs.k8s.io/docs/concepts/admission_check/provisioning_request/).
 - Kueue, ["MultiKueue"](https://kueue.sigs.k8s.io/docs/concepts/multikueue/).
-- Kueue, ["Preemption"](https://kueue.sigs.k8s.io/docs/concepts/preemption/) and ["Fair Sharing"](https://kueue.sigs.k8s.io/docs/concepts/fair_sharing/).
+- Kueue, ["Preemption"](https://kueue.sigs.k8s.io/docs/concepts/preemption/).
 - Kueue, ["Run A Kubernetes Job"](https://kueue.sigs.k8s.io/docs/tasks/run/jobs/).
 - Kueue, ["Troubleshooting Jobs"](https://kueue.sigs.k8s.io/docs/tasks/troubleshooting/troubleshooting_jobs/) and ["Troubleshooting Queues"](https://kueue.sigs.k8s.io/docs/tasks/troubleshooting/troubleshooting_queues/).
 - Kueue, ["Pending Workloads on-demand"](https://kueue.sigs.k8s.io/docs/tasks/manage/monitor_pending_workloads/pending_workloads_on_demand/).

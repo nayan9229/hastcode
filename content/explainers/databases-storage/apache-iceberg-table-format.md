@@ -8,6 +8,7 @@ kind: concept
 vertical: databases-storage
 tags: ["iceberg", "open-table-formats", "object-storage", "snapshots", "parquet"]
 published: "2026-10-27T17:47:18Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:18Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 In a [walkthrough published on 13 October 2026](https://duckdb.org/2026/10/13/inside-iceberg-table.html), the DuckDB team builds a small Apache Iceberg table of train services and changes it three times: an insert of 9,000 rows, an insert of 3,000 more, and a delete of the [1,000 rows from 2 October that ran four minutes late](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history). A query returns 11,000 rows, as you'd expect. The metadata tells a stranger story. After the delete, the table's own summary still counts [12,000 records in four data files](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-1-the-metadata-file). The delete did not touch a single data file. It wrote one new file listing 1,000 rows to ignore, and a fourth version of the table's metadata. Nothing was changed in place: in the DuckDB team's words, ["Every change writes new files and a new metadata.json, then commits by moving the catalog pointer to it."](https://duckdb.org/2026/10/13/inside-iceberg-table.html#the-tree)
@@ -38,28 +38,26 @@ A few terms, from the [spec's glossary](https://iceberg.apache.org/spec/#terms).
 
 "Open" is about who can read it. The project names Spark, Trino, Flink, Presto, Hive and Impala as engines that can [safely work with the same tables, at the same time](https://iceberg.apache.org/); DuckDB [reads and writes them too](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history).
 
-A folder of Parquet files partitioned by directory name is not a table format: the file listing is the state, the Hive-style design whose [correctness problems Iceberg was designed to solve](https://iceberg.apache.org/docs/latest/reliability/).
-
 ## The tree, from catalog pointer to Parquet file
 
 ```mermaid
 %% title: Inside the DuckDB example table after three commits: one pointer, then a tree of immutable files
 flowchart TD
-  C["Catalog: pointer to current metadata file"] --> M["Metadata file 00003 (JSON): schema, partition spec, 3 snapshots"]
-  M --> S["Current snapshot, sequence 3"]
-  S --> L["Manifest list (Avro): one per snapshot"]
-  L --> D1["Data manifest, seq 1: 3 files, 9,000 rows"]
-  L --> D2["Data manifest, seq 2: 1 file, 3,000 rows"]
-  L --> X["Delete manifest, seq 3: 1 file, 1,000 rows"]
-  D1 --> P1["Parquet data files for 1, 2 and 3 Oct"]
-  D2 --> P2["Parquet data file for 4 Oct"]
-  X --> PD["Position delete file, 2 Oct"]
-  PD -. "skip these row positions in the 2 Oct file" .-> P1
+  C["Catalog: current pointer"] --> M["Metadata 00003 (JSON): 3 snapshots"]
+  M --> S["Current snapshot, seq 3"]
+  S --> L["Manifest list (Avro)"]
+  L --> D1["Data manifest, seq 1: 3 files"]
+  L --> D2["Data manifest, seq 2: 1 file"]
+  L --> X["Delete manifest, seq 3: 1 file"]
+  D1 --> P1["Parquet, 1-3 Oct"]
+  D2 --> P2["Parquet, 4 Oct"]
+  X --> PD["Position deletes, 2 Oct"]
+  PD -. "skip rows" .-> P1
 ```
 
 Walk it from the top. The catalog stores [a single pointer per table](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-1-the-metadata-file). In the DuckDB example it names `00003-b79b5ffd-….metadata.json`, the fourth version, counting from `00000` at creation.
 
-The metadata file is JSON. Besides the schema and partition spec, it lists [every snapshot that is still around](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-1-the-metadata-file): here format version 2, three snapshots and three earlier metadata files in its log. Each snapshot carries a summary. Snapshot 1 added 9,000 records in three data files; snapshot 2 took the total to 12,000 in four; snapshot 3 added 1,000 position deletes and one delete file, and left the total at 12,000.
+The metadata file is JSON. Besides the schema and partition spec, it lists [every snapshot that is still around](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-1-the-metadata-file): here format version 2, three snapshots and three earlier metadata files in its log.
 
 Snapshot 3 points to a manifest list naming [three manifests](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-2-the-manifest-list): two for data files and one for delete files. The two older ones are reused, not rewritten, as the spec intends: manifests are ["reused across snapshots"](https://iceberg.apache.org/spec/#overview).
 
@@ -81,22 +79,22 @@ sequenceDiagram
   participant A as Writer A
   participant B as Writer B
   participant C as Catalog
-  A->>C: Load table, current is v2
-  B->>C: Load table, current is v2
-  A->>A: Write data files, manifests, manifest list, metadata
-  B->>B: Write its own files and metadata
-  A->>C: Swap pointer from v2 to v3
-  C-->>A: Committed, v3 is current
-  B->>C: Swap pointer from v2 to v3
-  C-->>B: Rejected, v2 is no longer current
-  B->>B: Check its assumptions still hold on v3
-  B->>C: Swap pointer from v3 to v4
+  A->>C: Load v2
+  B->>C: Load v2
+  A->>A: Write files and metadata
+  B->>B: Write files and metadata
+  A->>C: Swap v2 to v3
+  C-->>A: Committed v3
+  B->>C: Swap v2 to v3
+  C-->>B: Rejected, v2 not current
+  B->>B: Recheck on v3
+  B->>C: Swap v3 to v4
   C-->>B: Committed
 ```
 
 A write never edits a file. DuckDB [reads the current snapshot, writes new data and metadata files alongside the old ones](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history), then asks the catalog to move the pointer: "That move is the commit." The spec calls this [optimistic concurrency](https://iceberg.apache.org/spec/#optimistic-concurrency). A writer assumes the current version will not change before it commits, then swaps the pointer from its base version to its new one.
 
-Walk the diagram. Both writers load version 2 and write their files. Writer A swaps first. Writer B's commit names version 2 as the snapshot it replaces, which is [no longer current](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history), so it is rejected and must [retry on the new current version](https://iceberg.apache.org/spec/#optimistic-concurrency).
+Writer B's commit names version 2 as the snapshot it replaces, which is [no longer current](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history), so it is rejected and must [retry on the new current version](https://iceberg.apache.org/spec/#optimistic-concurrency).
 
 A retry is rarely a full redo. [Appends "have no requirements and can always be applied"](https://iceberg.apache.org/spec/#commit-conflict-resolution-and-retry); deletes of specific files and compactions first check that the files they remove are still in the table.
 
@@ -108,15 +106,13 @@ First, the manifest list stores [the range of values for each partition field](h
 
 Second, every manifest entry carries each column's [lower and upper bounds](https://iceberg.apache.org/docs/latest/performance/#data-filtering). The example spread `service_id` across the first three days round-robin, so each of those files spans roughly 1 to 9,000, while the 4 October file spans [9,001 to 12,000](https://duckdb.org/2026/10/13/inside-iceberg-table.html#column-statistics). A query with `WHERE service_id > 10000` only has to open that one file. The DuckDB team's advice follows: data written in the order of a commonly filtered column gets narrower bounds and more skipping.
 
-The Iceberg docs report that in some cases this bounds filtering is ["a 10x performance improvement"](https://iceberg.apache.org/docs/latest/performance/#data-filtering).
-
 ## Three formats, one idea
 
 Iceberg is one of several open table formats, and the others shape their metadata differently.
 
 **Delta Lake** keeps a [transaction log](https://github.com/delta-io/delta/blob/master/PROTOCOL.md#delta-log-entries): JSON files in a `_delta_log` directory, one per version, each holding the actions, such as adding or removing a file, that turn the previous version into the next. Its stated aims match Iceberg's: [serializable writes and snapshot isolation for reads](https://github.com/delta-io/delta/blob/master/PROTOCOL.md#overview), with writers that write files optimistically and then commit.
 
-**Apache Hudi** records every change as an action on its [timeline](https://hudi.apache.org/docs/timeline/), "a log of all actions performed on the table at different instants", which it treats as the source of truth for the table's state. Each action moves from requested to inflight to completed.
+**Apache Hudi** records every change as an action on its [timeline](https://hudi.apache.org/docs/timeline/), "a log of all actions performed on the table at different instants", which it treats as the source of truth for the table's state.
 
 **Iceberg version 4**, [under active development and not formally adopted](https://iceberg.apache.org/spec/#format-versioning), reshapes its own tree. It replaces the manifest list with [a single root manifest per snapshot](https://iceberg.apache.org/spec/#overview) and adds an adaptive metadata tree for [efficient small commits](https://iceberg.apache.org/spec/#version-4-metadata-structure-and-representation).
 
@@ -127,10 +123,6 @@ We infer the shared idea: an immutable record of which files make up each versio
 The pressure came from putting tables on object stores. Iceberg, its docs say, was designed to solve [correctness problems that affect Hive tables running in S3](https://iceberg.apache.org/docs/latest/reliability/). A Hive table tracks partitions in a central metastore and individual files in the file system. That made atomic changes to a table's contents impossible, and an eventually consistent store could return wrong results to anyone rebuilding the table from a file listing. Listing was slow too: [O(n) calls with the number of partitions](https://iceberg.apache.org/docs/latest/reliability/).
 
 A table format's answer is to ask little of storage. Iceberg needs only [in-place writes, seekable reads and deletes](https://iceberg.apache.org/spec/#file-system-operations): no random-access writes and no rename. The spec marks the older rename-based commit scheme as deprecated, ["unsafe in object stores and local file systems"](https://iceberg.apache.org/spec/#file-system-tables), and describes the atomic step instead as a [check-and-put on a pointer in a metastore or database](https://iceberg.apache.org/spec/#metastore-tables).
-
-The second pressure is sharing. Many engines on one table only work if the rules for which files are live are written down, not held in one engine's memory.
-
-The same features carry the costs. Immutability means every change adds files. History means old files stay until someone removes them.
 
 ## Practice one: expire snapshots and old metadata files
 
@@ -164,7 +156,7 @@ It is not a file format. Parquet, Avro and ORC decide how rows sit inside one fi
 
 It is not a catalog. The catalog holds [one pointer](https://duckdb.org/2026/10/13/inside-iceberg-table.html#getting-started), and the spec says the atomic operation that moves it [is not standardized by this spec](https://iceberg.apache.org/spec/#table-metadata): it depends on how the table is tracked. Everything else lives in files.
 
-It is not a database server. No process owns the table: readers [will not acquire locks](https://iceberg.apache.org/spec/#goals), and job planning is handled primarily by clients so it does not bottleneck on a central metadata store. We infer the boundary from those goals: the format describes state, and engines do the work. How catalogs implement the swap deserves its own Explainer.
+It is not a database server. No process owns the table: readers [will not acquire locks](https://iceberg.apache.org/spec/#goals), and job planning is handled primarily by clients so it does not bottleneck on a central metadata store. We infer the boundary from those goals: the format describes state, and engines do the work.
 
 ## What understanding a table format makes possible
 
