@@ -9,6 +9,7 @@ kind: comparison
 vertical: apis-networking
 tags: ["dns", "zone-transfer", "dnssec", "multi-provider", "resilience"]
 published: "2026-10-27T17:47:20Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:20Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 "Every web request starts with a DNS lookup," Matt Rinehart writes in [Fastly's 20 October 2026 post on its secondary DNS](https://www.fastly.com/blog/building-resilience-why-we-started-with-secondary-dns/), and when the authoritative servers for your zone stop answering, your application is unreachable even if your origin and CDN are healthy. Fastly started with secondary DNS rather than the bigger primary DNS build, arguing that a second authoritative provider "addresses the failure that actually happens, depending on one authoritative provider." That leaves a choice for anyone who owns a zone. You can stay on one provider. You can add a second provider as a secondary that copies the zone by zone transfer. Or you can run two primaries and push every change to both. We answer the same questions for all three, from the RFCs and the providers' own documentation.

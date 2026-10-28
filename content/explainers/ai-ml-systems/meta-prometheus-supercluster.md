@@ -9,6 +9,7 @@ kind: case-study
 vertical: ai-ml-systems
 tags: ["ai-infrastructure", "gpu-clusters", "datacenter-networking", "reliability", "meta"]
 published: "2026-10-27T17:47:14Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:14Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 In mid-2025, Meta's new training cluster in New Albany, Ohio, saw [nearly 1,000 interruptions per 8K GPUs a day](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/). A year later Meta reports a 99% cut, on a site that [two years ago was a conventional data center running web traffic](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/) and now trains its frontier models.

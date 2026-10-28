@@ -9,6 +9,7 @@ kind: case-study
 vertical: apis-networking
 tags: ["mysql", "connection-pooling", "caching", "wire-protocol", "cloudflare"]
 published: "2026-10-27T17:47:15Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:15Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero: system-name.png
 # hero_alt: "What the image shows"
 related: [cloudflare-d1, http-connection-reuse]
-draft: true
 ---
 
 During the beta of Hyperdrive's MySQL support, Cloudflare's highest-volume MySQL customer saw queries that should always return rows come back empty, [about 0.001% of the time](https://blog.cloudflare.com/hyperdrive-mysql/). No network issue explained it: two halves of Hyperdrive were reading each other's cache entries, written in two different dialects of the MySQL protocol.
@@ -37,19 +37,19 @@ The diagram is ours, redrawn from the text of Cloudflare's posts; Cloudflare's o
 ```mermaid
 %% title: How a MySQL query from a Worker reaches its database through Hyperdrive (redrawn from Cloudflare's description)
 flowchart TD
-  Worker["Worker with a MySQL driver, such as mysql2"]
+  Worker["Worker with a MySQL driver"]
   subgraph Near["Data centre running the Worker"]
-    Client["Hyperdrive Client: acts as the MySQL server, negotiates the Worker's capabilities, translates results"]
-    CacheA[("CDN cache of this data centre")]
+    Client["Hyperdrive Client: poses as the MySQL server, translates results"]
+    CacheA[("Local CDN cache")]
   end
   subgraph Far["Data centre closest to the database"]
-    Endpoint["Hyperdrive Endpoint: acts as a MySQL client with Hyperdrive's fixed capabilities, holds the pool"]
-    CacheB[("CDN cache of this data centre")]
+    Endpoint["Hyperdrive Endpoint: MySQL client with fixed capabilities, holds the pool"]
+    CacheB[("Local CDN cache")]
   end
   Origin[("Origin MySQL database")]
   Worker -->|"Step 1: handshake on the same machine"| Client
   Client -->|"Step 2: look up the query's hash"| CacheA
-  Client -->|"Step 3: on a miss, over a pre-warmed TCP connection"| Endpoint
+  Client -->|"Step 3: on a miss, pre-warmed TCP"| Endpoint
   Endpoint -->|"Step 4: look up, then store the result"| CacheB
   Endpoint -->|"Step 4: warm pooled connection"| Origin
   CacheA -.-|"Step 5: one cache when colocated"| CacheB
@@ -61,7 +61,7 @@ The sections below walk Steps 1 to 5 in order; Step 5 is the shared cache where 
 
 Before a database driver sends its first query it must complete a TCP handshake, a TLS handshake and authentication, which [Cloudflare counts as a bare minimum of five round trips](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/). Its quick benchmark measured about 125 ms per round trip from Chicago to London, so 625 ms to start a connection, which "is not viable in a distributed serverless environment". Queries can start in any of Cloudflare's [over 300 data centre locations](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/), and a stateless Worker that connects directly pays those round trips on every invocation.
 
-Opening one per request also costs the database. Many open connections [incur high per-connection resource costs](https://blog.cloudflare.com/hyperdrive-mysql/), even for MySQL, which does not use an OS process per connection. Traditional databases usually cap connections, and [distributed traffic exhausts them easily](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/).
+Opening one per request also costs the database. Many open connections [incur high per-connection resource costs](https://blog.cloudflare.com/hyperdrive-mysql/). Traditional databases usually cap connections, and [distributed traffic exhausts them easily](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/).
 
 Hyperdrive started with Postgres. Supporting MySQL meant [parsing a second wire protocol](https://blog.cloudflare.com/building-global-mysql-apps-with-cloudflare-workers-and-hyperdrive/), with its own authentication plugins and capability flags, and the [beta's goal](https://blog.cloudflare.com/hyperdrive-mysql/) was to show that real customer traffic met Cloudflare's production availability target of 99.99%. Getting there took, in Cloudflare's words, "just 20 bug fixes in a trenchcoat".
 
@@ -74,7 +74,7 @@ The architecture post weighs [four choices](https://blog.cloudflare.com/how-hype
 - **Session or statement pooling.** Session mode gives each client a connection until it disconnects, cutting concurrency; statement mode forbids multi-statement transactions. Hyperdrive is a [transaction-mode pooler](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/#pooling-mode), lending a connection for one query or transaction.
 - **One pool per region.** Earlier Hyperdrive kept a pool in each region of Worker traffic, picked by rendezvous hashing, with no guarantee it sat near the database. It now runs [a single global Endpoint](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/) as close to the origin as possible.
 
-The argument behind all four: do every round trip over the shortest distance available, and keep the drivers developers already run. The second half, we infer, is what later exposed the bug.
+The argument behind all four: do every round trip over the shortest distance available, and keep the drivers developers already run.
 
 ## Step 1: the Client poses as a MySQL server next to the Worker
 
@@ -96,9 +96,7 @@ Client-side caching arrived with the move to global Endpoints, because otherwise
 
 On a miss, the Client needs the Endpoint, possibly an ocean away. Opening a fresh connection there would repeat the round-trip problem, so the Client asks Cloudflare's networking platform, which [keeps a pool of ready TCP connections between all of Cloudflare's data centres](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/).
 
-The Client's first message carries every query message the Worker has buffered, like a SYN and a payload bundled together. The Endpoint streams the response back and keeps the channel open for follow-up queries until the Client disconnects, so the long haul runs with "zero wasted round trips".
-
-There are now two handshakes per logical connection, Worker to Client and Endpoint to origin, and Cloudflare argues that is the point: the same five-plus round trips still happen, but [over the smallest possible distances](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/).
+The Client's first message carries every query message the Worker has buffered. The Endpoint streams the response back and keeps the channel open for follow-up queries until the Client disconnects, so the long haul runs with "zero wasted round trips".
 
 ## Step 4: the Endpoint pools connections near the database
 
@@ -106,7 +104,7 @@ The Endpoint lives in [the data centre closest to the origin database](https://b
 
 The Endpoint plays the MySQL client, checks its own cache, and on a miss takes a warm connection from its pool, "usable in a matter of microseconds", returning it as soon as the result is back. The pool is capped at [about 20 origin connections per configuration on the Free plan and about 100 on Paid](https://developers.cloudflare.com/hyperdrive/platform/limits/#connection-limits), with a 10-minute idle timeout. Results from the origin are [stored in both the Client's and the Endpoint's caches](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/), so the Endpoint's cache shields the origin for Clients everywhere.
 
-A shared connection must not leak one user's session into the next. Hyperdrive cleans up with [`COM_RESET_CONNECTION`](https://dev.mysql.com/doc/dev/mysql-server/9.7.2/page_protocol_com_reset_connection.html), which resets session state without re-authenticating or closing the connection. It also [reset the character set to the server's default](https://blog.cloudflare.com/hyperdrive-mysql/), such as latin1, undoing the `utf8mb4` Hyperdrive had negotiated (itself a fix: plain `utf8` is a [deprecated alias for the 3-byte `utf8mb3`](https://dev.mysql.com/doc/refman/9.7/en/charset-unicode-utf8.html), which broke emoji). Hyperdrive now sets `utf8mb4` again after every reset.
+A shared connection must not leak one user's session into the next. Hyperdrive cleans up with [`COM_RESET_CONNECTION`](https://dev.mysql.com/doc/dev/mysql-server/9.7.2/page_protocol_com_reset_connection.html), which resets session state without re-authenticating or closing the connection. It also [reset the character set to the server's default](https://blog.cloudflare.com/hyperdrive-mysql/), such as latin1, undoing the `utf8mb4` Hyperdrive had negotiated. Hyperdrive now sets `utf8mb4` again after every reset.
 
 ## Step 5: one cache, two encodings of the same result
 
@@ -138,23 +136,23 @@ The fix: [always cache a canonical version of the result bytes](https://blog.clo
 
 The cache trades freshness for load. Hyperdrive [does not purge or invalidate cached results when your application writes](https://developers.cloudflare.com/hyperdrive/concepts/query-caching/#read-after-write-behavior), so a later read can return the old result until `max_age` expires, plus the `stale_while_revalidate` window. Cloudflare's answer is a second, cache-disabled Hyperdrive configuration for reads that must be fresh, such as authentication, permissions and reads right after a write.
 
-Translation is a standing cost. Every capability a driver lacks is code Hyperdrive must get right, in both directions, for every result. After the fix, we infer, a Client serving a mysql2 Worker from cache must rewrite the cached bytes on each hit rather than send them as stored; the post does not say what that costs. The charset fix also adds a command after every connection reset, which the post does not measure either.
+Translation is a standing cost. Every capability a driver lacks is code Hyperdrive must get right, in both directions, for every result. After the fix, we infer, a Client serving a mysql2 Worker from cache must rewrite the cached bytes on each hit rather than send them as stored; the post does not say what that costs.
 
 Pooling semantics leak into application code. In transaction mode, [`SET` statements last only for a transaction or a query](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/#pooling-mode), and wrapping many operations in one transaction to keep them hurts scaling. Connection caps are soft: a Client that cannot reach an existing pool gets a new one, so [counts may occasionally exceed the limits](https://developers.cloudflare.com/hyperdrive/platform/limits/), a choice of availability over strict enforcement.
 
 ## The evidence: one success rate, and Postgres benchmarks
 
-For MySQL, the post reports two numbers. The empty responses occurred [about 0.001% of the time](https://blog.cloudflare.com/hyperdrive-mysql/) for one high-volume customer, rare enough that raising the trace rate did not catch an end-to-end trace; the bug was found by reading telemetry, the MySQL protocol documentation and Hyperdrive's code. After the fix, the empty rows "went away" and the success rate for Client connections reached 99.99%, the production target.
+For MySQL, the post reports two numbers. The empty responses occurred [about 0.001% of the time](https://blog.cloudflare.com/hyperdrive-mysql/) for one high-volume customer. After the fix, the empty rows "went away" and the success rate for Client connections reached 99.99%, the production target.
 
 The latency evidence is older and from Postgres. In Cloudflare's simplest benchmark, an insert and a select from Chicago to a database in London [took an average of 1,200 ms directly, 500 ms through Hyperdrive and 320 ms with caching](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/).
 
-The gaps: no success rate before the fix, no list of the 20 bug fixes, no MySQL latency figures, no cache hit rates, and no count of how many customers or queries the shared-cache bug touched. The post also does not say how often Client and Endpoint share a data centre, which is how often the bug could fire. We infer it was mostly Workers running near their database, which is what [Placement](https://developers.cloudflare.com/hyperdrive/concepts/how-hyperdrive-works/#2-connection-pooling) encourages for Workers that make multiple sequential queries per request.
+The gaps: no success rate before the fix, no list of the 20 bug fixes, no MySQL latency figures, no cache hit rates, and no count of how many customers or queries the shared-cache bug touched. The post also does not say how often Client and Endpoint share a data centre, which is how often the bug could fire.
 
 ## What it makes possible
 
 MySQL support is now generally available: you can [create a Hyperdrive to an existing MySQL-compatible database](https://blog.cloudflare.com/hyperdrive-mysql/) from the dashboard or Wrangler, or connect a new PlanetScale database. Cloudflare's own billing, D1, R2 and Workers KV teams [use Hyperdrive to reach their Postgres clusters](https://blog.cloudflare.com/how-hyperdrive-speeds-up-database-access/) for control-plane work; [D1's control plane](/databases-storage/cloudflare-d1/) leans on its cache to keep heartbeats off Postgres.
 
-The lesson travels to any proxy that speaks a protocol on both sides. When a component translates between dialects, every cache behind it needs one agreed encoding, and the cache key must name everything that changes the bytes. An assumption that held for one protocol, here "the bytes I sent are the bytes I can store", is worth writing down before you port it.
+The lesson travels to any proxy that speaks a protocol on both sides. When a component translates between dialects, every cache behind it needs one agreed encoding, and the cache key must name everything that changes the bytes.
 
 What it buys is a MySQL database in one region that a Worker anywhere can query with the driver it already uses.
 
@@ -170,4 +168,3 @@ What it buys is a MySQL database in one region that a Worker anywhere can query 
 - [MySQL source documentation: Text Resultset](https://dev.mysql.com/doc/dev/mysql-server/8.0.46/page_protocol_com_query_response_text_resultset.html)
 - [MySQL source documentation: Connection Phase](https://dev.mysql.com/doc/dev/mysql-server/8.0.46/page_protocol_connection_phase.html)
 - [MySQL source documentation: COM_RESET_CONNECTION](https://dev.mysql.com/doc/dev/mysql-server/9.7.2/page_protocol_com_reset_connection.html)
-- [MySQL 9.7 Reference Manual: The utf8 Character Set (Deprecated alias for utf8mb3)](https://dev.mysql.com/doc/refman/9.7/en/charset-unicode-utf8.html)

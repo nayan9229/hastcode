@@ -9,6 +9,7 @@ kind: comparison
 vertical: distributed-systems
 tags: ["sharding", "postgres", "vitess", "mongodb", "shard-keys"]
 published: "2026-10-27T17:47:19Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:19Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 In PlanetScale's storefront example, `customers` and `orders` were each sharded by a hash of their own `id`, so a customer's orders could be spread across all four shards and the router had to join them itself. Sharding `orders` by `customer_id` instead let each shard run the join locally: [four shard requests instead of eight](https://planetscale.com/blog/the-lifecycle-of-a-sharded-postgres-query#title-a-better-topology). The stakes are more than speed. In Neki, PlanetScale's sharded Postgres, a transaction that stays on one shard keeps full Postgres semantics, while one that reaches two shards gets [no atomic commit and no shared snapshot](https://planetscale.com/blog/shard-groups-the-unit-of-co-location#co-locating-related-tables). Rohit Nayak's conclusion is the principle this piece builds on: "[Shard group design starts from your queries, not your tables](https://planetscale.com/blog/shard-groups-the-unit-of-co-location#putting-it-all-together)." So once you know your queries, which scheme should map a key to a shard: a hash, a range, or a directory? We answer the same questions for all three, from Neki's, Vitess's and MongoDB's own documentation.

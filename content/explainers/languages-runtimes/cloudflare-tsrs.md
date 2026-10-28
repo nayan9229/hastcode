@@ -9,6 +9,7 @@ kind: case-study
 vertical: languages-runtimes
 tags: ["typescript", "rust", "compilers", "memory", "webassembly"]
 published: "2026-10-27T17:47:16Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:16Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 On TypeScript 7, the compiler the TypeScript team ported to Go, one company's 37,000-file backend took [19 GiB of memory and 80 seconds](https://building.owner.com/tsrs) to type-check on one thread. In October 2026 Cloudflare and VoidZero announced [tsrs, a Rust port of that Go compiler](https://blog.cloudflare.com/typescript-rust-port/), which in early benchmarks is up to 8x faster and uses about 70% less memory, and its rule is to change nothing the checker decides.

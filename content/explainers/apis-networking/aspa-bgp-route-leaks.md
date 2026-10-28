@@ -9,6 +9,7 @@ kind: concept
 vertical: apis-networking
 tags: ["bgp", "rpki", "aspa", "route-leaks", "routing-security"]
 published: "2026-10-27T17:47:18Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:18Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 At 10:30 UTC on 24 June 2019, an Internet provider in Pennsylvania, DQE Communications (AS33154), was running a ["BGP Optimizer"](https://blog.cloudflare.com/how-verizon-and-a-bgp-optimizer-knocked-large-parts-of-the-internet-offline-today/) that split routes into smaller pieces, turning Cloudflare's 104.20.0.0/20 into two /21s. DQE announced those pieces to its customer, Allegheny Technologies (AS396531). Allegheny passed them to its other transit provider, Verizon (AS701), and Verizon [told the entire Internet](https://blog.cloudflare.com/how-verizon-and-a-bgp-optimizer-knocked-large-parts-of-the-internet-offline-today/). Traffic for Cloudflare, Amazon and Linode poured towards networks that could not carry it, and at the worst point Cloudflare lost [about 15% of its global traffic](https://blog.cloudflare.com/how-verizon-and-a-bgp-optimizer-knocked-large-parts-of-the-internet-offline-today/). Cloudflare's verdict: Verizon ["should never have forwarded those routes to the rest of the Internet"](https://blog.cloudflare.com/how-verizon-and-a-bgp-optimizer-knocked-large-parts-of-the-internet-offline-today/). The route had gone down from a provider to a customer and back up to another provider. Nothing in BGP itself let Verizon see that.
@@ -35,7 +35,7 @@ At 10:30 UTC on 24 June 2019, an Internet provider in Pennsylvania, DQE Communic
 
 RFC 7908 gives the working definition: a route leak is ["the propagation of routing announcement(s) beyond their intended scope"](https://www.rfc-editor.org/rfc/rfc7908.html#section-2). The scope usually comes from the business relationship between two networks, or **autonomous systems** (ASes): customer, transit provider or peer. A provider carries traffic to and from the whole Internet for its customers. Peers [exchange only their own customers' routes](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.2). Leaks [most often arise from accidental misconfigurations](https://www.rfc-editor.org/rfc/rfc7908.html#section-2).
 
-The 2019 incident took the shape of a common form, a **hairpin turn**: a network with two upstream providers [learns a route from one and propagates it to the other](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.1). The RFC explains why such leaks spread: the second provider prefers a customer's announcement over a peer's announcement of the same prefix. Its examples include a Telekom Malaysia leak of [about 179,000 prefixes](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.1) that Level3 accepted and propagated.
+The 2019 incident took the shape of a common form, a **hairpin turn**: a network with two upstream providers [learns a route from one and propagates it to the other](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.1).
 
 The RFC lists six types, and [four of them](https://www.rfc-editor.org/rfc/rfc7908.html#section-4) are the same violation in different contexts: routes [learned from a peer sent to a transit provider](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.4), routes from a provider sent to a peer, routes passed from one peer to another. In our reading, every one is a route that should only have travelled down towards customers turning back up or sideways. That is the pattern ASPA is built to see.
 
@@ -52,19 +52,19 @@ What does not count: peers. A lateral peer is never listed. A transparent Intern
 ```mermaid
 %% title: How a router checks one route's AS path against ASPA records
 flowchart TD
-  R["Route arrives on an eBGP session"] --> C{"Pre-checks: is the neighbor the first AS on the path, with no AS_SET?"}
+  R["Route arrives on eBGP"] --> C{"Neighbor is first AS, no AS_SET?"}
   C -->|"No"| I["Invalid"]
-  C -->|"Yes"| P["Compress the path: drop repeated AS numbers"]
-  P --> Q{"What role does the neighbor play?"}
-  Q -->|"Customer, peer or route server"| U["Upstream check: the whole path must be one up-ramp"]
-  Q -->|"Provider"| D["Downstream check: an up-ramp, then a down-ramp"]
-  U --> A["For each hop, look up the lower AS's ASPA: is the next AS its provider?"]
+  C -->|"Yes"| P["Compress: drop repeated ASes"]
+  P --> Q{"Neighbor's role?"}
+  Q -->|"Customer, peer or route server"| U["Upstream: all up-ramp"]
+  Q -->|"Provider"| D["Downstream: up-ramp, then down-ramp"]
+  U --> A["Each hop: is the next AS in the lower AS's ASPA?"]
   D --> A
-  A -->|"Even the longest possible ramps cannot cover the path"| I
-  A -->|"The ramps might cover it, but some AS has no ASPA"| K["Unknown"]
-  A -->|"Attested ramps cover the whole path"| V["Valid"]
-  I --> X["Ineligible for route selection, kept in Adj-RIB-In"]
-  K --> Y["Treated the same as Valid"]
+  A -->|"Ramps cannot cover path"| I
+  A -->|"Might cover; an AS has no ASPA"| K["Unknown"]
+  A -->|"Attested ramps cover path"| V["Valid"]
+  I --> X["Ineligible, kept in Adj-RIB-In"]
+  K --> Y["Treated as Valid"]
   V --> Y
 ```
 
@@ -86,9 +86,9 @@ Now remove AS1's ASPA. We infer from the draft's bounds that the first hop then 
 
 ## Where ASPA runs today
 
-**The registries.** APNIC added ASPA management to MyAPNIC [in June 2026](https://blog.apnic.net/2026/10/22/your-most-pressing-questions-about-aspa-answered/), and by 22 October 538 ASPA objects were published under its trust anchor. Harrison writes that since November 2025 the RIPE NCC, ARIN and APNIC [have deployed support](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/), with all five registries expected to support it by the end of 2026. Across the global RPKI, the profile draft counts [roughly 2,400 objects](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-profile-29.html#section-8.1) as of July 2026.
+**The registries.** APNIC added ASPA management to MyAPNIC [in June 2026](https://blog.apnic.net/2026/10/22/your-most-pressing-questions-about-aspa-answered/), and by 22 October 538 ASPA objects were published under its trust anchor. Harrison writes that since November 2025 the RIPE NCC, ARIN and APNIC [have deployed support](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/), with all five registries expected to support it by the end of 2026.
 
-**The routers.** The verification draft's implementation list names [OpenBGPD 7.8 and later](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-verification-29.html#section-10), an early field trial on Cisco IOS-XR in 2025, a BIRD side branch whose release waits on version 2 of the RPKI-to-Router protocol, and work in FRRouting, FreeRTR, RTRlib and NIST's BGP-SRx. The BIRD entry lags: APNIC's July post already counts BIRD among routers with ["good support"](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/). Most contributors tested against a shared set of [worked examples](https://github.com/ksriram25/IETF/blob/main/ASPA_path_verification_examples.pdf).
+**The routers.** The verification draft's implementation list names [OpenBGPD 7.8 and later](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-verification-29.html#section-10), an early field trial on Cisco IOS-XR in 2025, a BIRD side branch whose release waits on version 2 of the RPKI-to-Router protocol, and work in FRRouting, FreeRTR, RTRlib and NIST's BGP-SRx. The BIRD entry lags: APNIC's July post already counts BIRD among routers with ["good support"](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/).
 
 **The IXPs.** Harrison's October post covers the two route server designs. At a transparent Layer 2 exchange, participants [do not list the IXP](https://blog.apnic.net/2026/10/22/your-most-pressing-questions-about-aspa-answered/), but a participant that buys transit from another participant still lists it. At a non-transparent Layer 3 exchange the IXP adds its AS number to the path, so participants list it, and the IXP's own ASPA holds a single AS 0 entry.
 
@@ -96,9 +96,9 @@ The honest caveat: ["so far the level of validation observed in the public inter
 
 ## Why leaks get past origin validation
 
-Route origin validation (ROV) answers one question: may this AS originate this prefix? RFC 6811 gives each route [one of three states](https://www.rfc-editor.org/rfc/rfc6811.html#section-2), NotFound, Valid or Invalid, by comparing the prefix and origin AS against ROAs. The rest of the path is not consulted. APNIC puts it plainly: ROAs have reduced many accidental errors, but they do [not protect against problems related to a route's AS path](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/).
+Route origin validation (ROV) answers one question: may this AS originate this prefix? RFC 6811 gives each route [one of three states](https://www.rfc-editor.org/rfc/rfc6811.html#section-2), NotFound, Valid or Invalid, by comparing the prefix and origin AS against ROAs. APNIC puts it plainly: ROAs have reduced many accidental errors, but they do [not protect against problems related to a route's AS path](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/).
 
-A hairpin leak changes neither: RFC 7908 notes that in a Type 1 leak [neither the prefix nor the AS path is altered](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.1). The origin is still the rightful one.
+A hairpin leak changes neither: RFC 7908 notes that in a Type 1 leak [neither the prefix nor the AS path is altered](https://www.rfc-editor.org/rfc/rfc7908.html#section-3.1).
 
 In 2019, ROV would have helped only because the optimizer had split the prefixes. Cloudflare signs its prefixes for [a maximum length of /20](https://blog.cloudflare.com/how-verizon-and-a-bgp-optimizer-knocked-large-parts-of-the-internet-offline-today/), so the /21s were invalid, and Verizon could have dropped them had it validated. We infer that a leak of the /20 itself, with Cloudflare still the origin, would have been ROV Valid.
 
@@ -128,8 +128,6 @@ OTC is a mark that travels with the route. Its purpose is that once a route is s
 
 Had Allegheny's routers marked the routes learned from DQE this way, we infer they would have refused to send them to Verizon. The cost is the same as for ASPA: every session's role must be configured and correct, and RFC 9234 warns that incorrect Roles or OTC [may affect prefix propagation](https://www.rfc-editor.org/rfc/rfc9234.html#section-6).
 
-The draft also names what ASPA replaces. **Peerlock** has large carriers protect each other with AS path filters built by a [laborious manual process](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-verification-29.html#section-8.3). ASPA publishes the same knowledge in the RPKI, for any network to use.
-
 ## What ASPA is not
 
 **It is not BGPsec.** BGPsec signs each hop so a receiver knows the update [traveled the path it claims](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-verification-29.html#section-8.2). It does not detect route leaks, because a leaked update really did travel that path. The draft calls the two complementary.
@@ -138,7 +136,7 @@ The draft also names what ASPA replaces. **Peerlock** has large carriers protect
 
 **It is not a blame tool.** Even where ASPA is guaranteed to detect a leak, it [may not identify the AS that caused it](https://www.ietf.org/archive/id/draft-ietf-sidrops-aspa-verification-29.html#appendix-B).
 
-It does reach beyond leaks. A forged-origin hijack, where an attacker announces a path that ends in the rightful origin, passes ROV. If the origin has published an ASPA that does not list the attacker, the path [fails ASPA](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/). An attacker can forge a longer path to hide, but a longer path is less attractive, and the trick fails once the next AS up also publishes. Hijacks deserve their own Explainer.
+It does reach beyond leaks. A forged-origin hijack, where an attacker announces a path that ends in the rightful origin, passes ROV. If the origin has published an ASPA that does not list the attacker, the path [fails ASPA](https://blog.apnic.net/2026/07/09/aspa-at-apnic-strengthening-bgp-path-validation/). An attacker can forge a longer path to hide, but a longer path is less attractive, and the trick fails once the next AS up also publishes.
 
 ## What understanding ASPA makes possible
 

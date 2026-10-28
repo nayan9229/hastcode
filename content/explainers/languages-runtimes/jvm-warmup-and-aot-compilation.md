@@ -8,6 +8,7 @@ kind: concept
 vertical: languages-runtimes
 tags: ["jvm", "jit", "aot-compilation", "project-leyden", "startup"]
 published: "2026-10-27T17:47:17Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:17Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 The case study in [JEP 545](https://openjdk.org/jeps/545#Case-study-in-faster-startup-and-warmup) runs Spring PetClinic on a 32GB machine and calls it warmed up once P99 response times stay under 20ms. The load generator does not send full traffic at once. It starts at 1,000 requests per second and climbs to 30,000 over ten seconds, to simulate a load balancer that assumes the application is not at peak performance ["until the JVM has JIT-compiled all hot paths to machine code"](https://openjdk.org/jeps/545#Case-study-in-faster-startup-and-warmup). Send 30,000 a second from the start, the JEP says, and P99 would be measured in seconds rather than milliseconds. On JDK 25 with a 2MB initial heap, the JVM gave its [first response at 5.86s](https://openjdk.org/jeps/545#Scenario-1:-JDK-25-with-a-small-initial-heap-and-no-pre-touching), and P99 spiked above 20ms for tens of seconds afterwards while ZGC grew the heap towards 20GB; it warmed up at about 80 seconds. Inside Java announced on 16 October 2026 that [JEP 545 is targeted to JDK 28](https://inside.java/2026/10/16/jep545-target-jdk28/). The same JEP's future work points at [ahead-of-time code compilation](https://openjdk.org/jeps/545#Future-Work), [JEP 544](https://openjdk.org/jeps/544), a second change for JDK 28 aimed at the other part of warmup: compiling the code.

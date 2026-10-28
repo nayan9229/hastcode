@@ -8,6 +8,7 @@ kind: concept
 vertical: languages-runtimes
 tags: ["java", "off-heap-memory", "ffm-api", "memory-management", "native-interop"]
 published: "2026-10-27T17:47:17Z"
+verified: 2026-10-28
 reviewed: "2026-10-27T17:47:17Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [structured-concurrency]
-draft: true
 ---
 
 In one instrumented run of a test suite, more than 99.99% of the confined arenas that allocated native memory [used less than 64 bytes](https://inside.java/2026/10/23/confined-pools/). Confined arenas are often [scratch space around a native call](https://inside.java/2026/10/23/confined-pools/): room for the function to write an `int` or a pointer into, read once and thrown away. On an Apple M4, allocating 5 bytes that way [took 15.862 ns](https://inside.java/2026/10/23/confined-pools/). Per-Ake Minborg explains why: before JDK 28, even a tiny allocation "could involve the regular native allocator and the registration of an associated cleanup action", and that bookkeeping ["can cost more than actually accessing the allocated memory itself."](https://inside.java/2026/10/23/confined-pools/) JDK 28 serves those allocations from small per-thread pools, and the same benchmark [falls to 1.052 ns](https://inside.java/2026/10/23/confined-pools/), with no source change. The memory was never the expensive part. Giving it a safe lifetime was.
