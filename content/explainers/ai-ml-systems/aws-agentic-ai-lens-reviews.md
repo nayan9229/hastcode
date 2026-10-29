@@ -8,8 +8,9 @@ description: "How Smarsh runs AWS's 150-practice Agentic AI Lens as a Claude ski
 kind: case-study
 vertical: ai-ml-systems
 tags: ["ai-agents", "llm", "well-architected", "aws", "smarsh"]
-published: "2026-10-29T19:04:32Z"
-reviewed: "2026-10-29T19:04:32Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [meta-thin-orchestrator]
-draft: true
 ---
 
 At Smarsh, [every agentic solution must pass a Well-Architected review before it reaches a customer](https://aws.amazon.com/blogs/architecture/automating-agentic-ai-well-architected-reviews-with-the-aws-agentic-ai-lens/#the-challenge-a-lens-you-can-read-but-not-run), and the AWS lens written for agents was 150 best practices with no console to run them in. So Smarsh turned the lens into a JSON file, taught Claude to grade a repository against it, and put a script in front of the output that rejects any best-practice ID the model makes up.

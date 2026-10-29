@@ -8,8 +8,9 @@ description: "How Meta Andromeda puts ad targeting, a mixture-of-experts model a
 kind: case-study
 vertical: ai-ml-systems
 tags: ["ads-retrieval", "mixture-of-experts", "gpu-kernels", "recommendation-systems", "meta"]
-published: "2026-10-29T19:04:44Z"
-reviewed: "2026-10-29T19:04:44Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [expert-parallelism]
-draft: true
 ---
 
 Meta's ads retrieval system now [scores every eligible ad and surfaces the top candidates at over one billion ads per second](https://engineering.fb.com/2026/10/28/ml-applications/meta-andromeda-next-gen-ads-retrieval-gpu-co-design/), about 100 times its 2024 throughput. It got there partly by doing less arithmetic, not more: the new model needs about 300 times fewer inference-time FLOPs than the one it replaced, and the pipeline moves far less data through memory and across the network.

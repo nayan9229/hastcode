@@ -8,15 +8,15 @@ description: "How Revinate fronts EKS with API Gateway, a Lambda authorizer, usa
 kind: case-study
 vertical: apis-networking
 tags: ["api-gateway", "aws", "kubernetes", "oauth", "rate-limiting"]
-published: "2026-10-29T19:04:11Z"
-reviewed: "2026-10-29T19:04:11Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: system-name.png
 # hero_alt: "What the image shows"
 related: [agentgateway]
-draft: true
 ---
 
 Revinate's Customer Data Platform serves [over 12,500 hotels and powers more than 1.25 billion guest profiles](https://aws.amazon.com/blogs/architecture/how-revinate-accelerated-api-adoption-with-amazon-api-gateway/). When the team opened that data to hotels and partners as an API, the design question it wrote up in most detail was not authentication or pricing but one network hop: [how a request gets from Amazon API Gateway into a Kubernetes pod](https://aws.amazon.com/blogs/architecture/how-revinate-accelerated-api-adoption-with-amazon-api-gateway/#connecting-api-gateway-to-eks).

@@ -8,8 +8,9 @@ description: "How Meta's Catching JiTTests write LLM tests that fail on a risky 
 kind: case-study
 vertical: ai-ml-systems
 tags: ["testing", "llm", "mutation-testing", "code-review", "meta"]
-published: "2026-10-29T19:24:50Z"
-reviewed: "2026-10-29T19:24:50Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [meta-thin-orchestrator]
-draft: true
 ---
 
 In the first half of 2026, tests written by large language models at Meta [played a key role in catching 74 serious privacy bugs](https://engineering.fb.com/2026/10/29/security/catching-bugs-before-they-land-jittestings-human-on-the-loop-approach-at-full-scale/) before the code landed. Every one of those tests was built to fail: a test that passes on a change has caught nothing.

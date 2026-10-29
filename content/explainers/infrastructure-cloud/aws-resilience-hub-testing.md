@@ -8,15 +8,15 @@ description: "How AWS Resilience Hub turns a service's resources, DNS-found depe
 kind: case-study
 vertical: infrastructure-cloud
 tags: ["chaos-engineering", "fault-injection", "resilience", "aws", "dependencies"]
-published: "2026-10-29T19:09:35Z"
-reviewed: "2026-10-29T19:09:35Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: system-name.png
 # hero_alt: "What the image shows"
 related: [metastable-failures]
-draft: true
 ---
 
 AWS's own documentation for the next generation of Resilience Hub warns that its AI failure-mode assessment is [directional guidance, not proof](https://docs.aws.amazon.com/resilience-hub/latest/userguide/next-gen-how-assessments-work.html): "Do not use it as a guarantee or as evidence. If you need evidence, run a resilience test." In October 2026 AWS shipped those tests: [four pre-configured fault experiments](https://aws.amazon.com/blogs/architecture/recommended-resilience-testing-in-the-next-generation-of-aws-resilience-hub/) built from what Resilience Hub already knows about your service, and graded pass or fail.

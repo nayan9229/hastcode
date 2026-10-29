@@ -8,15 +8,15 @@ description: "Decode context parallelism shards an LLM's KV cache across GPUs by
 kind: concept
 vertical: ai-ml-systems
 tags: ["context-parallelism", "kv-cache", "llm-inference", "long-context", "vllm"]
-published: "2026-10-29T19:25:07Z"
-reviewed: "2026-10-29T19:25:07Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: concept-name.png
 # hero_alt: "What the image shows"
 related: [disaggregated-inference, expert-parallelism]
-draft: true
 ---
 
 On 29 October 2026, the day Mistral Large 4 came out, the vLLM and Mistral teams published how they serve it. One test in that post ran agentic sessions of about 100,000 tokens through a split prefill and decode setup. With 32 sessions, [a plain four-GPU tensor-parallel decode node ran out of KV cache and its time to first token climbed to 15 seconds](https://vllm.ai/blog/2026-10-29-mistral-large-4#long-context-decode-and-prefill-context-parallelism). A decode node with the same four-GPU count, configured as "TP4 DCP4", held time to first token at 0.7 seconds. What changed, we infer, was how the cache was laid out across the GPUs: the model's attention [keeps one latent KV head, so under tensor parallelism the cache is replicated on every rank](https://vllm.ai/blog/2026-10-29-mistral-large-4#long-context-decode-and-prefill-context-parallelism). Four GPUs were storing the same cache four times.

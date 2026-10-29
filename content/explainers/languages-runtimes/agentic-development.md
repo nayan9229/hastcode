@@ -8,15 +8,15 @@ description: "A coding agent's harness is the guides and sensors that steer it a
 kind: concept
 vertical: languages-runtimes
 tags: ["coding-agents", "harness-engineering", "continuous-integration", "testing", "ai-agents"]
-published: "2026-10-29T19:03:47Z"
-reviewed: "2026-10-29T19:03:47Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: concept-name.png
 # hero_alt: "What the image shows"
 related: [meta-thin-orchestrator, github-agent-scale-git, pgrust]
-draft: true
 ---
 
 In a week Thoughtworks wrote up on 2 September 2026, it put [10 engineers in one room in its Barcelona office](https://martinfowler.com/articles/exploring-gen-ai/an-accidental-blackboard.html) and asked them to build an airline IROps system, the software a flight control centre uses to decide which flights to cancel and which planes to swap when something goes wrong. The rule was ["No code written by anyone. Everything built by agents."](https://martinfowler.com/rachels-ramblings/good-devs-wary.html#a-week-at-the-whiteboard) The write-up says they [built one in four days](https://martinfowler.com/articles/exploring-gen-ai/an-accidental-blackboard.html); Thoughtworks CTO Rachel Laycock, who links it, says they [got 80% done](https://martinfowler.com/rachels-ramblings/good-devs-wary.html#a-week-at-the-whiteboard). Asked afterwards, the team told her they spent [about two-thirds of their time at the whiteboard and one-third on the harness](https://martinfowler.com/rachels-ramblings/good-devs-wary.html#a-week-at-the-whiteboard): tests, contracts, architecture checks and a delivery pipeline. And [the application ran, but the build was frequently red](https://martinfowler.com/rachels-ramblings/good-devs-wary.html#the-application-ran-the-build-was-red). The agents committed so often that the [frequent commits were overloading the CI pipeline](https://martinfowler.com/articles/exploring-gen-ai/an-accidental-blackboard.html#the-repo-as-an-accidental-blackboard-for-agents). Writing the code was the easy part. The hard part was the machinery that tells you whether to trust it.

@@ -7,8 +7,9 @@ description: "Immutable data is state fixed at construction. How records, value 
 kind: concept
 vertical: languages-runtimes
 tags: ["java", "immutability", "project-valhalla", "value-objects", "records"]
-published: "2026-10-29T19:10:16Z"
-reviewed: "2026-10-29T19:10:16Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [jvm-warmup-and-aot-compilation, java-off-heap-memory]
-draft: true
 ---
 
 Make a `LocalDate` for 23 January 1996, add thirty years, take thirty away, and compare the two dates. JEP 401 runs exactly this in jshell: `d1.equals(d3)` is true, and `d1 == d3` is [false](https://openjdk.org/jeps/401#Motivation). They are two objects with two identities, for what the JEP calls ["effectively 48 bits of primitive data"](https://openjdk.org/jeps/401#Object-identity-is-expensive-at-run-time). An array of them is an array of pointers, each to its own block of heap memory. Now run the same lines in a JDK 28 jshell with preview features on, and `d1 == d3` is [true](https://openjdk.org/jeps/401#Programming-with-value-objects). JEP 401 is [targeted to JDK 28](https://openjdk.org/projects/jdk/28/) as a preview, and with previews enabled, [30 JDK classes](https://inside.java/2026/10/27/quality-heads-up/), from `Integer` to `LocalDate`, become value classes. Nicolai Parlog, announcing it to open-source projects, flags the "uncommon compatibility implication" that ["existing code will start using the new feature despite being unchanged"](https://inside.java/2026/10/27/quality-heads-up/). The date was always immutable. What changed is that the JVM is now allowed to believe it.

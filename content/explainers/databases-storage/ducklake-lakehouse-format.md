@@ -8,15 +8,15 @@ description: "DuckLake keeps a lakehouse's metadata in a SQL database, not files
 kind: concept
 vertical: databases-storage
 tags: ["ducklake", "lakehouse", "open-table-formats", "duckdb", "parquet"]
-published: "2026-10-29T19:05:10Z"
-reviewed: "2026-10-29T19:05:10Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: concept-name.png
 # hero_alt: "What the image shows"
 related: [apache-iceberg-table-format]
-draft: true
 ---
 
 Matt Martin's data career began in 2008 with spreadsheets, when [assembling a single report could take three hours](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#from-copy-paste-to-code). Years later he was running Apache Iceberg and Delta Lake, and hit the trouble that [starts when the metadata grows](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#why-ducklake). Iceberg writes several metadata files per transaction, so over time a query must resolve thousands of them before it can plan, and planning that once took seconds slows down. Then he tried DuckLake. In his experience, catalog operations that take seconds with Iceberg [resolve in under a millisecond with DuckLake](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#why-ducklake), "because they are queries against indexed tables." That clause is the whole idea. DuckLake answers "which files make up this table right now?" with one SQL query, not a walk through files on object storage.

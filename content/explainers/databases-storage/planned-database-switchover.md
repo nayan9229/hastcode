@@ -8,15 +8,15 @@ description: "Stopping the primary, pausing writes in place or buffering at a pr
 kind: comparison
 vertical: databases-storage
 tags: ["postgresql", "mysql", "vitess", "high-availability", "replication"]
-published: "2026-10-29T19:05:01Z"
-reviewed: "2026-10-29T19:05:01Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: option-a-vs-option-b.png
 # hero_alt: "What the image shows"
 related: [etcd, metastable-failures]
-draft: true
 ---
 
 PostgreSQL's own documentation recommends switching roles on purpose: [regular switching from primary to standby](https://www.postgresql.org/docs/current/warm-standby-failover.html) "allows regular downtime on each system for maintenance" and tests the failover path before you need it. PlanetScale's Shlomi Noach, describing how its Neki Postgres shards do it, names the price of every such move: a planned switchover ["comes at an unavoidable cost"](https://planetscale.com/blog/designing-a-planned-switchover-for-minimum-disruption), a window in which writes cannot reliably go to either the old or the new primary. You cannot remove that window. You choose how the old primary is frozen and where your application waits while it lasts. We compare three answers: stop the primary, pause writes in place, or hold queries at a proxy, from the PlanetScale post and the Patroni, PostgreSQL, MySQL and Vitess documentation.

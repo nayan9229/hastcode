@@ -8,15 +8,15 @@ description: "Fully sharded data parallelism splits a model's weights, gradients
 kind: concept
 vertical: ai-ml-systems
 tags: ["fsdp", "pytorch", "distributed-training", "gpu-memory", "data-parallelism"]
-published: "2026-10-29T19:25:23Z"
-reviewed: "2026-10-29T19:25:23Z"
+published: "2026-10-29T19:47:44Z"
+verified: 2026-10-29
+reviewed: "2026-10-29T19:47:44Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: concept-name.png
 # hero_alt: "What the image shows"
 related: [expert-parallelism, meta-prometheus-supercluster]
-draft: true
 ---
 
 [PyTorch 2.15 shipped on 28 October 2026](https://github.com/pytorch/pytorch/releases/tag/v2.15.0) with a one-line note under backwards-incompatible changes: ["FSDP2 separates sharded and unsharded gradient dtypes."](https://pytorch.org/blog/pytorch-2-15-release-blog/) The pull request behind it spells out what that means for the most common setup, fp32 weights trained in bf16. Before, gradients were reduced in bf16. After, they are reduced in fp32, which the author marks as ["2x reduce-scatter bytes"](https://github.com/pytorch/pytorch/pull/194434). The same release lets precision-sensitive weights such as [MoE router gates and norm weights stay in fp32](https://pytorch.org/blog/pytorch-2-15-release-blog/) while the rest of the model runs in bf16, "still with one all-gather per `fully_shard`". Why would the data type of a gradient double the traffic of a training job? Because under FSDP no GPU keeps the whole model. Every step, every layer's weights are gathered from all the GPUs and every gradient is scattered back, so the bytes per number decide how much crosses the network.
