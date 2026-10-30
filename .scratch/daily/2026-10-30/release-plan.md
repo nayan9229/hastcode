@@ -6,7 +6,7 @@ The eight below are drafts again. On each release day, for its two Pieces: remov
 
 | Day | Pieces |
 |---|---|
-| 2026-10-31 | `meta-privacylib`, `dnssec-root-key-rollover` |
+| 2026-10-31 | `meta-privacylib`, `dnssec-root-key-rollover` (released 00:09 IST) |
 | 2026-11-01 | `snapshot-restore-hydration`, `workers-ai-kv-cache-exposure` |
 | 2026-11-02 | `cloudflare-origin-range-requests`, `volatile-expressions-sharded-sql` |
 | 2026-11-03 | `shopify-overexposed`, `bundled-vs-platform-trust-stores` |
