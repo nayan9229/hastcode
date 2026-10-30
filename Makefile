@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh intake lead lead-dismiss
+.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh intake lead lead-dismiss daily
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -119,6 +119,13 @@ intake: generate
 lead-dismiss: generate
 	@test -n "$(ID)" || { echo "usage: make lead-dismiss ID=<id> (IDs are in $(INTAKE_STATE)/queue.md)" >&2; exit 2; }
 	$(LOAD_ENV) go run ./cmd/intake $(INTAKE_FLAGS) -dismiss "$(ID)"
+# `make daily` (ADR-0009): Intake, then Claude Code (claude -p) chooses,
+# picks, drafts and fact-checks today's Pieces and commits them as drafts
+# with the Author's check list. Never verifies, pushes or tags.
+# DRY=1 chooses only; BRIEFS=all|N, EXPLAINERS=N (default 10), PARALLEL=N (4).
+daily: generate
+	BRIEFS="$(BRIEFS)" EXPLAINERS="$(EXPLAINERS)" PARALLEL="$(PARALLEL)" DRY="$(DRY)" scripts/daily.sh
+
 lead: generate
 	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]] (IDs are in $(INTAKE_STATE)/queue.md; a Brief needs EXPLAINER=)" >&2; exit 2; }
 	$(LOAD_ENV) go run ./cmd/intake $(INTAKE_FLAGS) -pick "$(ID)" -kind "$(KIND)" -vertical "$(VERTICAL)" -explainer "$(EXPLAINER)"

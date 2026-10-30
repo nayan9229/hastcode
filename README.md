@@ -878,10 +878,25 @@ as an Explainer. The skeleton builds in preview (`make dev`) with one
 `author-placeholder` warning per file; a production build leaves it out
 while it is a draft and fails on any `TODO(author)` once it is not.
 
-**The daily rhythm**: run `make intake` each morning, read the queue, pick
-Leads (`make lead`; drafts come in waves the Author approves, and at most
-two Pieces from Leads are Published a day, ADR-0007 as amended), and dismiss the rest you will not write
-(`make lead-dismiss`); what is left open expires after 7 days. **The
+**The daily rhythm** (ADR-0009): run `make daily` each morning. It runs
+Intake, then a headless Claude Code session (`claude -p`, on the Author's
+login) chooses every fresh Lead that can carry a Brief with a live Explainer
+teaching its lesson and up to `EXPLAINERS` (default 10) Leads that can carry
+a Case Study, Concept or Comparison, explaining each rejection. Each pick
+goes through `make lead` one at a time and is renamed to its chosen slug;
+then `PARALLEL` (default 4) pairs of sessions draft each Piece by its kind's
+writing guide and fact-check it against its Sources (prompts in
+`scripts/daily/`; `scripts/daily/check-page.sh` is the one command they may
+run: a preview build plus the page's size). A draft its Source cannot carry
+is removed. The drafts and the Author's check list
+(`.scratch/daily/<date>/review-queue.md`) are committed on the current
+branch; nothing is pushed or tagged, and every draft keeps `draft: true` and
+no `verified:`. `make daily DRY=1` chooses only; `BRIEFS=N` limits Briefs
+(default all). Run logs, each session's JSON and the run's Claude cost are
+under `.intake/daily/<run>/`. The Author then verifies, sets `verified:`,
+removes `draft: true` and Publishes. No daily Publish cap applies until the
+site has 500 Pieces (ADR-0009). By hand, the same steps are `make intake`,
+`make lead` and `make lead-dismiss`; what is left open expires after 7 days. **The
 planned pace** is 5 Explainers a week (2 Case Studies, 2 Concepts, 1
 Comparison) and 5 Briefs a week, with every Vertical getting a new
 Explainer in the first two weeks, which reaches the launch gate in about

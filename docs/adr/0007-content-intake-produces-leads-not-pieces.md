@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-10-26
 amended: 2026-10-27 (the daily cap moves from picking to Publishing; drafts come in Author-approved waves)
+amended-by: ADR-0009 (2026-10-30: picking and drafting automated by make daily; no daily cap until 500 Pieces)
 ---
 
 # Content intake produces Leads, not Pieces
