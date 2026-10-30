@@ -8,8 +8,9 @@ description: "How a KV pool smaller than GLM-5.3's context and an ignored SGLang
 kind: case-study
 vertical: ai-ml-systems
 tags: ["llm-inference", "kv-cache", "sglang", "security", "cloudflare"]
-published: "2026-10-30T10:03:55Z"
-reviewed: "2026-10-30T10:03:55Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [disaggregated-inference]
-draft: true
 ---
 
 From 27 August to 9 September 2026, the GLM-5.3 model on Cloudflare Workers AI answered [155 very long prompts](https://blog.cloudflare.com/kv-cache-exposure-remediation/) with responses that could carry data from other customers' requests made shortly before. Each one looked like a success: Cloudflare writes that the client got ["HTTP 200 instead of HTTP 400"](https://blog.cloudflare.com/kv-cache-exposure-remediation/), with a matching prompt token count and a coherent reply.

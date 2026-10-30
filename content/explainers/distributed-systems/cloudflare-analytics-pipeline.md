@@ -8,8 +8,9 @@ description: "How Cloudflare's Logfwdr-to-ClickHouse pipeline sends each event o
 kind: case-study
 vertical: distributed-systems
 tags: ["data-pipelines", "sampling", "aggregation", "clickhouse", "cloudflare"]
-published: "2026-10-30T10:03:52Z"
-reviewed: "2026-10-30T10:03:52Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 In May 2026 Cloudflare's data pipeline was delivering [roughly two billion events per second](https://blog.cloudflare.com/rewinding-the-exponential/), and the traffic behind it grows exponentially while the hardware grows linearly. Cloudflare's Data team says five years of changes have been [equivalent to deferring two and a half years of hardware expansion](https://blog.cloudflare.com/rewinding-the-exponential/), and in 2026 alone it removed about 70 GB/s of compressed traffic by sending less, not by compressing harder.

@@ -7,8 +7,9 @@ description: "Adaptive heap sizing lets ZGC resize the heap toward a GC CPU targ
 kind: concept
 vertical: languages-runtimes
 tags: ["zgc", "garbage-collection", "jvm", "heap-sizing", "java"]
-published: "2026-10-30T10:03:53Z"
-reviewed: "2026-10-30T10:03:53Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 The [case study in JEP 546](https://openjdk.org/jeps/546#Case-study-in-adaptive-heap-sizing) puts four JVMs, one after another, into a single container with 16GB of memory. A SPECjbb2015 instance ran alone for the first 12 minutes at 5,000 requests per second. Then an H2 in-memory database benchmark started beside it and grew its heap in a sudden burst, and the SPECjbb2015 JVM shrank its own heap at once to make room. When the database exited at the 24-minute mark, SPECjbb2015 grew back into the memory it freed. From minute 30, two more SPECjbb2015 instances joined, each at 5,000 requests per second, and [within two minutes the three had split the memory roughly evenly](https://openjdk.org/jeps/546#Case-study-in-adaptive-heap-sizing). The JEP tracks the container's physical memory, and each JVM's, across 42 minutes, and each heap kept changing as the neighbours did.

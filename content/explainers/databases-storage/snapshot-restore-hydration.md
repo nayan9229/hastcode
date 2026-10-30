@@ -8,8 +8,9 @@ description: "Waiting, pg_prewarm, scans, pg_dump or VACUUM ANALYZE after an RDS
 kind: comparison
 vertical: databases-storage
 tags: ["postgresql", "amazon-rds", "pg-prewarm", "snapshot-restore", "aws"]
-published: "2026-10-30T10:03:53Z"
-reviewed: "2026-10-30T10:03:53Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 AWS restored one snapshot of a 1,200 GiB PostgreSQL database to two identical db.m5.4xlarge instances. On the one where 15 parallel sessions ran `pg_prewarm`, the storage was fully hydrated in about 5 hours. The other, left alone, was 23% done after 5 hours, with more than 24 hours estimated, in [AWS's own test](https://aws.amazon.com/blogs/database/reducing-storage-initialization-impact-in-amazon-rds-for-postgresql-after-snapshot-restore/). Once prewarming finished, a large table scan took 44 seconds on the prewarmed instance and 571 seconds on the other. The gap exists because a restored volume is usable before its data has arrived: blocks come from Amazon S3 the first time something reads them. The Lead lists four ways to pull them in sooner, and waiting is the fifth. We answer the same four questions for all five (what each loads, how fast, what it costs, and how you know it worked) from AWS's post and documentation and the PostgreSQL 18 manual.

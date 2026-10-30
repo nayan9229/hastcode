@@ -7,8 +7,9 @@ description: "Expression volatility tells a sharded SQL router what it may push 
 kind: concept
 vertical: databases-storage
 tags: ["postgres", "sharding", "query-planning", "sequences", "neki"]
-published: "2026-10-30T10:03:52Z"
-reviewed: "2026-10-30T10:03:52Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 On 14 October 2026, Mats Rydberg [walked through one short statement](https://planetscale.com/blog/neki-volatile-expressions#putting-it-all-together) on the PlanetScale blog: `UPDATE animals SET tag_id = nextval('tag_seq');`. On one Postgres server it is one statement. In [Neki](https://planetscale.com/blog/the-architecture-of-neki), PlanetScale's sharding layer for Postgres, it becomes a `SELECT animals.id FROM animals FOR UPDATE` sent to the shards, a fresh sequence value for every row that comes back, and one `UPDATE animals SET tag_id = $2 WHERE id = $1` per row, sent back to the shard that holds it. Swap `nextval('tag_seq')` for `lower(name)` and, we infer, none of that machinery is needed: the post shows immutable expressions [running on the shards](https://planetscale.com/blog/neki-volatile-expressions#putting-it-all-together). What separates the two plans is one property Postgres attaches to every expression: its volatility.

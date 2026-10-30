@@ -8,8 +8,9 @@ description: "Cloudflare's Origin Range Requests fetches big files by the cache 
 kind: case-study
 vertical: apis-networking
 tags: ["caching", "http", "cdn", "pingora", "cloudflare"]
-published: "2026-10-30T10:03:54Z"
-reviewed: "2026-10-30T10:03:54Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Under Cloudflare's old range caching, R2's slice size was 64 MiB, so [a small read that crossed a slice boundary could move 128 MiB between data centers](https://blog.cloudflare.com/origin-range-requests/). In October 2026 Cloudflare described the replacement: no slice size at all, and R2's [p99 time to first byte dropped by roughly half](https://blog.cloudflare.com/origin-range-requests/) on both cache hits and misses.

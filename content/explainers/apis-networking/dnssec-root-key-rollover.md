@@ -8,8 +8,9 @@ description: "A root KSK rollover replaces the key every DNSSEC validator trusts
 kind: concept
 vertical: apis-networking
 tags: ["dnssec", "dns", "trust-anchors", "key-rollover", "rfc-5011"]
-published: "2026-10-30T10:03:54Z"
-reviewed: "2026-10-30T10:03:54Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 On 9 October 2026, two days before the DNS root changed its signing key, APNIC Labs [reached a major Indian ISP](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) whose resolvers did not yet trust the incoming key. The roll began at [14:00 UTC on 11 October](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/). The ISP fixed its resolvers in time, and the share of measured Indian users behind DNSSEC-validating resolvers rose [from 55% to 59%](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) across the roll. APNIC's Geoff Huston writes that they were ["not so fortunate"](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) contacting ISPs in Brazil, where the rate [fell from 54% to 50%](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/). Brazil lost [7,780,266 validating users](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/), more than any other economy, while India gained 45,423,360, the most of any. Same key, same minute, opposite results.

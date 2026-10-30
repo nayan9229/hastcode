@@ -8,8 +8,9 @@ description: "How browsers, Go, Java and OS-store runtimes stopped trusting eMud
 kind: comparison
 vertical: languages-runtimes
 tags: ["tls", "x509", "certificate-revocation", "go", "java"]
-published: "2026-10-30T10:03:53Z"
-reviewed: "2026-10-30T10:03:53Z"
+published: "2026-10-30T10:42:23Z"
+verified: 2026-10-30
+reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 On 17 October 2026, Mozilla added eight intermediate certificates issued under an eMudhra root [to OneCRL, "effectively blocking their usage in Firefox"](https://go.dev/blog/emudhra-incident). The keys behind them were "trivially weak," the Go team writes, allowing "recovery of the private keys in microseconds," so anyone holding them could sign a certificate for any domain. Firefox was protected that day. Go programs on Linux had to wait for [Go 1.27.3 and 1.26.10](https://go.dev/blog/emudhra-incident), shipped on 19 October as the project's first-ever URGENT security release, and then for every binary to be rebuilt. Java runtimes needed a vendor update or [four `keytool -delete` commands](https://openjdk.org/emudhra). The same compromise reached each client through a different door. So the question is: when a certificate authority (CA) fails, who can withdraw your client's trust in it, through what channel, and how fast? We answer it for browsers, Go, Java with its bundled `cacerts`, and runtimes that read the operating system's store.
