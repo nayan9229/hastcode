@@ -122,9 +122,11 @@ lead-dismiss: generate
 # `make daily` (ADR-0009): Intake, then Claude Code (claude -p) chooses,
 # picks, drafts and fact-checks today's Pieces and commits them as drafts
 # with the Author's check list. Never verifies, pushes or tags.
-# DRY=1 chooses only; BRIEFS=all|N, EXPLAINERS=N (default 10), PARALLEL=N (4).
+# DRY=1 chooses only; BRIEFS=all|N (default 2), EXPLAINERS=N (default 2, or
+# 0 while BACKLOG=4 Explainer drafts wait), PARALLEL=N (4). Drafting keeps
+# pace with the two-a-day Publish cap (ADR-0010).
 daily: generate
-	BRIEFS="$(BRIEFS)" EXPLAINERS="$(EXPLAINERS)" PARALLEL="$(PARALLEL)" DRY="$(DRY)" scripts/daily.sh
+	BRIEFS="$(BRIEFS)" EXPLAINERS="$(EXPLAINERS)" BACKLOG="$(BACKLOG)" PARALLEL="$(PARALLEL)" DRY="$(DRY)" scripts/daily.sh
 
 lead: generate
 	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]] (IDs are in $(INTAKE_STATE)/queue.md; a Brief needs EXPLAINER=)" >&2; exit 2; }

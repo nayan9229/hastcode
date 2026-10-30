@@ -3,13 +3,14 @@
 #
 #   make daily                    # Intake, choose, pick, draft, fact-check, commit
 #   make daily DRY=1              # Intake and choose only: print the picks, write nothing
-#   make daily EXPLAINERS=5 BRIEFS=3 PARALLEL=4
+#   make daily EXPLAINERS=2 BRIEFS=2 PARALLEL=4 BACKLOG=4
 #
 # 1. make intake refreshes the queue.
 # 2. A headless Claude Code session (claude -p) chooses: every fresh Lead that
-#    can carry a Brief with a live Explainer teaching its lesson (BRIEFS=all by
-#    default), and up to EXPLAINERS (default 10) Leads that can carry a Case
-#    Study, Concept or Comparison. It explains every rejection.
+#    can carry a Brief with a live Explainer teaching its lesson (BRIEFS, default
+#    2, or all), and up to EXPLAINERS Leads that can carry a Case Study, Concept
+#    or Comparison (default 2, or 0 while BACKLOG (4) Explainer drafts wait).
+#    It explains every rejection.
 # 3. Each pick goes through make lead, one at a time (the intake state is not
 #    safe for parallel writers), and is renamed to the chosen slug.
 # 4. PARALLEL (default 4) pipelines: one session drafts each Piece by its
@@ -83,7 +84,15 @@ print("explainers="+shlex.quote(",".join(p.get("explainers") or [])))' "$run/pic
   exit 0
 fi
 
-BRIEFS="${BRIEFS:-all}"; EXPLAINERS="${EXPLAINERS:-10}"; PARALLEL="${PARALLEL:-4}"; DRY="${DRY:-}"
+# The Publish cap is two Pieces a day (ADR-0010, enforced by the build), so
+# drafting keeps pace with it: up to 2 Briefs (they expire after 72 hours)
+# and, while fewer than BACKLOG (4) Explainer drafts wait, up to 2 Explainers.
+backlog=$( { grep -l '^draft: true' content/explainers/*/*.md 2>/dev/null || true; } | wc -l | tr -d ' ')
+BRIEFS="${BRIEFS:-2}"; PARALLEL="${PARALLEL:-4}"; DRY="${DRY:-}"
+if [ -z "${EXPLAINERS:-}" ]; then
+  if [ "$backlog" -ge "${BACKLOG:-4}" ]; then EXPLAINERS=0; else EXPLAINERS=2; fi
+fi
+echo "Explainer drafts waiting: $backlog (Explainers today: $EXPLAINERS, Briefs: up to $BRIEFS)"
 command -v "$CLAUDE" >/dev/null || { echo "make daily needs Claude Code (claude) on PATH" >&2; exit 2; }
 if [ -z "$DRY" ] && ! { git diff --quiet && git diff --cached --quiet; }; then
   echo "make daily commits its drafts: commit or stash your tracked changes first" >&2; exit 2

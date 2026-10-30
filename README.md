@@ -131,6 +131,15 @@ Repo Profiles that predate the rule), are outside it. A value that is not
 a `YYYY-MM-DD` date fails with rule `frontmatter`
 (`step_validate_verified.go`).
 
+**The publish-pace gate (ADR-0010).** At most two non-draft Pieces,
+Explainers and Briefs together, may share a `published` day (read in its
+own offset). A production build fails (rule `publish-pace`, one site-wide
+error per day over the cap, naming the day and every file) on any such day
+from 2026-10-30; a Preview warns. Days before 2026-10-30 are exempt. The
+build has no scheduling, so a backlog waits as drafts: on release day lift
+`draft: true` and set `published` and `verified` to that day
+(`step_validate_publish_pace.go`, tests `builder/publish_pace_test.go`).
+
 Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: every Piece's hero comes from the build unless it names one.
@@ -880,9 +889,10 @@ while it is a draft and fails on any `TODO(author)` once it is not.
 
 **The daily rhythm** (ADR-0009): run `make daily` each morning. It runs
 Intake, then a headless Claude Code session (`claude -p`, on the Author's
-login) chooses every fresh Lead that can carry a Brief with a live Explainer
-teaching its lesson and up to `EXPLAINERS` (default 10) Leads that can carry
-a Case Study, Concept or Comparison, explaining each rejection. Each pick
+login) chooses up to `BRIEFS` (default 2) fresh Leads that can carry a Brief with
+a live Explainer teaching its lesson and up to `EXPLAINERS` (default 2, or 0
+while `BACKLOG`, default 4, Explainer drafts wait) Leads that can carry a
+Case Study, Concept or Comparison, explaining each rejection. Each pick
 goes through `make lead` one at a time and is renamed to its chosen slug;
 then `PARALLEL` (default 4) pairs of sessions draft each Piece by its kind's
 writing guide and fact-check it against its Sources (prompts in
@@ -891,11 +901,12 @@ run: a preview build plus the page's size). A draft its Source cannot carry
 is removed. The drafts and the Author's check list
 (`.scratch/daily/<date>/review-queue.md`) are committed on the current
 branch; nothing is pushed or tagged, and every draft keeps `draft: true` and
-no `verified:`. `make daily DRY=1` chooses only; `BRIEFS=N` limits Briefs
-(default all). Run logs, each session's JSON and the run's Claude cost are
-under `.intake/daily/<run>/`. The Author then verifies, sets `verified:`,
-removes `draft: true` and Publishes. No daily Publish cap applies until the
-site has 500 Pieces (ADR-0009). By hand, the same steps are `make intake`,
+no `verified:`. `make daily DRY=1` chooses only; `BRIEFS=all` takes every
+qualifying Brief. Run logs, each session's JSON and the run's Claude cost are
+under `.intake/daily/<run>/`. The Author then verifies and releases at most two Pieces a
+day: remove `draft: true` and set `published` and `verified` to the release
+day, then Publish. A production build fails (rule `publish-pace`) on any
+day from 2026-10-30 with more than two non-draft Pieces (ADR-0010). By hand, the same steps are `make intake`,
 `make lead` and `make lead-dismiss`; what is left open expires after 7 days. **The
 planned pace** is 5 Explainers a week (2 Case Studies, 2 Concepts, 1
 Comparison) and 5 Briefs a week, with every Vertical getting a new

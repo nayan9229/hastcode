@@ -9,7 +9,6 @@ kind: case-study
 vertical: distributed-systems
 tags: ["privacy", "policy-enforcement", "client-libraries", "rpc", "meta"]
 published: "2026-10-30T10:42:23Z"
-verified: 2026-10-30
 reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -18,6 +17,7 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
+draft: true
 ---
 
 Meta's PrivacyLib performs [billions of privacy checks every second](https://engineering.fb.com/2026/10/27/security/privacylib/), inside the clients of hundreds of data and processing systems, while consuming ["only a small fraction of Meta's total compute capacity"](https://engineering.fb.com/2026/10/27/security/privacylib/). It manages that by not being a service at all: the check runs in the caller's own process, and the common path [avoids a network call](https://engineering.fb.com/2026/10/27/security/privacylib/).

@@ -9,7 +9,6 @@ kind: case-study
 vertical: infrastructure-cloud
 tags: ["security", "kubernetes", "cloud-run", "gcp", "shopify"]
 published: "2026-10-30T10:42:23Z"
-verified: 2026-10-30
 reviewed: "2026-10-30T10:42:23Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
@@ -18,6 +17,7 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
+draft: true
 ---
 
 Shopify's first scanner for apps that answer strangers without a login read the Kubernetes files in its infrastructure repository, and it [flagged protected apps, missed real ones and never saw some at all](https://shopify.engineering/overexposed). Its replacement, Overexposed, stops trusting the repository, asks Google Cloud what is actually deployed, and then knocks on each door as an anonymous outsider.

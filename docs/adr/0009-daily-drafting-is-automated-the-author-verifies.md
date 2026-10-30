@@ -2,6 +2,7 @@
 status: accepted
 date: 2026-10-30
 amends: ADR-0007
+amended-by: ADR-0010 (2026-10-30: the two-a-day Publish cap returns, enforced by the build)
 ---
 
 # Daily drafting is automated; the Author verifies
