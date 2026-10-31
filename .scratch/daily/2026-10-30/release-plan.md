@@ -6,7 +6,9 @@ The eight below are drafts again. On each release day, for its two Pieces: remov
 
 | Day | Pieces |
 |---|---|
-| 2026-10-31 | `meta-privacylib`, `dnssec-root-key-rollover` (released 00:09 IST) |
-| 2026-11-01 | `snapshot-restore-hydration`, `workers-ai-kv-cache-exposure` |
-| 2026-11-02 | `cloudflare-origin-range-requests`, `volatile-expressions-sharded-sql` |
-| 2026-11-03 | `shopify-overexposed`, `bundled-vs-platform-trust-stores` |
+| 2026-10-30 | `cloudflare-analytics-pipeline`, `zgc-adaptive-heap-sizing` (live) |
+| 2026-10-31 | `dnssec-root-key-rollover` (00:09 IST), Brief `emudhra-weak-ca-keys` (22:05 IST; took Meta PrivacyLib's slot) |
+| 2026-11-01 | `meta-privacylib`, `snapshot-restore-hydration` |
+| 2026-11-02 | `workers-ai-kv-cache-exposure`, `cloudflare-origin-range-requests` |
+| 2026-11-03 | `volatile-expressions-sharded-sql`, `shopify-overexposed` |
+| 2026-11-04 | `bundled-vs-platform-trust-stores` |

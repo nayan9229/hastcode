@@ -1,12 +1,12 @@
 ---
 # From Lead 4xabvz3v (Cloudflare blog), picked 2026-10-31. Drafted per
-# docs/editorial/brief-writing-guide.md. published is the pick time,
-# provisional: set it when you publish. verified: is the Author's alone
+# docs/editorial/brief-writing-guide.md. verified: is the Author's alone
 # (ADR-0007).
 title: "eMudhra's weak CA keys: trust stores that cannot drop a broken CA"
 description: "Cloudflare rejected eMudhra's weak CA keys within hours; a week on, most large-network probes still accepted them. Trust stores must update fast."
 tags: [tls, pki, trust-anchors, cloudflare]
-published: "2026-10-31T12:35:07Z"
+published: "2026-10-31T22:05:29+05:30"
+verified: 2026-10-31
 author: mira-vance
 source_url: "https://blog.cloudflare.com/emudhra-patching/"
 explainers: [dnssec-root-key-rollover]
@@ -17,7 +17,6 @@ explainers: [dnssec-root-key-rollover]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
