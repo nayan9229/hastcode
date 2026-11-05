@@ -10,6 +10,9 @@ The eight below are drafts again. On each release day, for its two Pieces: remov
 | 2026-10-31 | `dnssec-root-key-rollover` (00:09 IST), Brief `emudhra-weak-ca-keys` (22:05 IST; took Meta PrivacyLib's slot) |
 | 2026-11-01 | nothing released |
 | 2026-11-02 | `meta-privacylib`, `snapshot-restore-hydration` (18:13 UTC) |
-| 2026-11-03 | `workers-ai-kv-cache-exposure`, `cloudflare-origin-range-requests` |
-| 2026-11-04 | `volatile-expressions-sharded-sql`, `shopify-overexposed` |
-| 2026-11-05 | `bundled-vs-platform-trust-stores` |
+| 2026-11-03 | nothing released |
+| 2026-11-04 | nothing released |
+| 2026-11-05 | Briefs `fly-io-petsem-sqlite-lock-contention`, `vllm-kimi-k31-pro-day-0-support` (17:02 UTC; both expire 2026-11-07 00:00 UTC) |
+| 2026-11-06 | `workers-ai-kv-cache-exposure`, `cloudflare-origin-range-requests` |
+| 2026-11-07 | `volatile-expressions-sharded-sql`, `shopify-overexposed` |
+| 2026-11-08 | `bundled-vs-platform-trust-stores` |

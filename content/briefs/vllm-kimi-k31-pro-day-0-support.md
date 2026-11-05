@@ -5,7 +5,8 @@
 title: "vLLM's Kimi K3.1 Pro day 0: merge shape and cache layout set the cost"
 description: "vLLM's Kimi K3.1 Pro support packs each DCP top-k candidate into 32 bits and the KV cache by block: merge shape and cache layout set the cost."
 tags: ["llm-inference", "kv-cache", "context-parallelism", "vllm"]
-published: "2026-11-05T13:01:30Z"
+published: "2026-11-05T17:02:45Z"
+verified: 2026-11-05
 author: mira-vance
 source_url: "https://vllm.ai/blog/2026-11-04-kimi-k31-pro"
 explainers: [decode-context-parallelism, disaggregated-inference]
@@ -16,7 +17,6 @@ explainers: [decode-context-parallelism, disaggregated-inference]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

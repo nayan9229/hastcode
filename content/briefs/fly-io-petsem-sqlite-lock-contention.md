@@ -5,7 +5,8 @@
 title: "Fly.io's flaky Petsem: SQLite has one writer, so keep writes bounded"
 description: "Extra tracking writes tipped Petsem's SQLite primary into lock contention, failing over half of writes. SQLite has one writer: bound the load."
 tags: [sqlite, locking, incidents, fly-io]
-published: "2026-11-05T13:01:30Z"
+published: "2026-11-05T17:02:45Z"
+verified: 2026-11-05
 author: mira-vance
 source_url: "https://fly.io/infra-log/petsem-was-flaky/"
 explainers: [cloudflare-d1]
@@ -16,7 +17,6 @@ explainers: [cloudflare-d1]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "Appropriate Uses For SQLite", url: "https://www.sqlite.org/whentouse.html"}, {title: "Write-Ahead Logging", url: "https://www.sqlite.org/wal.html"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
