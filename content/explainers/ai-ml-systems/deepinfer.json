@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-22T18:25:44Z",
+  "fetched_at": "2026-11-07T06:39:37Z",
   "slug": "deepseek-ai/DeepInfer",
   "name": "DeepInfer",
   "url": "https://github.com/deepseek-ai/DeepInfer",
@@ -17,24 +17,29 @@
   "languages": {
     "C++": 278292,
     "Makefile": 983,
-    "Python": 2345620,
+    "Python": 2345817,
     "Shell": 8961
   },
-  "stars": 19729,
-  "forks": 2099,
-  "watchers": 43,
-  "open_issues": 192,
+  "stars": 25565,
+  "forks": 3132,
+  "watchers": 65,
+  "open_issues": 247,
   "created_at": "2026-10-16T07:47:23Z",
-  "pushed_at": "2026-10-21T04:55:44Z",
+  "pushed_at": "2026-11-03T07:31:59Z",
   "latest_release": null,
   "releases": [],
   "contributors": {
-    "total": 3,
+    "total": 4,
     "top": [
       {
         "login": "beginlner",
         "url": "https://github.com/beginlner",
         "contributions": 2
+      },
+      {
+        "login": "Inference1",
+        "url": "https://github.com/Inference1",
+        "contributions": 1
       },
       {
         "login": "wx-csy",
@@ -69,7 +74,7 @@
     "sha": "7143caadd1258f56295e2c7766889478556836b3"
   },
   "stargazers": {
-    "count": 19730
+    "count": 25565
   },
   "sources": [
     "https://github.com/deepseek-ai/DeepInfer",

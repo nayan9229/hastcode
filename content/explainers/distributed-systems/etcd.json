@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-22T18:26:08Z",
+  "fetched_at": "2026-11-07T06:39:59Z",
   "slug": "etcd-io/etcd",
   "name": "etcd",
   "url": "https://github.com/etcd-io/etcd",
@@ -27,26 +27,47 @@
   "language": "Go",
   "languages": {
     "Dockerfile": 6157,
-    "Go": 5855618,
+    "Go": 5867809,
     "Jsonnet": 60077,
     "Makefile": 25370,
     "Procfile": 8280,
     "Shell": 148606
   },
-  "stars": 52417,
-  "forks": 10548,
-  "watchers": 1268,
-  "open_issues": 396,
+  "stars": 52642,
+  "forks": 10590,
+  "watchers": 1281,
+  "open_issues": 425,
   "created_at": "2013-07-06T21:57:21Z",
-  "pushed_at": "2026-10-22T17:56:12Z",
+  "pushed_at": "2026-11-06T12:29:27Z",
   "latest_release": {
-    "tag": "v3.7.2",
-    "name": "v3.7.2",
-    "date": "2026-09-22T21:22:39Z",
-    "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.2",
+    "tag": "v3.7.3",
+    "name": "v3.7.3",
+    "date": "2026-10-22T23:12:51Z",
+    "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.3",
     "prerelease": false
   },
   "releases": [
+    {
+      "tag": "v3.7.3",
+      "name": "v3.7.3",
+      "date": "2026-10-22T23:12:51Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.3",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.6.16",
+      "name": "v3.6.16",
+      "date": "2026-10-22T23:00:22Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.6.16",
+      "prerelease": false
+    },
+    {
+      "tag": "v3.5.35",
+      "name": "v3.5.35",
+      "date": "2026-10-22T21:36:15Z",
+      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.5.35",
+      "prerelease": false
+    },
     {
       "tag": "v3.7.2",
       "name": "v3.7.2",
@@ -95,27 +116,6 @@
       "date": "2026-07-08T18:26:53Z",
       "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.0",
       "prerelease": false
-    },
-    {
-      "tag": "v3.6.13",
-      "name": "v3.6.13",
-      "date": "2026-07-01T20:43:27Z",
-      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.6.13",
-      "prerelease": false
-    },
-    {
-      "tag": "v3.5.32",
-      "name": "v3.5.32",
-      "date": "2026-07-01T20:32:19Z",
-      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.5.32",
-      "prerelease": false
-    },
-    {
-      "tag": "v3.7.0-rc.0",
-      "name": "v3.7.0-rc.0",
-      "date": "2026-06-01T21:27:32Z",
-      "url": "https://github.com/etcd-io/etcd/releases/tag/v3.7.0-rc.0",
-      "prerelease": true
     }
   ],
   "contributors": {
@@ -129,7 +129,7 @@
       {
         "login": "ahrtr",
         "url": "https://github.com/ahrtr",
-        "contributions": 2315
+        "contributions": 2323
       },
       {
         "login": "xiang90",
@@ -139,7 +139,7 @@
       {
         "login": "serathius",
         "url": "https://github.com/serathius",
-        "contributions": 1907
+        "contributions": 1908
       },
       {
         "login": "yichengq",
@@ -159,7 +159,7 @@
       {
         "login": "ivanvc",
         "url": "https://github.com/ivanvc",
-        "contributions": 367
+        "contributions": 382
       },
       {
         "login": "jmhbnz",
@@ -194,7 +194,7 @@
     "sha": "19b0b357f67647f5326d96e0da0a3ac4dd020ccf"
   },
   "stargazers": {
-    "count": 52417
+    "count": 52642
   },
   "sources": [
     "https://github.com/etcd-io/etcd",

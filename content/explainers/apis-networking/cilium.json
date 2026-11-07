@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-22T18:25:32Z",
+  "fetched_at": "2026-11-07T06:39:44Z",
   "slug": "cilium/cilium",
   "name": "cilium",
   "url": "https://github.com/cilium/cilium",
@@ -32,32 +32,60 @@
   "default_branch": "main",
   "language": "Go",
   "languages": {
-    "C": 2713366,
-    "Dockerfile": 32434,
-    "Go": 24553844,
-    "Go Template": 60567,
+    "C": 2716573,
+    "Dockerfile": 32548,
+    "Go": 25152265,
+    "Go Template": 61058,
     "HTML": 3439,
     "Lua": 2517,
-    "Makefile": 81431,
+    "Makefile": 78798,
     "Python": 88877,
-    "Shell": 173696,
+    "Shell": 173891,
     "SmPL": 13189,
     "TeX": 416
   },
-  "stars": 25707,
-  "forks": 4179,
+  "stars": 25789,
+  "forks": 4221,
   "watchers": 312,
-  "open_issues": 1100,
+  "open_issues": 1038,
   "created_at": "2015-12-16T12:33:31Z",
-  "pushed_at": "2026-10-22T18:13:45Z",
+  "pushed_at": "2026-11-06T21:20:52Z",
   "latest_release": {
-    "tag": "v1.20.3",
-    "name": "1.20.3",
-    "date": "2026-10-15T15:26:34Z",
-    "url": "https://github.com/cilium/cilium/releases/tag/v1.20.3",
+    "tag": "v1.20.4",
+    "name": "1.20.4",
+    "date": "2026-10-23T14:51:39Z",
+    "url": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
     "prerelease": false
   },
   "releases": [
+    {
+      "tag": "v1.21.0-pre.4",
+      "name": "1.21.0-pre.4",
+      "date": "2026-11-02T23:21:19Z",
+      "url": "https://github.com/cilium/cilium/releases/tag/v1.21.0-pre.4",
+      "prerelease": true
+    },
+    {
+      "tag": "v1.20.4",
+      "name": "1.20.4",
+      "date": "2026-10-23T14:51:39Z",
+      "url": "https://github.com/cilium/cilium/releases/tag/v1.20.4",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.19.10",
+      "name": "1.19.10",
+      "date": "2026-10-23T14:51:33Z",
+      "url": "https://github.com/cilium/cilium/releases/tag/v1.19.10",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.18.16",
+      "name": "1.18.16",
+      "date": "2026-10-23T14:51:27Z",
+      "url": "https://github.com/cilium/cilium/releases/tag/v1.18.16",
+      "prerelease": false
+    },
     {
       "tag": "v1.20.3",
       "name": "1.20.3",
@@ -99,34 +127,6 @@
       "date": "2026-09-16T01:53:16Z",
       "url": "https://github.com/cilium/cilium/releases/tag/v1.19.8",
       "prerelease": false
-    },
-    {
-      "tag": "v1.18.14",
-      "name": "1.18.14",
-      "date": "2026-09-16T01:53:07Z",
-      "url": "https://github.com/cilium/cilium/releases/tag/v1.18.14",
-      "prerelease": false
-    },
-    {
-      "tag": "v1.21.0-pre.2",
-      "name": "1.21.0-pre.2",
-      "date": "2026-09-09T11:50:23Z",
-      "url": "https://github.com/cilium/cilium/releases/tag/v1.21.0-pre.2",
-      "prerelease": true
-    },
-    {
-      "tag": "v1.20.1",
-      "name": "1.20.1",
-      "date": "2026-08-18T10:36:16Z",
-      "url": "https://github.com/cilium/cilium/releases/tag/v1.20.1",
-      "prerelease": false
-    },
-    {
-      "tag": "v1.19.7",
-      "name": "1.19.7",
-      "date": "2026-08-18T10:35:54Z",
-      "url": "https://github.com/cilium/cilium/releases/tag/v1.19.7",
-      "prerelease": false
     }
   ],
   "contributors": {
@@ -135,7 +135,7 @@
       {
         "login": "aanm",
         "url": "https://github.com/aanm",
-        "contributions": 3968
+        "contributions": 4017
       },
       {
         "login": "tgraf",
@@ -145,27 +145,27 @@
       {
         "login": "joestringer",
         "url": "https://github.com/joestringer",
-        "contributions": 2493
+        "contributions": 2500
       },
       {
         "login": "tklauser",
         "url": "https://github.com/tklauser",
-        "contributions": 1951
+        "contributions": 1956
       },
       {
         "login": "jrajahalme",
         "url": "https://github.com/jrajahalme",
-        "contributions": 1630
+        "contributions": 1637
       },
       {
         "login": "pchaigno",
         "url": "https://github.com/pchaigno",
-        "contributions": 1535
+        "contributions": 1538
       },
       {
         "login": "julianwiedmann",
         "url": "https://github.com/julianwiedmann",
-        "contributions": 1495
+        "contributions": 1496
       },
       {
         "login": "brb",
@@ -175,7 +175,7 @@
       {
         "login": "giorio94",
         "url": "https://github.com/giorio94",
-        "contributions": 1227
+        "contributions": 1228
       },
       {
         "login": "borkmann",
@@ -202,10 +202,10 @@
   },
   "readme": {
     "url": "https://github.com/cilium/cilium/blob/main/README.rst",
-    "sha": "dda75cdf8fca1128af57591ed1c7ba505c9a3742"
+    "sha": "5a04db876866480a8685653b051d98b21285aa9d"
   },
   "stargazers": {
-    "count": 25707
+    "count": 25789
   },
   "sources": [
     "https://github.com/cilium/cilium",

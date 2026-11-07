@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-22T18:25:30Z",
+  "fetched_at": "2026-11-07T06:40:10Z",
   "slug": "php/frankenphp",
   "name": "frankenphp",
   "url": "https://github.com/php/frankenphp",
@@ -22,30 +22,51 @@
   "default_branch": "main",
   "language": "Go",
   "languages": {
-    "C": 100706,
-    "Dockerfile": 15044,
-    "Go": 905829,
+    "C": 112830,
+    "Dockerfile": 16433,
+    "Go": 983322,
     "Go Template": 14661,
     "HCL": 6371,
     "Hack": 95783,
-    "PHP": 5761,
+    "PHP": 6131,
     "PowerShell": 2018,
-    "Shell": 36596
+    "Shell": 36699
   },
-  "stars": 11450,
-  "forks": 499,
-  "watchers": 88,
-  "open_issues": 121,
+  "stars": 11518,
+  "forks": 513,
+  "watchers": 84,
+  "open_issues": 120,
   "created_at": "2022-03-25T09:37:54Z",
-  "pushed_at": "2026-10-22T15:38:33Z",
+  "pushed_at": "2026-11-07T01:28:05Z",
   "latest_release": {
-    "tag": "v1.13.2",
-    "name": "v1.13.2",
-    "date": "2026-10-21T18:19:03Z",
-    "url": "https://github.com/php/frankenphp/releases/tag/v1.13.2",
+    "tag": "v1.13.5",
+    "name": "v1.13.5",
+    "date": "2026-11-05T12:01:06Z",
+    "url": "https://github.com/php/frankenphp/releases/tag/v1.13.5",
     "prerelease": false
   },
   "releases": [
+    {
+      "tag": "v1.13.5",
+      "name": "v1.13.5",
+      "date": "2026-11-05T12:01:06Z",
+      "url": "https://github.com/php/frankenphp/releases/tag/v1.13.5",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.13.4",
+      "name": "v1.13.4",
+      "date": "2026-10-26T16:51:30Z",
+      "url": "https://github.com/php/frankenphp/releases/tag/v1.13.4",
+      "prerelease": false
+    },
+    {
+      "tag": "v1.13.3",
+      "name": "v1.13.3",
+      "date": "2026-10-23T12:43:58Z",
+      "url": "https://github.com/php/frankenphp/releases/tag/v1.13.3",
+      "prerelease": false
+    },
     {
       "tag": "v1.13.2",
       "name": "v1.13.2",
@@ -94,36 +115,15 @@
       "date": "2026-06-04T10:29:19Z",
       "url": "https://github.com/php/frankenphp/releases/tag/v1.12.4",
       "prerelease": false
-    },
-    {
-      "tag": "v1.12.3",
-      "name": "v1.12.3",
-      "date": "2026-05-15T23:09:45Z",
-      "url": "https://github.com/php/frankenphp/releases/tag/v1.12.3",
-      "prerelease": false
-    },
-    {
-      "tag": "v1.12.2",
-      "name": "v1.12.2",
-      "date": "2026-04-09T15:43:18Z",
-      "url": "https://github.com/php/frankenphp/releases/tag/v1.12.2",
-      "prerelease": false
-    },
-    {
-      "tag": "v1.12.1",
-      "name": "v1.12.1",
-      "date": "2026-03-10T15:32:11Z",
-      "url": "https://github.com/php/frankenphp/releases/tag/v1.12.1",
-      "prerelease": false
     }
   ],
   "contributors": {
-    "total": 161,
+    "total": 166,
     "top": [
       {
         "login": "dunglas",
         "url": "https://github.com/dunglas",
-        "contributions": 687
+        "contributions": 737
       },
       {
         "login": "alexandre-daubois",
@@ -133,17 +133,17 @@
       {
         "login": "henderkes",
         "url": "https://github.com/henderkes",
-        "contributions": 90
+        "contributions": 92
       },
       {
         "login": "AlliBalliBaba",
         "url": "https://github.com/AlliBalliBaba",
-        "contributions": 87
+        "contributions": 88
       },
       {
         "login": "dependabot[bot]",
         "url": "https://github.com/apps/dependabot",
-        "contributions": 42
+        "contributions": 44
       },
       {
         "login": "withinboredom",
@@ -151,24 +151,24 @@
         "contributions": 40
       },
       {
+        "login": "github-actions[bot]",
+        "url": "https://github.com/apps/github-actions",
+        "contributions": 19
+      },
+      {
         "login": "IndraGunawan",
         "url": "https://github.com/IndraGunawan",
         "contributions": 14
       },
       {
-        "login": "github-actions[bot]",
-        "url": "https://github.com/apps/github-actions",
-        "contributions": 14
-      },
-      {
         "login": "nicolas-grekas",
         "url": "https://github.com/nicolas-grekas",
-        "contributions": 13
+        "contributions": 14
       },
       {
         "login": "dunglas-release[bot]",
         "url": "https://github.com/apps/dunglas-release",
-        "contributions": 7
+        "contributions": 10
       }
     ]
   },
@@ -193,7 +193,7 @@
     "sha": "96f0bc9d14c2a32a81c714821ac889e874654e24"
   },
   "stargazers": {
-    "count": 11450
+    "count": 11518
   },
   "sources": [
     "https://github.com/php/frankenphp",

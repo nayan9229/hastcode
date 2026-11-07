@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-10-22T14:07:04Z",
+  "fetched_at": "2026-11-07T06:39:55Z",
   "slug": "apache/iggy",
   "name": "iggy",
   "url": "https://github.com/apache/iggy",
@@ -24,34 +24,34 @@
   "default_branch": "master",
   "language": "Rust",
   "languages": {
-    "C#": 2208026,
-    "C++": 777670,
+    "C#": 3098160,
+    "C++": 1181322,
     "CSS": 87404,
-    "Dockerfile": 49647,
-    "Gherkin": 8710,
-    "Go": 1165361,
-    "Go Template": 16382,
+    "Dockerfile": 51319,
+    "Gherkin": 27535,
+    "Go": 2038582,
+    "Go Template": 18478,
     "HTML": 13336,
     "Handlebars": 1050,
-    "Java": 2514123,
-    "JavaScript": 28578,
-    "Just": 5940,
-    "PHP": 100053,
-    "Python": 659776,
+    "Java": 4030147,
+    "JavaScript": 45184,
+    "Just": 5929,
+    "PHP": 341794,
+    "Python": 913467,
     "Ruby": 1117,
-    "Rust": 26011827,
-    "Shell": 304824,
-    "Starlark": 9166,
-    "Svelte": 253670,
-    "Swift": 700389,
-    "TypeScript": 1074242
+    "Rust": 34109755,
+    "Shell": 336509,
+    "Starlark": 9783,
+    "Svelte": 282986,
+    "Swift": 1772703,
+    "TypeScript": 1781463
   },
-  "stars": 5160,
-  "forks": 485,
-  "watchers": 35,
-  "open_issues": 271,
+  "stars": 5245,
+  "forks": 516,
+  "watchers": 32,
+  "open_issues": 249,
   "created_at": "2023-03-18T21:39:42Z",
-  "pushed_at": "2026-10-22T12:30:22Z",
+  "pushed_at": "2026-11-07T04:59:04Z",
   "latest_release": {
     "tag": "server-0.9.0",
     "name": "server-0.9.0",
@@ -132,27 +132,27 @@
     }
   ],
   "contributors": {
-    "total": 154,
+    "total": 165,
     "top": [
       {
         "login": "hubcio",
         "url": "https://github.com/hubcio",
-        "contributions": 610
+        "contributions": 628
       },
       {
         "login": "spetz",
         "url": "https://github.com/spetz",
-        "contributions": 463
+        "contributions": 468
       },
       {
         "login": "dependabot[bot]",
         "url": "https://github.com/apps/dependabot",
-        "contributions": 432
+        "contributions": 454
       },
       {
         "login": "numinnex",
         "url": "https://github.com/numinnex",
-        "contributions": 139
+        "contributions": 159
       },
       {
         "login": "BartoszCiesla",
@@ -162,12 +162,12 @@
       {
         "login": "krishvishal",
         "url": "https://github.com/krishvishal",
-        "contributions": 70
+        "contributions": 80
       },
       {
         "login": "mmodzelewski",
         "url": "https://github.com/mmodzelewski",
-        "contributions": 68
+        "contributions": 71
       },
       {
         "login": "lukaszzborek",
@@ -197,6 +197,7 @@
     ],
     "manifests": [
       "Cargo.toml",
+      "Package.swift",
       "package.json"
     ],
     "dockerfile": "Dockerfile",
@@ -205,10 +206,10 @@
   },
   "readme": {
     "url": "https://github.com/apache/iggy/blob/master/README.md",
-    "sha": "07990be327fb81064dd9e57b372c21cf44097304"
+    "sha": "ece44b5d2c566d9de6f912c410aa9cb161c2234a"
   },
   "stargazers": {
-    "count": 5160
+    "count": 5245
   },
   "sources": [
     "https://github.com/apache/iggy",
