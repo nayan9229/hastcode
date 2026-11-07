@@ -5,7 +5,8 @@
 title: "GitHub's Project Rubicon: only the pointers need consensus"
 description: "GitHub's new Git storage keeps packs in Blob Storage and votes only on reference pointers: 7,200 pushes a second to one repository in its tests."
 tags: [git, consensus, object-storage, github]
-published: "2026-11-07T06:09:09Z"
+published: "2026-11-07T06:26:51Z"
+verified: 2026-11-07
 author: mira-vance
 source_url: "https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/"
 explainers: [github-agent-scale-git]
@@ -16,7 +17,6 @@ explainers: [github-agent-scale-git]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "Pro Git: Git Objects", url: "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

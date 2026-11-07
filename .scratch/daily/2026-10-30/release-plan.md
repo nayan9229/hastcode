@@ -13,6 +13,8 @@ The eight below are drafts again. On each release day, for its two Pieces: remov
 | 2026-11-03 | nothing released |
 | 2026-11-04 | nothing released |
 | 2026-11-05 | Briefs `fly-io-petsem-sqlite-lock-contention`, `vllm-kimi-k31-pro-day-0-support` (17:02 UTC; both expire 2026-11-07 00:00 UTC) |
-| 2026-11-06 | `workers-ai-kv-cache-exposure`, `cloudflare-origin-range-requests` |
-| 2026-11-07 | `volatile-expressions-sharded-sql`, `shopify-overexposed` |
-| 2026-11-08 | `bundled-vs-platform-trust-stores` |
+| 2026-11-06 | nothing released |
+| 2026-11-07 | Brief `github-ref-cas-git-storage` (expires 2026-11-08 20:23 UTC), `workers-ai-kv-cache-exposure` (06:26 UTC) |
+| 2026-11-08 | Brief `fly-io-ipv4-checksum-offload-cve` (expires 2026-11-09 00:00 UTC), `cloudflare-origin-range-requests` |
+| 2026-11-09 | `volatile-expressions-sharded-sql`, `shopify-overexposed` |
+| 2026-11-10 | `bundled-vs-platform-trust-stores` |
