@@ -57,6 +57,15 @@ func writeCloudflareManifest(s *site) error {
 			NotFoundHandling: "404-page",
 			RunWorkerFirst:   []string{subscribe.Path},
 		},
+		// What the Cloudflare dashboard asked for on 2026-11-10 ("keep
+		// deployments in sync"): every invocation logged and traced and
+		// kept, Issues on. Only the signup path invokes the Worker, so the
+		// volume is the signup rate, never page views.
+		Observability: cloudflare.Observability{
+			Logs:   cloudflare.ObservabilityLogs{Enabled: true, HeadSamplingRate: 1, InvocationLogs: true, Persist: true},
+			Traces: cloudflare.ObservabilityTraces{Enabled: true, HeadSamplingRate: 1, Persist: true},
+			Issues: cloudflare.ObservabilityIssues{Enabled: true},
+		},
 	})
 }
 

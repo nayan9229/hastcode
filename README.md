@@ -1366,7 +1366,13 @@ output (`../../worker/index.js` for the default `OUT`; the builder anchors
 it on `-tools`, the project root); `compatibility_date` (a constant in the
 step file; never later than the pinned Wrangler's runtime);
 `workers_dev: true` and `preview_urls: true` (smoke-test and Preview URLs);
-no `routes`, so a deploy never attaches hastcode.com by itself (the DNS flip
+`observability` (Workers Logs, Traces and Issues, the block the dashboard
+asks to keep in sync: `logs` and `traces` enabled with `head_sampling_rate:
+1` and `persist: true`, `logs.invocation_logs: true`, `issues.enabled:
+true`; the dashboard spells Issues `issue_detection`, Wrangler `issues`,
+and Wrangler warns about then drops the dashboard spelling; only the signup
+path invokes the Worker, so the volume is signups, not page views); no
+`routes`, so a deploy never attaches hastcode.com by itself (the DNS flip
 is a wizard step); and `assets`:
 
 - `directory: "static"`, `binding: "ASSETS"` (the Worker's `env.ASSETS`).

@@ -34,9 +34,48 @@ type Config struct {
 	CompatibilityDate string `json:"compatibility_date"`
 	// WorkersDev keeps <name>.<account>.workers.dev; PreviewURLs enables
 	// per-version and per-branch preview URLs.
-	WorkersDev  bool   `json:"workers_dev"`
-	PreviewURLs bool   `json:"preview_urls"`
-	Assets      Assets `json:"assets"`
+	WorkersDev    bool          `json:"workers_dev"`
+	PreviewURLs   bool          `json:"preview_urls"`
+	Assets        Assets        `json:"assets"`
+	Observability Observability `json:"observability"`
+}
+
+// Observability is wrangler.json "observability": Workers Logs, Traces and
+// Issues for the Worker. The dashboard's "keep deployments in sync" block
+// names Issues `issue_detection`; Wrangler's key is `issues`
+// (https://developers.cloudflare.com/workers/wrangler/configuration/#observability,
+// Wrangler 4.134.0 or later), and the pinned Wrangler warns about an
+// unexpected field and drops it, so the dashboard spelling never applies.
+type Observability struct {
+	Logs   ObservabilityLogs   `json:"logs"`
+	Traces ObservabilityTraces `json:"traces"`
+	Issues ObservabilityIssues `json:"issues"`
+}
+
+// ObservabilityLogs is Workers Logs. HeadSamplingRate, 0 to 1, is the share
+// of invocations logged; InvocationLogs adds one log per invocation
+// (request, status, timing) beside the Worker's own console output; Persist
+// keeps them on Cloudflare's observability platform, queryable in the
+// dashboard.
+type ObservabilityLogs struct {
+	Enabled          bool    `json:"enabled"`
+	HeadSamplingRate float64 `json:"head_sampling_rate"`
+	InvocationLogs   bool    `json:"invocation_logs"`
+	Persist          bool    `json:"persist"`
+}
+
+// ObservabilityTraces is Workers Traces (beta): same sampling and
+// persistence as logs.
+type ObservabilityTraces struct {
+	Enabled          bool    `json:"enabled"`
+	HeadSamplingRate float64 `json:"head_sampling_rate"`
+	Persist          bool    `json:"persist"`
+}
+
+// ObservabilityIssues is Workers Issues: detects and groups production
+// failures of the Worker.
+type ObservabilityIssues struct {
+	Enabled bool `json:"enabled"`
 }
 
 // Assets is wrangler.json "assets": Workers Static Assets.

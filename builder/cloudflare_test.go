@@ -53,6 +53,24 @@ func TestCloudflare_WorkersConfigServesTheStaticTreeWithTheWorkerOnlyOnTheSignup
 	}
 }
 
+// Workers observability, as the dashboard's "keep deployments in sync"
+// block asks (2026-11-10), in Wrangler's spelling: the dashboard's
+// issue_detection is Wrangler's issues; the pinned Wrangler warns about and
+// drops an unexpected field, so the dashboard spelling would never apply.
+func TestCloudflare_WorkersConfigKeepsObservabilityInSyncWithTheDashboard(t *testing.T) {
+	out := buildtest.MustBuild(t, buildtest.Config(), buildtest.NewTree())
+	wc := buildtest.WorkersConfig(t, out)
+
+	want := map[string]any{
+		"logs":   map[string]any{"enabled": true, "head_sampling_rate": float64(1), "invocation_logs": true, "persist": true},
+		"traces": map[string]any{"enabled": true, "head_sampling_rate": float64(1), "persist": true},
+		"issues": map[string]any{"enabled": true},
+	}
+	if got := wc["observability"]; !reflect.DeepEqual(got, want) {
+		t.Errorf("observability = %#v, want %#v", got, want)
+	}
+}
+
 func TestCloudflare_HeadersCacheHashedAssetsForeverAndRevalidateHTML(t *testing.T) {
 	tree := buildtest.ValidTree()
 	for _, p := range buildtest.TransparencyPages() {
