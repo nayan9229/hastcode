@@ -5,7 +5,8 @@
 title: "GitHub's anonymous-traffic surge: shed the cheapest class first"
 description: "On 9 November anonymous requests to GitHub got 504s while logged-in traffic stayed healthy. Admit by traffic class and shed the cheapest first."
 tags: [load-shedding, admission-control, incidents, github]
-published: "2026-11-10T06:34:59Z"
+published: "2026-11-10T06:56:04Z"
+verified: 2026-11-10
 author: mira-vance
 source_url: "https://www.githubstatus.com/incidents/c9px7cw2ghrs"
 explainers: [metastable-failures]
@@ -16,7 +17,6 @@ explainers: [metastable-failures]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "Increase in timeouts for some unauthenticated users", url: "https://www.githubstatus.com/incidents/pyynvrm1vskw"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
