@@ -6,7 +6,8 @@
 title: "Shopify's 12-week native rebuild: the harness set the pace"
 description: "Shopify moved 300-plus screens from React Native to Swift and Kotlin in 12 weeks with agents. Speed came from fast checks, not bigger agent tasks."
 tags: [coding-agents, harness-engineering, mobile, shopify]
-published: "2026-11-12T09:17:22Z"
+published: "2026-11-12T10:26:08Z"
+verified: 2026-11-12
 author: mira-vance
 source_url: "https://shopify.engineering/shopify-app-rebuild"
 explainers: [agentic-development]
@@ -17,7 +18,6 @@ explainers: [agentic-development]
 # Optional: related Explainer slugs.
 # related: [meta-thin-orchestrator]
 sources: [{title: "Reflex: an architecture for building mobile apps with agents", url: "https://shopify.engineering/reflex"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

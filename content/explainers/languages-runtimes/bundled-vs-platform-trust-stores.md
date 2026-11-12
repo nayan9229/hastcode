@@ -8,7 +8,7 @@ description: "How browsers, Go, Java and OS-store runtimes stopped trusting eMud
 kind: comparison
 vertical: languages-runtimes
 tags: ["tls", "x509", "certificate-revocation", "go", "java"]
-published: "2026-11-12T10:00:00Z"
+published: "2026-11-09T10:00:00Z"
 verified: 2026-11-12
 reviewed: "2026-11-12T10:00:00Z"
 author: mira-vance

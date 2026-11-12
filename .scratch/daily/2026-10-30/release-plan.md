@@ -19,6 +19,7 @@ The eight below are drafts again. On each release day, for its two Pieces: remov
 | 2026-11-09 | nothing released |
 | 2026-11-10 | Briefs `github-anonymous-traffic-surge`, `topstep-redis-to-valkey-migration` (06:56 UTC) |
 | 2026-11-11 | `cloudflare-origin-range-requests`, `shopify-overexposed` (released 2026-11-12 with `published` backdated to 11 Nov: the Author chose to clear the backlog in one day; `verified` 2026-11-12) |
-| 2026-11-12 | `volatile-expressions-sharded-sql`, `bundled-vs-platform-trust-stores` |
+| 2026-11-09 | `volatile-expressions-sharded-sql`, `bundled-vs-platform-trust-stores` (released 2026-11-12, `published` backdated to 9 Nov to free the day for two Briefs) |
+| 2026-11-12 | Briefs `shopify-mobile-app-native-rebuild` (post 10 Nov), `vllm-encoder-disaggregation-epd` (post 11 Nov) |
 
 Backlog cleared 2026-11-12; `make daily` drafts Explainers again from 2026-11-13. Intake queue cut the same day to Leads under 3 days old (84 dismissed).

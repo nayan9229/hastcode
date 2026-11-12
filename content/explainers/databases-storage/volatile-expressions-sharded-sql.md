@@ -7,7 +7,7 @@ description: "Expression volatility tells a sharded SQL router what it may push 
 kind: concept
 vertical: databases-storage
 tags: ["postgres", "sharding", "query-planning", "sequences", "neki"]
-published: "2026-11-12T10:00:00Z"
+published: "2026-11-09T10:00:00Z"
 verified: 2026-11-12
 reviewed: "2026-11-12T10:00:00Z"
 author: mira-vance

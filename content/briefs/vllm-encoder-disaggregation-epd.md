@@ -6,7 +6,8 @@
 title: "vLLM's encoder disaggregation: a third GPU pool must earn its keep"
 description: "vLLM v0.32.0 puts multimodal encoders on their own GPUs. On GB200, EPD beat PD per GPU at concurrency 64–128 and lost at 16. The split must pay."
 tags: [llm-inference, multimodal, gpu, vllm]
-published: "2026-11-12T09:17:21Z"
+published: "2026-11-12T10:26:08Z"
+verified: 2026-11-12
 author: mira-vance
 source_url: "https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd"
 explainers: [disaggregated-inference]
@@ -17,7 +18,6 @@ explainers: [disaggregated-inference]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 sources: [{title: "Disaggregated Encoder", url: "https://docs.vllm.ai/en/latest/features/disagg_encoder/"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
