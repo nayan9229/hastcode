@@ -8,6 +8,8 @@ Reader) are defined in `GLOSSARY.md`; use them in code and test names.
 
 ## Quick start
 
+Day-to-day operation in plain words: `docs/author-runbook.md`.
+
 templ is a Go tool dependency (`go.mod` `tool` directive), so no global install
 is needed. Generated `*_templ.go` files are **gitignored**: generate before
 compiling, vetting or testing anything. Mermaid diagrams need Node 22+ and the
