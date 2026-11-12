@@ -15,4 +15,4 @@ rm -rf "$out"
 go run ./cmd/builder -content content -config site.yaml -out "$out" -mode preview -skip-search-index 2>&1 | grep -F "$slug.md" || echo "no build errors or warnings name $slug.md"
 page="$out/static/$url/index.html"
 [ -f "$page" ] || { echo "page not written: $page"; exit 1; }
-python3 -c "import re,sys;s=open(sys.argv[1]).read();print('page bytes', len(re.sub(r'<style>.*?</style>','',s,count=1,flags=re.S).encode()), '(at most 49500)')" "$page"
+python3 -c "import re,sys;s=open(sys.argv[1]).read();print('page bytes', len(re.sub(r'<style>.*?</style>','',s,count=1,flags=re.S).encode()), '(at most 51500)')" "$page"

@@ -127,7 +127,7 @@ func AVIFChroma(tb testing.TB, outDir, urlPath string) string {
 // FileSize is the length in bytes of the file written for urlPath. The test
 // fails if it is missing.
 // ContentSize is the size of the page at urlPath without its inline
-// stylesheet (the <style> element in <head>), which the 50 KB gate does not
+// stylesheet (the <style> element in <head>), which the 52 KB gate does not
 // count (ADR-0006).
 func ContentSize(tb testing.TB, outDir, urlPath string) int64 {
 	tb.Helper()

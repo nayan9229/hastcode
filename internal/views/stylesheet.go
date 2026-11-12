@@ -11,7 +11,7 @@ import (
 
 // CSS delivery (ADR-0006, superseding ADR-0003): the stylesheet is inlined
 // once in every page's <head>, so text paints without a second request. The
-// 50 KB per-page HTML gate does not count it (InlineStyle).
+// 52 KB per-page HTML gate does not count it (InlineStyle).
 
 //go:embed site.css
 var baseCSS string

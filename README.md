@@ -142,6 +142,29 @@ build has no scheduling, so a backlog waits as drafts: on release day lift
 `draft: true` and set `published` and `verified` to that day
 (`step_validate_publish_pace.go`, tests `builder/publish_pace_test.go`).
 
+**The Agent Surface (ADR-0011).** For Agents (GLOSSARY: software reading
+the site on a Reader's behalf), not for rankings: research found no AEO
+value, so this exists for agent tooling only. Every Piece page gets a
+Markdown twin at its URL with `.md` in place of the trailing slash
+(`/briefs/x/` -> `/briefs/x.md`): a generated header (title, canonical
+URL, kind, dates, author, Brief source, "© HastCode. Quote with a link
+to <canonical>") then the Piece's written Markdown, frontmatter removed,
+Mermaid left as code, every inline internal link absolute (located
+through the parsed tree, so code is never touched; reference-style links
+stay as written). A twin follows its page: written only when the page was
+(Previews include drafts, Production never; a page a gate dropped has no
+twin), right after the link gate, which lets a page link its own twin
+through `<link rel="alternate" type="text/markdown">`
+(`step_render_twins.go`). `/llms.txt` orients an Agent (llmstxt.org
+shape, never lists Pieces; `step_write_llms_txt.go`) and `/sitemap.md`
+lists every live Piece's twin by Vertical then Briefs, newest first
+(`step_write_markdown_sitemap.go`). Both are linked from the footer's
+"Agents" row with the feeds. Twins
+stay out of search: not in the XML sitemaps or IndexNow (the page index
+reads only HTML), and `X-Robots-Tag: noindex` on `/*.md` and `/llms.txt`
+in `_headers` (QA already noindexes everything). A Repo Profile's Fact
+Pack sections are in its HTML page only. Tests: `builder/agent_surface_test.go`.
+
 Add a Vertical by adding one entry to `site.yaml`.
 
 Heroes: every Piece's hero comes from the build unless it names one.
@@ -230,7 +253,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `builder/pipeline.go` | Phases, `registerStep`, the `site` state struct, `fail`/`warn`, the "skip failed files" filter `passed` behind `publishedExplainers()`/`publishedBriefs()`/`publishedPages()`. |
 | `builder/step_*.go` | One file per pipeline step (load, validate, transform, render, write). |
 | `builder/urls.go` | The URL scheme: one func per page type (`explainerURL`, …), every fixed page, feed and sitemap path, the asset directories, and the retired paths (`retiredSections`, `homeAliasURL`). |
-| `builder/render.go` | Output helpers: `writePage(urlPath, templComponent)` incl. the 50 KB HTML size gate (rule `html-size`), `writeXML`, `isWritten`, rule `markdown`. The output reset is `step_render_reset.go`. |
+| `builder/render.go` | Output helpers: `writePage(urlPath, templComponent)` incl. the 52 KB HTML size gate (rule `html-size`; the spec's 50 KB, raised with ADR-0011), `writeXML`, `isWritten`, rule `markdown`. The output reset is `step_render_reset.go`. |
 | `builder/load.go` | `eachMarkdown` and rule `frontmatter`, shared by the `step_load_*.go` steps. |
 | `builder/*_test.go` | Build-seam tests (package `builder_test`), one file per feature area. |
 | `internal/content/` | Parse content files (frontmatter + body) into `Explainer`, `Brief`, `Author`, `Page`, and a Repo Profile's `FactPack` (`fact_pack.go`: the Fact Pack v1 shape with its JSON names, `ParseFactPack`, and `FactPackFile(markdownFile)`, the naming rule: the same name with `.json`, beside the Markdown), and `Repo` (`repo.go`: owner/name, `ParseRepo`, the one check the frontmatter `repo` key and the fetch command's `-repo` share). No config or output knowledge. |
@@ -270,6 +293,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
+| `builder/step_render_twins.go` | The Agent Surface's Markdown twins (ADR-0011): `twinURL`, the `twin` value per Piece, the header, and `absoluteTwinLinks` (internal links made absolute, located through the parsed tree). See "The Agent Surface". |
+| `builder/step_write_llms_txt.go`, `builder/step_write_markdown_sitemap.go` | `/llms.txt` (orientation, never lists Pieces) and `/sitemap.md` (every live Piece's twin by Vertical then Briefs). |
 | `builder/step_write_cloudflare_manifest.go`, `internal/cloudflare/` | The Production Target's manifest: `<out>/wrangler.json` (Workers Static Assets config, `main` -> `worker/index.js`) plus `static/_headers` and `static/_redirects`. See "Deploying". |
 | `internal/deploy/`, `cmd/adapt/` | The deploy-adapter rule: `Apply(out, target)` (remove the other Target's files in place, write the Target's overlays); `make adapt TARGET=cloudflare\|vercel` runs it. Also the one map of Target spellings: `ParseTarget` reads a name (`cloudflare`), short code (`cf`) or Publish tag (`PUBCF-…`); `Target.Code()`, `Target.TagPrefix()`. |
 | `cmd/target/` | `go run ./cmd/target <name\|code\|tag>` prints `target=`, `code=`, `tag_prefix=`: how `scripts/publish.sh` and `scripts/publish-gate.sh` spell a Target. |
@@ -307,9 +332,10 @@ write author photos 16, upload images 17 (r2 mode), render explainers 20, render
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
 render search page 62, render 404 page 65, check internal links 1000
-(keep it last: it reads every written page); validate IndexNow key 6, validate ads.txt 6; write
+(it reads every written page; only write Markdown twins 1010 comes after
+it, because a twin follows its page, ADR-0011); validate IndexNow key 6, validate ads.txt 6; write
 phase: index written pages 5 (reads the output back; later write steps use
-`s.index`), feeds 20, sitemap 30, news sitemap 35, robots.txt 40, ads.txt 41, IndexNow
+`s.index`), feeds 20, sitemap 30, llms.txt 32, sitemap.md 33, news sitemap 35, robots.txt 40, ads.txt 41, IndexNow
 key + changed URLs 50, author placeholders 60, config.json 100, Cloudflare manifest 105, index search 800 (Pagefind over the
 final output), save page manifest 900 (keep it last).
 
@@ -320,9 +346,10 @@ query and fragment ignored). It must name a written file or a directory
 index (`/a/` -> `/a/index.html`; `/a` without the slash is broken), or a
 path the build does not write itself (`linkTargetsNotWritten`:
 `/api/subscribe`, `/feed.xml`, `/{vertical}/feed.xml`,
-`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`; feeds and
-sitemaps are written in the write phase, after the gate, so their entries
-stay). Otherwise it is a `broken-link`
+`/briefs/feed.xml`, `/sitemap.xml`, `/news-sitemap.xml`, `/llms.txt`,
+`/sitemap.md`; feeds, sitemaps and the Agent Surface files are written in
+the write phase, after the gate, so their entries stay), or the page's own
+Markdown twin (written right after the gate). Otherwise it is a `broken-link`
 error naming the page and the target, attributed to the page's content
 file ("" for home and listings), and the page is removed from the output.
 Header and footer links are checked on every page, so the About, Contact,
@@ -491,7 +518,8 @@ check is only a secondary guard (it measures compressed transfer and
 blocks Google's analytics and ad hosts on previews).
 
 **Weight, ads, analytics.** Every page written through `s.writePage` is
-checked against the 50 KB uncompressed HTML gate, not counting the shared
+checked against the 52 KB uncompressed HTML gate (the spec's 50 KB, raised
+with ADR-0011 when site chrome grew), not counting the shared
 inline stylesheet (ADR-0006; tests measure with `buildtest.ContentSize`); an oversized page is a site-wide `html-size`
 error naming the URL and is not written. Ads come from one component,
 `@AdSlot(page.Ads, views.AdAfterTLDR|views.AdAfterWhatHappened|views.AdAfterBody)`
@@ -1354,7 +1382,8 @@ One `make build` writes one output directory (`$(OUT)`, default
 | `config.json` | Vercel (QA) | Build Output API routes ("Routes and caching"), incl. `X-Robots-Tag: noindex` on everything. |
 | `static/robots.txt` | both, overlaid for Vercel | Production's real file; `make adapt TARGET=vercel` overwrites it with `User-agent: *` / `Disallow: /`. |
 | `wrangler.json` | Cloudflare (Production) | Workers Static Assets config. |
-| `static/_headers` | Cloudflare | Cache policy; parsed by Workers, never served. |
+| `static/_headers` | Cloudflare | Cache policy, plus `X-Robots-Tag: noindex` on `/*.md` and `/llms.txt`; parsed by Workers, never served. |
+| `static/**/*.md`, `static/llms.txt`, `static/sitemap.md` | both | The Agent Surface (ADR-0011): Markdown twins of every live Piece, orientation and index for Agents. |
 | `static/_redirects` | Cloudflare | `/home` and `/home/` -> `/` 301; parsed, never served. |
 
 **The Cloudflare manifest.** `wrangler.json` is plain JSON (Wrangler reads

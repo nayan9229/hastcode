@@ -84,6 +84,10 @@ func cloudflareHeaders() string {
 		"/\n  Cache-Control: " + htmlCacheControl + "\n" +
 		"/*/\n  Cache-Control: " + htmlCacheControl + "\n" +
 		"/*.html\n  Cache-Control: " + htmlCacheControl + "\n\n" +
+		"# The Agent Surface (ADR-0011) is for Agents, not search engines:\n" +
+		"# never indexed as a duplicate of its page.\n" +
+		"/*.md\n  X-Robots-Tag: noindex\n" +
+		llmsTxtURL + "\n  X-Robots-Tag: noindex\n\n" +
 		"# <worker>.<account>.workers.dev and preview URLs\n" +
 		"# (<preview>-<worker>.<account>.workers.dev) duplicate the site: keep\n" +
 		"# them out of search. hastcode.com is not matched.\n" +

@@ -126,7 +126,7 @@ func TestIndexNow_NoKeyMeansNoKeyFileAndNoArtefact(t *testing.T) {
 		t.Error("wrote an IndexNow artefact without a key")
 	}
 	for _, p := range buildtest.URLPaths(t, out) {
-		if strings.Count(p, "/") == 1 && strings.HasSuffix(p, ".txt") && p != "/robots.txt" {
+		if strings.Count(p, "/") == 1 && strings.HasSuffix(p, ".txt") && p != "/robots.txt" && p != "/llms.txt" {
 			t.Errorf("wrote a key file %s without a key", p)
 		}
 	}

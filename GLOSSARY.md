@@ -68,6 +68,16 @@ _Avoid_: Writer, contributor, editor
 A disclosed editorial voice the team publishes under, with its own name and author page, never presented as a real individual. HastCode's is Mira Vance.
 _Avoid_: Persona, pen name, ghostwriter, fake author
 
+### Agents
+
+**Agent**:
+Software that reads the site on a Reader's behalf: an LLM crawler, a coding agent, an answer engine. Never a Reader, who is a person.
+_Avoid_: Bot (except for a named crawler in robots.txt), AI, LLM reader
+
+**Agent Surface**:
+The files published for Agents rather than Readers: llms.txt, sitemap.md and the Markdown twin of every live Piece.
+_Avoid_: AI files, llms files, discovery layer
+
 ### Publishing
 
 **Target**:

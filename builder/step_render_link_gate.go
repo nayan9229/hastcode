@@ -28,8 +28,9 @@ const ruleBrokenLink = "broken-link"
 // checkInternalLinks reads every HTML page written to the output and
 // checks that each internal href (site-relative, page-relative, or
 // absolute on the site's own origin) resolves to a written file, to a
-// directory index ("/a/" -> /a/index.html), or to a path the build does
-// not write itself (linkTargetsNotWritten). A page with a broken link is a
+// directory index ("/a/" -> /a/index.html), to a path the build does not
+// write itself (linkTargetsNotWritten), or to the page's own Markdown twin
+// (written after the gate, ADR-0011). A page with a broken link is a
 // build error attributed to its content file ("" for pages without one,
 // such as the home page or a listing) and is removed from the output.
 func checkInternalLinks(s *site) error {
@@ -68,7 +69,7 @@ func checkInternalLinks(s *site) error {
 		var broken []string
 		for _, href := range hrefs(data) {
 			target, internal := internalTarget(site, pageURL, href)
-			if !internal || allowed[target] || written[target] || (strings.HasSuffix(target, "/") && written[target+"index.html"]) {
+			if !internal || allowed[target] || target == twinURL(pageURL) || written[target] || (strings.HasSuffix(target, "/") && written[target+"index.html"]) {
 				continue
 			}
 			if !slices.Contains(broken, href) {
@@ -143,6 +144,9 @@ func (s *site) linkTargetsNotWritten() map[string]bool {
 		briefsFeedURL:  true,
 		sitemapURL:     true,
 		newsSitemapURL: true,
+		// The Agent Surface (ADR-0011), written in the write phase.
+		llmsTxtURL:         true,
+		markdownSitemapURL: true,
 	}
 	for slug := range s.verticals {
 		allowed[verticalFeedURL(slug)] = true

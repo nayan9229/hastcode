@@ -30,6 +30,10 @@ type Page struct {
 	Description string
 	// Canonical is the page's absolute canonical URL (trailing slash).
 	Canonical string
+	// MarkdownTwin is the absolute URL of the page's Markdown twin
+	// (ADR-0011), linked as rel="alternate"; empty on pages without one
+	// (only Pieces have a twin).
+	MarkdownTwin string
 	// Social is the Open Graph / Twitter card preview.
 	Social Social
 	// Breadcrumbs is the trail from Home to this page (site-relative
@@ -102,6 +106,9 @@ type Chrome struct {
 	Search    Link
 	// Pages are the transparency pages (About, Contact, Editorial Policy).
 	Pages []Link
+	// Agents are the Agent Surface files (llms.txt, sitemap.md) in the
+	// footer's "For agents" row, which also lists Feeds.
+	Agents []Link
 	// Feeds are the RSS feeds linked from the footer.
 	Feeds []Link
 }

@@ -13,14 +13,16 @@ import (
 // Output helpers shared by render and write steps: writePage (every HTML
 // page, with the size gate), writeXML (feeds, sitemaps) and isWritten.
 
-// HTML size gate (spec "Non-functional": HTML ≤ 50 KB uncompressed). It
-// lives in writePage, the one path every page type writes through, so new
-// page types are gated without opting in. The shared inline stylesheet
-// (ADR-0006) does not count; inline JSON-LD, SVG and scripts do.
+// HTML size gate (spec "Non-functional": HTML ≤ 50 KB uncompressed; raised
+// to 52 KB on 2026-11-13 when the Agent Surface's head link and footer row
+// added 280 bytes to every page, ADR-0011). It lives in writePage, the one
+// path every page type writes through, so new page types are gated without
+// opting in. The shared inline stylesheet (ADR-0006) does not count; inline
+// JSON-LD, SVG and scripts do.
 const (
 	ruleHTMLSize  = "html-size"
-	maxHTMLBytes  = 50 * 1024
-	maxHTMLBudget = "50 KB"
+	maxHTMLBytes  = 52 * 1024
+	maxHTMLBudget = "52 KB"
 )
 
 // ruleMarkdown is a content body goldmark could not render (render steps

@@ -77,6 +77,10 @@ func (s *site) chrome() views.Chrome {
 			{Name: "Editorial Policy", URL: editorialPolicyURL},
 			{Name: "Privacy", URL: privacyURL},
 		},
+		Agents: []views.Link{
+			{Name: "llms.txt", URL: llmsTxtURL},
+			{Name: "sitemap.md", URL: markdownSitemapURL},
+		},
 		Feeds: []views.Link{
 			{Name: "RSS (all)", URL: siteFeedURL},
 			{Name: "RSS (Briefs)", URL: briefsFeedURL},

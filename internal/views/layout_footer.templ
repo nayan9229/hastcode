@@ -1,13 +1,22 @@
 package views
 
 // SiteFooter is the footer on every page: transparency pages (Google News
-// wants them reachable everywhere), RSS feeds, and the publication name.
+// wants them reachable everywhere), the "Agents" row (the Agent Surface,
+// ADR-0011, and the RSS feeds), and the publication name.
 templ SiteFooter(c Chrome) {
 	<footer class="site-footer">
 		<div class="wrap">
 			<nav aria-label="About HastCode">
 				<ul class="inline-list">
 					for _, l := range c.Pages {
+						<li><a href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>
+					}
+				</ul>
+			</nav>
+			<nav aria-label="Agents">
+				<ul class="inline-list">
+					<li>Agents:</li>
+					for _, l := range c.Agents {
 						<li><a href={ templ.SafeURL(l.URL) }>{ l.Name }</a></li>
 					}
 					for _, l := range c.Feeds {

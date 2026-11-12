@@ -7,11 +7,12 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
-// The spec's weight budget: no page's HTML may exceed 50 KB uncompressed,
+// The weight budget: no page's HTML may exceed 52 KB uncompressed (the
+// spec's 50 KB, raised with ADR-0011),
 // not counting the shared inline stylesheet (ADR-0006).
-const htmlSizeLimit = 50 * 1024
+const htmlSizeLimit = 52 * 1024
 
-func TestSizeGate_PageOver50KBFailsTheBuildNamingThePage(t *testing.T) {
+func TestSizeGate_PageOver52KBFailsTheBuildNamingThePage(t *testing.T) {
 	e := buildtest.ValidExplainer()
 	padding := strings.Repeat("Leaders send heartbeats so followers do not start elections. ", 1000) // ~62 KB
 	e.Body = strings.Replace(e.Body, "## Sources", "## Heartbeats keep followers quiet\n\n"+padding+"\n\n## Sources", 1)
@@ -19,7 +20,7 @@ func TestSizeGate_PageOver50KBFailsTheBuildNamingThePage(t *testing.T) {
 	out, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithExplainer(e))
 
 	buildtest.RequireErrorRule(t, res, "", "html-size", explainerPath)
-	buildtest.RequireErrorRule(t, res, "", "html-size", "50 KB")
+	buildtest.RequireErrorRule(t, res, "", "html-size", "52 KB")
 	if buildtest.Exists(out, explainerPath) {
 		t.Errorf("oversized page %s was written; want it left out of the output", explainerPath)
 	}

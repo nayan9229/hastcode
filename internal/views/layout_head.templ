@@ -19,6 +19,9 @@ templ Head(p Page) {
 	if p.Canonical != "" {
 		<link rel="canonical" href={ p.Canonical }/>
 	}
+	if p.MarkdownTwin != "" {
+		<link rel="alternate" type="text/markdown" href={ p.MarkdownTwin }/>
+	}
 	@SocialMeta(p)
 	<meta name="color-scheme" content="light dark"/>
 	<meta name="theme-color" media="(prefers-color-scheme: light)" content={ lightPalette.bg }/>

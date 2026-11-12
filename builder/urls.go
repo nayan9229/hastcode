@@ -54,6 +54,10 @@ const (
 	briefsFeedURL      = "/briefs/feed.xml"
 	sitemapURL         = "/sitemap.xml"
 	newsSitemapURL     = "/news-sitemap.xml"
+	// The Agent Surface (ADR-0011): orientation for Agents, and every live
+	// Piece's Markdown twin listed. Twins themselves are at twinURL(page).
+	llmsTxtURL         = "/llms.txt"
+	markdownSitemapURL = "/sitemap.md"
 )
 
 // Retired URLs (ADR-0001): every path under a retired section (the Genuin

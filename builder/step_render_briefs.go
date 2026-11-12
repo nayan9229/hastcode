@@ -56,6 +56,7 @@ func briefPage(s *site, b *content.Brief, lead, body string) views.BriefPage {
 			{Name: b.Title, URL: briefURL(b)},
 		},
 	})
+	page.MarkdownTwin = s.absURL(twinURL(briefURL(b)))
 	return views.BriefPage{
 		Page:        page,
 		Title:       b.Title,

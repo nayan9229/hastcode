@@ -27,7 +27,7 @@ cd "$(dirname "$0")/.."
 CLAUDE="${CLAUDE:-claude}"
 WORKER_TOOLS="Read Edit Write Glob Grep WebFetch WebSearch Bash(scripts/daily/check-page.sh:*)"
 SELECT_TOOLS="Read Glob Grep WebFetch WebSearch"
-SIZE_LIMIT='SIZE LIMIT: the check prints "page bytes"; keep it at most 49,500. Production pages carry about 1.4 KB more (ads, analytics) against a hard limit of 51,200. Two Mermaid diagrams plus 2,800 words usually overflows: prefer one diagram and about 2,400 words.'
+SIZE_LIMIT='SIZE LIMIT: the check prints "page bytes"; keep it at most 51,500. Production pages carry about 1.4 KB more (ads, analytics) against a hard limit of 53,248. Two Mermaid diagrams plus 2,800 words usually overflows: prefer one diagram and about 2,400 words.'
 
 render() { # render <template> KEY=value...: substitute {{KEY}}
   python3 - "$@" <<'PY'

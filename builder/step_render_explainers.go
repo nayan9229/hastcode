@@ -65,6 +65,7 @@ func explainerPage(s *site, e *content.Explainer, lead, body string) views.Expla
 			{Name: e.Title, URL: explainerURL(e)},
 		},
 	})
+	page.MarkdownTwin = s.absURL(twinURL(explainerURL(e)))
 	ep := views.ExplainerPage{
 		Page:         page,
 		Title:        e.Title,
