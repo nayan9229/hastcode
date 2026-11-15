@@ -9,14 +9,14 @@ kind: case-study
 vertical: apis-networking
 tags: ["networking", "ipv6", "ebpf", "vxlan", "fly-io"]
 published: "2026-11-15T07:09:16Z"
-reviewed: "2026-11-15T07:09:16Z"
+verified: 2026-11-15
+reviewed: "2026-11-15T07:51:47Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: system-name.png
 # hero_alt: "What the image shows"
 related: [cilium, fly-io-sbd]
-draft: true
 ---
 
 Until this year, every host in Fly.io's fleet kept a phonebook: a kernel map of every Machine that had ever moved and where it lives now, with [hundreds of thousands of entries on every host, kept up to date in real time](https://fly.io/blog/throwing-out-the-phonebook/). Its replacement holds [between 100 and 200 routes on most hosts](https://fly.io/blog/throwing-out-the-phonebook/#what-changed), and learns each one only when a packet asks for it.

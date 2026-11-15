@@ -6,6 +6,7 @@ title: "GitHub's October incidents: clients that never backed off"
 description: "In October, retries, reconnects and an import burst that did not back off worsened three GitHub faults. Backoff and rate limits break the loop."
 tags: [retries, backoff, incidents, github]
 published: "2026-11-15T07:09:16Z"
+verified: 2026-11-15
 author: mira-vance
 source_url: "https://github.blog/news-insights/company-news/github-availability-report-october-2026/"
 explainers: [metastable-failures]
@@ -16,7 +17,6 @@ explainers: [metastable-failures]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.

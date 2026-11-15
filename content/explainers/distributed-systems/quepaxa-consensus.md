@@ -9,7 +9,8 @@ kind: concept
 vertical: distributed-systems
 tags: ["consensus", "quepaxa", "raft", "paxos", "fault-detection"]
 published: "2026-11-13T07:09:16Z"
-reviewed: "2026-11-13T07:09:16Z"
+verified: 2026-11-15
+reviewed: "2026-11-15T07:51:47Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [metastable-failures, etcd]
-draft: true
 ---
 
 At 14:43 UTC on 2 November 2020, a core network switch at Cloudflare [went into a partially operating state](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/): some protocols kept working, some packets were not forwarded, and six minutes later it recovered on its own. For those minutes an etcd cluster behind it could not accept a write. One node kept starting elections and voting for itself; another kept voting for the existing leader. The votes tied, and the cluster stayed read-only until the switch recovered, because Raft elections end up [blocking all writes until they're resolved](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/). The knock-on effects through Cloudflare's databases hit API and dashboard availability for six hours and 33 minutes, and the dashboard ran [as much as 80 times slower than normal](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/). In November 2026, when Cloudflare explained the consensus protocol behind Meerkat, its new control-plane store, it [cited that incident](https://blog.cloudflare.com/choosing-quepaxa/). The protocol it chose has no elections to stall.
