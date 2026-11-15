@@ -20,6 +20,10 @@ Single-context: `GLOSSARY.md` + `docs/adr/` at repo root. See `docs/agents/domai
 
 A Fact Pack is fetched, never hand-written: `make fetch REPO=owner/name MD=content/explainers/<vertical>/<slug>.md` writes it beside the Markdown (needs `GITHUB_TOKEN`; README "Repo Profiles: fetching a Fact Pack"). `make refresh` re-fetches every one; the fetch binary exits 3 when any changed (make reports it as `Error 3`). A Refresh is manual: the Author runs it locally, reviews the diff, commits and pushes; GitHub Actions never fetches from GitHub (it tests, builds Previews and publishes by tag). Nothing publishes without the Author's approval: an agent never removes `draft: true` from a Profile, merges a Profile pull request, or tags. An agent never sets `verified:` on any Piece either: it records that the Author checked every claim against its Source (ADR-0007). The Author does that after verifying every claim; Publish stays a tag (ADR-0004, ADR-0005).
 
+## Releasing
+
+`make release` is the Author's command (ADR-0012): it lifts `draft: true`, sets `verified:`, keeps each draft's Publication Day (a Gap Day `make daily` assigned stays), builds and commits. An agent never runs `make release` and never edits those fields by hand. The morning is `make daily`, verify, `make release`, `git push origin main`, `scripts/publish.sh cf` (`docs/author-runbook.md`).
+
 Writing one: start from `docs/editorial/repo-profile-template.md`, follow `docs/editorial/repo-profile-writing-guide.md` (sections, grounding in the Fact Pack / README / release pages, quickstart verbatim, title patterns), choose with `docs/editorial/repo-profile-selection.md`, voice in `docs/editorial/house-byline-voice.md`. Day-28 numbers go in a copy of `docs/editorial/checkpoint-note-template.md`.
 
 ## Writing a Case Study, Concept, Comparison or Brief

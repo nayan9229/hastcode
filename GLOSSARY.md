@@ -80,13 +80,25 @@ _Avoid_: AI files, llms files, discovery layer
 
 ### Publishing
 
+**Publication Day**:
+The calendar day in a Piece's `published`, in its own offset: the day it counts against the two-a-day cap and shows as its date. It may precede the day the Piece went live (a backfilled Gap Day).
+_Avoid_: Publish date (Publish is the tag), release day, live day
+
+**Gap Day**:
+A Publication Day since 2026-10-30 with fewer than two Pieces, live or drafted for it, that a later daily run may fill with Explainers.
+_Avoid_: Missed day, empty day, hole
+
 **Target**:
 One of the two hosts a build can be deployed to. The Production Target serves hastcode.com; the QA Target is for checking a release and never serves hastcode.com.
 _Avoid_: Environment, stage, primary, standby
 
 **Publish**:
 Deploying one commit of the main branch to a Target by tagging it. The tag names the Target.
-_Avoid_: Release, ship, push live
+_Avoid_: Ship, push live, deploy (as a verb for the tag)
+
+**Release**:
+The Author's act of making verified drafts part of the next Publish: lifting `draft: true` and recording `verified` (`make release`). A Release changes files; a Publish deploys a commit.
+_Avoid_: Publish (the tag), approve, go live
 
 **Preview**:
 A build of a branch, drafts included, deployed to a temporary address for review before merging.

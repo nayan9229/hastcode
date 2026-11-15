@@ -14,6 +14,14 @@ import (
 
 var delim = []byte("---")
 
+// SplitFrontmatter separates a leading "---" YAML block from the body:
+// front is the text between the markers (trailing newline kept), body what
+// follows the closing marker line. internal/release edits front by line
+// and writes "---\n" + front + "---\n" + body back.
+func SplitFrontmatter(data []byte) (front, body []byte, err error) {
+	return splitFrontmatter(data)
+}
+
 // splitFrontmatter separates a leading "---" YAML block from the body.
 func splitFrontmatter(data []byte) (front, body []byte, err error) {
 	data = bytes.TrimPrefix(data, []byte("\ufeff"))

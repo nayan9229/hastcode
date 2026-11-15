@@ -37,6 +37,8 @@ for p in picked:
               + (f"{c.get('claims_checked')} claims checked, {len(c.get('fixed', []))} fixed, {len(c.get('removed', []))} removed" if c else "did not run"), ""]
     if p["kind"] == "brief":
         lines += ["**Publish within 72 hours of the Lead's date**, with or after its Explainer: " + ", ".join(p.get("explainers") or []), ""]
+    if p.get("fills"):
+        lines += [f"**Fills Gap Day {p['fills']}** (ADR-0012): `published` is that day; `make release` keeps it.", ""]
     if d.get("author_checks"):
         lines += ["**Drafter asks you to check:**"] + [f"- [ ] {x}" for x in d["author_checks"]] + [""]
     if c.get("unconfirmed"):
@@ -50,7 +52,7 @@ out = pathlib.Path(".scratch/daily") / day
 out.mkdir(parents=True, exist_ok=True)
 q = out / "review-queue.md"
 head = [] if q.exists() else [f"# Daily review queue, {day}", "",
-        "Drafted by `make daily` (ADR-0009). Every Piece is `draft: true` and unverified. Verify every claim against its Source, then set `verified:` and remove `draft: true` yourself (ADR-0007).", ""]
+        "Drafted by `make daily` (ADR-0009). Every Piece is `draft: true` and unverified. Verify every claim against its Source, then `make release` (ADR-0012): it sets `verified:`, removes `draft: true` and keeps each Publication Day.", ""]
 tail = ["### Not drafted", ""] + (dropped or ["- none"]) + ["", "<details><summary>Leads the editor rejected</summary>", ""] \
     + [f"- `{s['id']}`: {s['reason']}" for s in skipped] + ["", "</details>", ""]
 with open(q, "a") as f:

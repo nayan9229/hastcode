@@ -21,3 +21,4 @@ todo.list
 
 # Intake's local state: the Lead queue and the seen-state (README "Intake")
 .intake/
+__pycache__/

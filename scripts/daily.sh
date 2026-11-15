@@ -3,7 +3,8 @@
 #
 #   make daily                    # Intake, choose, pick, draft, fact-check, commit
 #   make daily DRY=1              # Intake and choose only: print the picks, write nothing
-#   make daily EXPLAINERS=2 BRIEFS=2 PARALLEL=4 BACKLOG=4
+#   make daily EXPLAINERS=2 BRIEFS=2 PARALLEL=4 BACKLOG=4 LOOKBACK=3 TOTAL=6
+#   (EXPLAINERS=N forces today's Explainer count and skips Gap Days)
 #
 # 1. make intake refreshes the queue.
 # 2. A headless Claude Code session (claude -p) chooses: every fresh Lead that
@@ -19,7 +20,15 @@
 # 5. The drafts and the Author's check list
 #    (.scratch/daily/<date>/review-queue.md) are committed on the current
 #    branch. Nothing is pushed or tagged; every draft keeps draft: true and
-#    no verified: (CLAUDE.md, ADR-0007).
+#    no verified: (CLAUDE.md, ADR-0007). The Author verifies, then
+#    `make release`, `git push`, `scripts/publish.sh cf`.
+# Gap Days (ADR-0012): a Publication Day in the last LOOKBACK (3) days with
+# fewer than two Pieces, live or drafted, gets Explainers (never Briefs),
+# oldest day first, two per day, within TOTAL (6) drafts a run (TOTAL
+# reserves today's Briefs and Explainers first, so BRIEFS=all may exceed
+# it); such a draft's published is moved to that day at the pick's clock
+# time (cmd/release -redate) and the check list says which day it fills.
+# make release keeps the day.
 # Run logs and each session's JSON are kept under .intake/daily/<run>/.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -88,11 +97,27 @@ fi
 # drafting keeps pace with it: up to 2 Briefs (they expire after 72 hours)
 # and, while fewer than BACKLOG (4) Explainer drafts wait, up to 2 Explainers.
 backlog=$( { grep -l '^draft: true' content/explainers/*/*.md 2>/dev/null || true; } | wc -l | tr -d ' ')
-BRIEFS="${BRIEFS:-2}"; PARALLEL="${PARALLEL:-4}"; DRY="${DRY:-}"
+BRIEFS="${BRIEFS:-2}"; PARALLEL="${PARALLEL:-4}"; DRY="${DRY:-}"; LOOKBACK="${LOOKBACK:-3}"; TOTAL="${TOTAL:-6}"
+# Gap Days (ADR-0012), oldest first, as "day slots" lines; none while the
+# backlog rule holds or EXPLAINERS is forced.
+# today_explainers is today's own quota; briefs_reserved what TOTAL keeps
+# for Briefs before Gap Days get the rest.
+gaps=""; today_explainers=2; briefs_reserved=2
+[ "$BRIEFS" = all ] || [ "$BRIEFS" -ge "$briefs_reserved" ] || briefs_reserved=$BRIEFS
 if [ -z "${EXPLAINERS:-}" ]; then
-  if [ "$backlog" -ge "${BACKLOG:-4}" ]; then EXPLAINERS=0; else EXPLAINERS=2; fi
+  if [ "$backlog" -ge "${BACKLOG:-4}" ]; then today_explainers=0; else
+    gaps=$(go run ./cmd/release -content content -gaps -lookback "$LOOKBACK")
+  fi
+  EXPLAINERS=$today_explainers
+else
+  today_explainers=$EXPLAINERS
 fi
-echo "Explainer drafts waiting: $backlog (Explainers today: $EXPLAINERS, Briefs: up to $BRIEFS)"
+gapslots=$(printf '%s\n' "$gaps" | awk 'NF{s+=$2} END{print s+0}')
+room=$(( TOTAL - briefs_reserved - today_explainers )); [ "$room" -lt 0 ] && room=0
+[ "$gapslots" -gt "$room" ] && gapslots=$room
+EXPLAINERS=$(( today_explainers + gapslots ))
+echo "Explainer drafts waiting: $backlog (Explainers: $today_explainers today plus $gapslots for Gap Days; Briefs: up to $BRIEFS)"
+[ -z "$gaps" ] || printf '%s\n' "$gaps" | awk -v fill="$gapslots" '{n=($2<fill)?$2:fill; fill-=n; print "  Gap Day " $1 ": " $2 " slot(s) open, " n " filled this run"}'
 command -v "$CLAUDE" >/dev/null || { echo "make daily needs Claude Code (claude) on PATH" >&2; exit 2; }
 if [ -z "$DRY" ] && ! { git diff --quiet && git diff --cached --quiet; }; then
   echo "make daily commits its drafts: commit or stash your tracked changes first" >&2; exit 2
@@ -118,6 +143,21 @@ for p in d["picks"]:
 print(f"  {len(d['picks'])} picked, {len(d['skipped'])} rejected with reasons (select.json)")
 PY
 [ -n "$DRY" ] && { echo "DRY=1: nothing picked or written. Choices: $run/select.json"; exit 0; }
+# Assign Publication Days (ADR-0012): today's Explainer picks come first;
+# the rest fill Gap Days oldest first, up to each day's slots. fills.txt
+# holds "<id> <day>" lines; a pick absent there keeps the pick time.
+printf '%s\n' "$gaps" >"$run/gaps.txt"
+python3 - "$run" "$gapslots" "$today_explainers" <<'PY' >"$run/fills.txt"
+import json, sys
+run, allowed, today = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+gaps = [l.split() for l in open(run + "/gaps.txt") if l.strip()]
+picks = [p for p in json.load(open(run + "/select.json"))["structured_output"]["picks"] if p["kind"] != "brief"]
+extra = picks[today:today + allowed]
+for day, slots in gaps:
+    for _ in range(int(slots)):
+        if not extra: break
+        print(extra.pop(0)["id"], day)
+PY
 
 echo "3/5 Picking"
 python3 - "$run" <<'PY' >"$run/pick.sh"
@@ -148,7 +188,23 @@ p = next(x for x in json.load(open(run + "/select.json"))["structured_output"]["
 p.update(path=path, slug=pathlib.Path(path).stem)
 open(run + "/picked.jsonl", "a").write(json.dumps(p) + "\n")
 PY
-  echo "  $written"
+  if fill=$(awk -v id="$id" '$1==id{print $2}' "$run/fills.txt") && [ -n "$fill" ]; then
+    # Re-date the skeleton to the Gap Day at the pick's clock time (the
+    # one frontmatter editor, cmd/release) and record the day on the pick
+    # for the check list.
+    go run ./cmd/release -content content -redate "$fill" -files "$written"
+    python3 - "$run" "$id" "$fill" <<'PY'
+import json, sys
+run, id_, day = sys.argv[1:4]
+lines = [json.loads(l) for l in open(run + "/picked.jsonl")]
+for l in lines:
+    if l["id"] == id_: l["fills"] = day
+open(run + "/picked.jsonl", "w").write("".join(json.dumps(l) + "\n" for l in lines))
+PY
+    echo "  $written (fills Gap Day $fill)"
+  else
+    echo "  $written"
+  fi
 done <"$run/pick.sh"
 python3 -c 'import json,sys;r=sys.argv[1];json.dump([json.loads(l) for l in open(r+"/picked.jsonl")],open(r+"/picked.json","w"),indent=1)' "$run"
 count=$(python3 -c 'import json,sys;print(len(json.load(open(sys.argv[1]))))' "$run/picked.json")
@@ -163,5 +219,5 @@ files=$(python3 -c 'import json,sys,os;print("\n".join(p["path"] for p in json.l
 if [ -n "$files" ]; then
   printf '%s\n' "$files" | xargs git add -- ".scratch/daily/$day"
   git commit -q -m "Daily $day: drafts from make daily (draft: true, unverified)" -m "Check list: .scratch/daily/$day/review-queue.md (ADR-0009)."
-  echo "Committed $(printf '%s\n' "$files" | wc -l | tr -d ' ') drafts on $(git branch --show-current). Verify, set verified:, remove draft: true, then Publish."
+  echo "Committed $(printf '%s\n' "$files" | wc -l | tr -d ' ') drafts on $(git branch --show-current). Verify, then make release, git push origin main, scripts/publish.sh cf."
 fi

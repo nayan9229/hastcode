@@ -42,20 +42,20 @@ func (p pick) frontmatter(fm string) (string, error) {
 		"title":     quote(p.lead.Title),
 		"published": published,
 	}
-	dates := "published is the pick time, provisional: set it"
+	dates := "published is the pick time (make daily may move it to a Gap Day);"
 	if p.isBrief() {
 		values["source_url"] = quote(p.lead.Link)
 		values["explainers"] = "[" + strings.Join(p.explainers, ", ") + "]"
 	} else {
 		values["vertical"] = p.vertical
 		values["reviewed"] = published
-		dates = "published and reviewed are the pick time, provisional: set them"
+		dates = "published and reviewed are the pick time (make daily may move them to a Gap Day);"
 	}
 	lines := []string{
 		fmt.Sprintf("# Skeleton from Lead %s (%s), picked %s.", p.lead.ID, p.lead.Source, p.now.Format(time.DateOnly)),
 		fmt.Sprintf("# Follow docs/editorial/%s-writing-guide.md and replace every", p.kind),
 		"# TODO(author) line. " + dates,
-		"# when you publish. verified: is the Author's alone (ADR-0007).",
+		"# make release keeps it (ADR-0012). verified: is the Author's alone (ADR-0007).",
 	}
 	opening := true
 	set := map[string]bool{}

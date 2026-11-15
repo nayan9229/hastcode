@@ -81,35 +81,25 @@ and cannot be fixed, delete the draft file (`git rm`).
 To see a draft as a web page: `make dev`, then open
 http://localhost:3000. Drafts show in this local preview.
 
-### Step 3: release (at most two a day)
+### Step 3: release
 
-For each piece you verified, in its frontmatter (the block between the
-`---` lines at the top):
-
-1. delete the line `draft: true`
-2. set `published:` to today, for example `published: "2026-11-12T07:00:00Z"`
-3. add a line under it: `verified: 2026-11-12` (today's date)
-
-Only you may do steps 1 and 3. An agent must never do them.
-
-Or run this, after replacing the two file names:
+Once every draft in the check list is verified:
 
 ```sh
-NOW=$(date -u +%Y-%m-%dT%H:%M:%SZ); TODAY=$(date -u +%Y-%m-%d)
-for f in content/briefs/FIRST.md content/explainers/VERTICAL/SECOND.md; do
-  sed -i '' -e "s|^published: \".*\"$|published: \"$NOW\"\nverified: $TODAY|" -e '/^draft: true$/d' "$f"
-done
-```
-
-Then:
-
-```sh
-make build && make check     # production build; must pass
-git add content
-git commit -m "Release $(date -u +%Y-%m-%d): <what>, verified by the Author"
+make release                 # every draft; or FILES="content/briefs/a.md content/explainers/v/b.md"
 git push origin main
 scripts/publish.sh cf        # go live on hastcode.com
 ```
+
+`make release` does, for each draft: removes `draft: true`, sets
+`verified:` to today, sets `reviewed:` to now on Explainers, keeps
+`published:` as the draft has it, runs the production build, and commits
+with a "Release <day>: ..." message. Only you run it; an agent never does.
+`make release DRY=1` shows what it would do.
+
+It refuses, before changing anything, when a day would end up with more
+than two pieces live. Then release fewer with `FILES=`, or delete a stale
+draft (`git rm`).
 
 `scripts/publish.sh vl` first sends the same commit to the QA copy
 (https://qa.hastcode.com/) if you want to look before going live.
@@ -129,6 +119,15 @@ says `success`, the page is at `https://hastcode.com/briefs/<slug>/` or
 | `brief-length` | Brief over 250 words | Cut words |
 | `brief-explainer-link` | Brief does not link a live Explainer | Link one in "Why it matters" and in `explainers:` |
 | `review-overdue` | An Explainer's `reviewed:` date is old | Re-read it, update `reviewed:` |
+
+### Missed a day? `make daily` fills it
+
+If you skip a morning, the next `make daily` looks back up to 3 days for
+days with fewer than two pieces (a **Gap Day**) and drafts Explainers for
+them, oldest day first, two per day, up to 6 drafts in one run. Such a
+draft already carries that past day in `published:`; the check list says
+"Fills Gap Day 2026-11-13". `make release` keeps that day. Gap Days never
+get Briefs: a Brief is news and goes stale. (ADR-0012)
 
 ## 5. Why did `make daily` make only Briefs today?
 
@@ -179,8 +178,8 @@ when anything changed, which is normal: review the diff, commit, push.
 ## 7. Rules to remember
 
 - Two pieces a day, counted by `published` day. The build enforces it.
-- `verified` is yours alone. Same day as `published` or later, never
-  before, never in the future.
+- `verified` is yours alone (`make release` writes it when you run it).
+  Same day as `published` or later, never before, never in the future.
 - A Brief must be published within 72 hours of its Lead's date. A Brief
   draft older than that cannot be published; delete it or turn the topic
   into an Explainer later.

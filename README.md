@@ -53,8 +53,9 @@ frontmatter on a branch. `make dev` shows it locally; push the branch
 summary, then runs Lighthouse CI against it. Production builds never
 contain drafts.
 
-**Publish flow.** Remove `draft: true`, merge the pull request to `main`
-(that only runs the tests). Then, on an up-to-date, clean `main`:
+**Publish flow.** Verify the draft, then `make release` (ADR-0012: lifts
+`draft: true`, sets `verified`, keeps `published`, builds, commits); merge
+to `main` if on a branch (that only runs the tests). Then, on an up-to-date, clean `main`:
 `scripts/publish.sh vl` deploys that commit to the QA Target
 (https://qa.hastcode.com/); check it; `scripts/publish.sh cf` deploys the
 same commit to Production (hastcode.com) and pings IndexNow with the pages
@@ -138,8 +139,9 @@ Explainers and Briefs together, may share a `published` day (read in its
 own offset). A production build fails (rule `publish-pace`, one site-wide
 error per day over the cap, naming the day and every file) on any such day
 from 2026-10-30; a Preview warns. Days before 2026-10-30 are exempt. The
-build has no scheduling, so a backlog waits as drafts: on release day lift
-`draft: true` and set `published` and `verified` to that day
+build has no scheduling, so a backlog waits as drafts: the Author verifies
+and runs `make release`, which keeps each draft's Publication Day (a Gap
+Day `make daily` assigned, ADR-0012) and sets `verified` to the real day
 (`step_validate_publish_pace.go`, tests `builder/publish_pace_test.go`).
 
 **The Agent Surface (ADR-0011).** For Agents (GLOSSARY: software reading
@@ -293,6 +295,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `api/subscribe.go` | Vercel Go function entry (package `handler`, `func Handler`). Wiring only. No other `.go` files here: each becomes a function. |
 | `cmd/subscribe/` | Local run of the subscribe function plus the built site, behind the built `config.json` routes. |
 | `builder/step_write_vercel_config.go` | The routing table (`routes()`): cache headers, 410s, `/home` 301, trailing-slash 308s, 404 fallback. |
+| `internal/release/`, `cmd/release/`, `scripts/release.sh` | The Author's release step and Gap Day arithmetic (ADR-0012): `GapDays`, `Redate`, `NewPlan`/`Apply` (edits frontmatter lines in place through `content.SplitFrontmatter`; cap constants mirror the builder's). `cmd/release` is flags and exit codes (`-gaps`, `-redate`, `-dry`); the script runs it, then the production build, then commits. See "Intake". |
 | `builder/step_render_twins.go` | The Agent Surface's Markdown twins (ADR-0011): `twinURL`, the `twin` value per Piece, the header, and `absoluteTwinLinks` (internal links made absolute, located through the parsed tree). See "The Agent Surface". |
 | `builder/step_write_llms_txt.go`, `builder/step_write_markdown_sitemap.go` | `/llms.txt` (orientation, never lists Pieces) and `/sitemap.md` (every live Piece's twin by Vertical then Briefs). |
 | `builder/step_write_cloudflare_manifest.go`, `internal/cloudflare/` | The Production Target's manifest: `<out>/wrangler.json` (Workers Static Assets config, `main` -> `worker/index.js`) plus `static/_headers` and `static/_redirects`. See "Deploying". |
@@ -546,8 +549,10 @@ visits are never counted and Lighthouse CI measures the page's own code
 says so and is linked from every page's footer.
 Everything must work without JS.
 
-**Tests.** Five seams are tested, and only these (spec "Testing
-Decisions"): the Build seam, the Subscribe HTTP seam, the Fetch seam
+**Tests.** Six seams are tested, and only these (spec "Testing
+Decisions", plus the Release seam of ADR-0012: `internal/release`'s
+`GapDays`, `Redate`, `NewPlan` and `Apply` on a temp content tree,
+package `release_test`, helpers `piece` and `clock`): the Build seam, the Subscribe HTTP seam, the Fetch seam
 (`internal/factpack` against an in-process GitHub), the Intake seam
 (`internal/intake`'s `Run`/`Dismiss`/`Pick` against `httptest` publishers,
 a temp state directory and a fixed clock, asserting on the queue file,
@@ -661,8 +666,8 @@ Start from `docs/editorial/repo-profile-template.md` (frontmatter, the
 nine headings in order, five FAQ questions, the AI-assistance note) and
 follow `docs/editorial/repo-profile-writing-guide.md`: copy, fetch the
 Fact Pack, draft against the Fact Pack, README and release pages, check
-the Preview, have the Author verify every claim, then remove `draft: true`
-and tag. Nothing publishes without the Author. Which repositories qualify:
+the Preview, have the Author verify every claim, then `make release`,
+push and tag. Nothing publishes without the Author. Which repositories qualify:
 `docs/editorial/repo-profile-selection.md`. On each Profile's day 28, fill
 in `docs/editorial/checkpoint-note-template.md` (the ADR-0005 metrics and
 pass rule). The Friday roundup is an ordinary Brief linking the week's
@@ -897,8 +902,8 @@ draft skeleton, the only write Intake makes under the content tree. The
 skeleton is the kind's template (`docs/editorial/<kind>-template.md`,
 `-templates`) with the Lead filled in and no prose written: the title from
 the Lead, `kind` and `vertical` (the Source's, or `KIND=`/`VERTICAL=`), a
-provisional `published` (and `reviewed` for an Explainer) at the pick time
-in UTC, which the Author sets when publishing, `author: mira-vance`,
+`published` (and `reviewed` for an Explainer) at the pick time, which
+`make daily` may move to a Gap Day and `make release` keeps, `author: mira-vance`,
 `draft: true`, no `verified` and no `hero` (the build draws the title card),
 every template heading in order, the template's `TODO(author)` hints left
 for the Author, and the Lead's link as the one line in `## Sources`. An
@@ -933,10 +938,22 @@ is removed. The drafts and the Author's check list
 branch; nothing is pushed or tagged, and every draft keeps `draft: true` and
 no `verified:`. `make daily DRY=1` chooses only; `BRIEFS=all` takes every
 qualifying Brief. Run logs, each session's JSON and the run's Claude cost are
-under `.intake/daily/<run>/`. The Author then verifies and releases at most two Pieces a
-day: remove `draft: true` and set `published` and `verified` to the release
-day, then Publish. A production build fails (rule `publish-pace`) on any
-day from 2026-10-30 with more than two non-draft Pieces (ADR-0010). By hand, the same steps are `make intake`,
+under `.intake/daily/<run>/`. **Gap Days (ADR-0012):** a Publication Day in
+the last `LOOKBACK` (3) days with fewer than two Pieces, live or drafted,
+is filled with Explainers (never Briefs), oldest day first, two a day,
+within `TOTAL` (6) drafts a run; such a draft's `published` is that day at
+the pick's clock time (`cmd/release -gaps`, `internal/release.GapDays`)
+and the check list says which day it fills. The Author then verifies and
+runs **`make release`** (`scripts/release.sh`, `cmd/release`,
+`internal/release`): every draft, or `FILES="…"`; it refuses when a
+Publication Day would exceed two Pieces live plus released, else per Piece
+removes `draft: true`, sets `verified` to today in the Piece's own offset,
+sets `reviewed` to now on an Explainer, keeps `published`, runs the
+production build and commits "Release <day>: …, verified by the Author".
+`DRY=1` prints the plan. Then `git push origin main` and
+`scripts/publish.sh cf`. An agent never runs `make release` (CLAUDE.md). A
+production build fails (rule `publish-pace`) on any day from 2026-10-30
+with more than two non-draft Pieces (ADR-0010). By hand, the same steps are `make intake`,
 `make lead` and `make lead-dismiss`; what is left open expires after 7 days. **The
 planned pace** is 5 Explainers a week (2 Case Studies, 2 Concepts, 1
 Comparison) and 5 Briefs a week, with every Vertical getting a new
