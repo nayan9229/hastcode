@@ -8,8 +8,8 @@ description: "QuePaxa is a consensus protocol where the leader is only a fast pa
 kind: concept
 vertical: distributed-systems
 tags: ["consensus", "quepaxa", "raft", "paxos", "fault-detection"]
-published: "2026-11-15T07:09:16Z"
-reviewed: "2026-11-15T07:09:16Z"
+published: "2026-11-13T07:09:16Z"
+reviewed: "2026-11-13T07:09:16Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
