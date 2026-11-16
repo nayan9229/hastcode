@@ -8,7 +8,8 @@ kind: comparison
 vertical: databases-storage
 tags: ["postgresql", "migrations", "logical-replication", "bucardo", "heroku"]
 published: "2026-11-14T09:41:24Z"
-reviewed: "2026-11-14T09:41:24Z"
+verified: 2026-11-16
+reviewed: "2026-11-16T10:04:38Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Twelve hours into a data copy, PlanetScale's Heroku Migrator hit one row whose index entry was too large for the target's B-tree, and because [the whole copy ran in one transaction](https://planetscale.com/blog/migrate-from-heroku-to-planetscale#copy-restarting-from-zero), the next run would empty every table and start over. The migrator exists because a typical offline migration ["requires several hours of downtime"](https://planetscale.com/blog/migrate-from-heroku-to-planetscale), and because Heroku's standard tiers ["don't give you WAL access or logical replication"](https://planetscale.com/blog/migrate-from-heroku-to-planetscale#why-leaving-heroku-is-unique). The fix, building indexes after the copy instead of during it, took the copy from about 60 GB/h to nearly 300 GB/h. If you are moving a large Postgres database to a new host, you have three ways to do it: dump and restore it offline, stream it with logical replication, or capture changes with triggers, as Bucardo does. We answer the same five questions for all three (downtime, prerequisites, load on the source, copy speed and failure modes), from the PostgreSQL and Heroku documentation, Bucardo's own pages and PlanetScale's account of its migrator.
