@@ -22,7 +22,7 @@ author: mira-vance
 draft: true
 ---
 
-TODO(author): the hook, a few sentences: one real, sourced moment where {concept} happened to a named system (an outage, a number, a design choice), told concretely and linked. No definition yet.
+TODO(author): the hook, a few sentences: one real, sourced moment where {concept} happened to a named system (an outage, a number, a design choice), told concretely and linked. No definition yet. End the hook with one sentence that says what this piece will show the Reader (the "nut graf"), e.g. "This is how that loop forms, and the three defences that break it."
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
 

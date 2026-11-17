@@ -208,6 +208,43 @@ func TestPick_ConceptSkeletonFollowsTheConceptTemplate(t *testing.T) {
 	}
 }
 
+// hook is the skeleton's opening: the body text before the AI-assistance
+// note, which the writing guides call "Opening (before TL;DR)".
+func (s skeleton) hook(t *testing.T) string {
+	t.Helper()
+	text, _, ok := strings.Cut(s.Body, "\n> Drafted with AI assistance")
+	if !ok {
+		t.Fatalf("%s has no AI-assistance note", s.Path)
+	}
+	return strings.TrimSpace(text)
+}
+
+// The Concept and Case Study guides end the hook on one sentence that says
+// what the piece will show the Reader (the "nut graf"); the skeleton asks
+// for it, so a draft cannot open on a turn alone.
+func TestPick_ConceptAndCaseStudyHooksAskForTheNutGraf(t *testing.T) {
+	for _, tc := range []struct{ kind, lead string }{
+		{"case-study", regionOutage},
+		{"concept", walLead},
+	} {
+		t.Run(tc.kind, func(t *testing.T) {
+			in := newPickIntake(t)
+
+			s := readSkeleton(t, in, mustPick(t, in, tc.lead, intake.PickOptions{Kind: tc.kind}))
+
+			hook := s.hook(t)
+			if !strings.Contains(hook, "TODO(author)") {
+				t.Errorf("hook %q has no TODO(author) hint", hook)
+			}
+			for _, want := range []string{"End the hook with one sentence", "what this piece will show the Reader", "nut graf"} {
+				if !strings.Contains(hook, want) {
+					t.Errorf("hook does not ask for the closing nut-graf sentence (%q):\n%s", want, hook)
+				}
+			}
+		})
+	}
+}
+
 func TestPick_KindAndVerticalOverridesReplaceTheSourcesSuggestion(t *testing.T) {
 	in := newPickIntake(t)
 
