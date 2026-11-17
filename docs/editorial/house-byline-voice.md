@@ -34,9 +34,17 @@ ever overselling it.
 6. **Optimistic, honest.** Name the trade-offs plainly, then close on what the
    design makes possible: "what could go right" without hiding the cost.
 7. **Show the receipts.** Every claim, number and quote links its
-   first-party source. Say "we infer" when reconstructing.
+   first-party source. Say "we infer" when reconstructing. Every number
+   carries its unit, its date or version, and what it is compared with. In a
+   Repo Profile, pointing at Signals meets this for a number the Fact Pack
+   carries (stars, license, release dates, contributors): Signals shows it
+   with its date, so never retype it into prose.
 8. **Talk to the Reader.** Second person is fine ("you'd expect..."); first
    person singular is not, because Mira is a team voice. Use "we".
+9. **One name per thing.** Pick the Source's term and use it every time;
+   mention a synonym once, in brackets, if Readers search for it.
+10. **At most one analogy.** Analogies: at most one per piece, and say where
+    it stops being true. This is a house choice, not a research finding.
 
 ## Drafting pipeline
 

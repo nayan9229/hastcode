@@ -20,7 +20,7 @@ After that, a weekly `make refresh`, run by the Author locally and committed, ke
 
 - **Three sources, in this order:** the Fact Pack, the README, the release pages (then the repository's own docs and code). No star trackers, no other outlets' summaries, no "people say".
 - **Link inline** where you make the claim. Sources lists the README and every release page or doc you cited; the build adds the Fact Pack's sources itself (the repository, releases, contributors, `.github` and README pages on github.com), once each, so citing one of those pages yourself does not repeat it.
-- **Do not retype what the Fact Pack carries.** Stars, license, language, release dates and contributor counts render on the card and in Signals, and a Refresh keeps them current. A number in your prose goes stale on the next Refresh. Point at it ("the release cadence in Signals") or say what it means ("releases every few weeks since 2025").
+- **Do not retype what the Fact Pack carries.** Stars, license, language, release dates and contributor counts render on the card and in Signals, and a Refresh keeps them current. A number in your prose goes stale on the next Refresh. Point at it ("the release cadence in Signals") or say what it means ("releases every few weeks since 2025"). Pointing at Signals meets the house rule that every number carries its unit, date and comparison ([voice rule 7](house-byline-voice.md#voice-rules)).
 - **Say "we infer"** when you reconstruct something the sources leave open.
 
 ## Section by section
