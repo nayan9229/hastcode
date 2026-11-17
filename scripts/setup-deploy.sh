@@ -687,6 +687,9 @@ if [[ "$IMAGE_STORE" == r2 ]]; then
 fi
 set_var INDEXNOW_ENABLED "false"
 note "INDEXNOW_ENABLED stays false until hastcode.com is served by Cloudflare (stage 15)."
+set_var WEBSUB_ENABLED "false"
+note "WEBSUB_ENABLED stays false: the WebSub hub ping is optional and you turn it on by hand"
+note "(README \"Feeds, sitemaps, robots and IndexNow\"). This wizard never turns it on."
 note "Optional: Settings → Environments → production → Required reviewers → you,"
 note "so every Production deploy waits for a click (environments appear after first use)."
 pause

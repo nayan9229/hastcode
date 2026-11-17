@@ -48,6 +48,20 @@ PerplexityBot through in Cloudflare, turn on Always Use HTTPS, submit both
 sitemaps in Google Search Console, import the site into Bing Webmaster
 Tools. IndexNow already pings on every publish; don't send it by hand.
 
+Optional: also tell Google's WebSub hub when a feed changes. It is off
+until you run this once (README "WebSub hub ping"):
+
+```sh
+gh variable set WEBSUB_ENABLED --body true
+```
+
+After a `scripts/publish.sh cf`, check what the hub answered (`answered
+204` is good; "no feed changed" means nothing to send):
+
+```sh
+gh run view "$(gh run list --workflow publish.yml --limit 20 --json databaseId,displayTitle --jq '[.[] | select(.displayTitle | test("^Publish PUBCF-[0-9]+-[0-9]+$"))][0].databaseId')" --log | grep -E 'changed feed: |answered|no artefact: no feed'
+```
+
 Weekly check (5 minutes, read-only, changes nothing). Run it on your
 laptop; nothing in GitHub runs it:
 

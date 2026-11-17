@@ -68,8 +68,10 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: make build MODE=preview
-      # Previews never ping IndexNow; the adapter removes config.json.
+      # Previews never ping IndexNow or a WebSub hub; the adapter removes
+      # config.json.
       - run: rm -f .vercel/output/indexnow.json
+      - run: rm -f .vercel/output/websub.json
       - run: make adapt TARGET=cloudflare
       # `versions upload` creates a Worker version without deploying it
       # (Production keeps serving the last `wrangler deploy`).

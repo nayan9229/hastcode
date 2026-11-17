@@ -304,7 +304,8 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/deploy/`, `cmd/adapt/` | The deploy-adapter rule: `Apply(out, target)` (remove the other Target's files in place, write the Target's overlays); `make adapt TARGET=cloudflare\|vercel` runs it. Also the one map of Target spellings: `ParseTarget` reads a name (`cloudflare`), short code (`cf`) or Publish tag (`PUBCF-…`); `Target.Code()`, `Target.TagPrefix()`. |
 | `cmd/target/` | `go run ./cmd/target <name\|code\|tag>` prints `target=`, `code=`, `tag_prefix=`: how `scripts/publish.sh` and `scripts/publish-gate.sh` spell a Target. |
 | `builder/step_write_page_index.go`, `step_write_page_manifest.go` | Reads every written HTML page back (canonical, noindex, `<time>`s, hash of `<main>`) and diffs it against the previous build's page manifest in the build cache; the last write step saves the new manifest when the build passed. |
-| `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go` | Full-text RSS feeds, `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact. See "Feeds, sitemaps, robots and IndexNow". |
+| `builder/step_write_feeds.go`, `step_write_sitemap.go`, `step_write_news_sitemap.go`, `step_write_robots.go`, `step_validate_indexnow_key.go`, `step_write_indexnow.go`, `step_write_websub.go` | Full-text RSS feeds (with the WebSub `rel="hub"` link), `/sitemap.xml` + `/news-sitemap.xml`, `/robots.txt`, the IndexNow key file and changed-URL artefact, the WebSub changed-feed artefact. See "Feeds, sitemaps, robots and IndexNow". |
+| `scripts/websub/ping.sh` | The Production publish job's WebSub hub ping (one form POST per Publish; a failure only warns). Tested in `scripts/websub/ping_test.go` against a local stand-in hub. See "WebSub hub ping". |
 | `internal/crawlcheck/`, `cmd/crawlcheck/` | `make crawl-check`: `Checker{Site, HTTP, WWW, Crawlers, Client, Timeout, Out}` with `New(siteURL)` (the three addresses from `site_url`) and `Run(ctx) Report` (`crawlcheck.go`: robots.txt, crawler access, the redirects; `Report.ExitCode()`); the RFC 9309 group reading (`robots.go`); the crawler list with each owner's user-agent string, robots tokens and page (`crawlers.go`). `cmd/crawlcheck` is flags and exit codes only. Tests: `internal/crawlcheck/*_test.go` against local stand-ins. See "Crawl check". |
 | `site.yaml` | Site config: `site_url`, `verticals`, `images` (`store`, `base_url`, `bucket`, `cache_dir`; see "Image Store"), `ga_measurement_id` (Google Analytics 4 Measurement ID `G-…`, ADR-0008; Production and QA builds fail with `analytics-config` while blank or malformed; Previews and `make dev` never carry analytics), `ads_enabled`, `adsense_client` (required when ads are on), `adsense_slots` (AdSense ad unit id per slot position `after-tldr`, `after-what-happened`, `after-body`; required for Production and QA builds when ads are on; Previews and `make dev` never carry ads), `ads_txt` (records written verbatim to `/ads.txt`; malformed lines fail with `ads-txt`; empty = no file), `indexnow_key` (public, stable; blank = IndexNow off), `same_as` (home Organization profiles). |
 | `package.json` | Pinned Node build tools (`beautiful-mermaid`, `pagefind`). Not a JS app. |
@@ -342,7 +343,7 @@ render search page 62, render 404 page 65, check internal links 1000
 it, because a twin follows its page, ADR-0011); validate IndexNow key 6, validate ads.txt 6; write
 phase: index written pages 5 (reads the output back; later write steps use
 `s.index`), feeds 20, sitemap 30, llms.txt 32, sitemap.md 33, news sitemap 35, robots.txt 40, ads.txt 41, IndexNow
-key + changed URLs 50, author placeholders 60, config.json 100, Cloudflare manifest 105, index search 800 (Pagefind over the
+key + changed URLs 50, WebSub changed feeds 55, author placeholders 60, config.json 100, Cloudflare manifest 105, index search 800 (Pagefind over the
 final output), save page manifest 900 (keep it last).
 
 **Internal links.** After every page is written, `checkInternalLinks`
@@ -559,7 +560,10 @@ package `release_test`, helpers `piece` and `clock`, and the Crawl-check
 seam: `internal/crawlcheck`'s `Checker.Run` against local stand-ins of
 the three addresses, package `crawlcheck_test`, helpers `newStandIn`,
 `run`, `requireFailed` in `helpers_test.go` and `recordingTransport` in
-`network_test.go`): the Build seam, the Subscribe HTTP seam, the Fetch seam
+`network_test.go`, and the WebSub ping seam: `scripts/websub/ping.sh`
+run with bash against a local stand-in hub, plus `publish.yml`'s step
+order and the wizard's `WEBSUB_ENABLED`, package `websub`, helpers
+`standInHub`, `runPing`, `notice`, `readWorkflow` in `ping_test.go`): the Build seam, the Subscribe HTTP seam, the Fetch seam
 (`internal/factpack` against an in-process GitHub), the Intake seam
 (`internal/intake`'s `Run`/`Dismiss`/`Pick` against `httptest` publishers,
 a temp state directory and a fixed clock, asserting on the queue file,
@@ -1215,7 +1219,10 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   `/briefs/feed.xml`; newest 50 each, channel description = tagline.
   Feed readers load no site CSS, so diagrams in feeds have their CSS
   variables resolved to the light palette (`views.FeedSafeDiagrams`);
-  pages keep the themable variables.
+  pages keep the themable variables. Each feed's channel carries
+  `<atom:link rel="self">` (its own Production URL, which is also its
+  WebSub topic) and, next to it, `<atom:link rel="hub"
+  href="https://pubsubhubbub.appspot.com/">` (see "WebSub hub ping" below).
 - **Feed links in `<head>`** (autodiscovery, so a feed reader, browser or
   feed-intake service given any page URL finds the feed): every page
   carries `<link rel="alternate" type="application/rss+xml" title="HastCode"
@@ -1283,6 +1290,84 @@ cached). The manifest the artefact is diffed against is Production's own
 (only the Cloudflare job restores and saves it), so a QA Publish never hides a change from the next Production
 ping. A failed ping fails the job before the build cache is saved, so the
 next Production Publish lists those URLs again.
+
+### WebSub hub ping
+
+Optional, and off until you turn it on. Google says "If you use Atom or
+RSS, you can use WebSub to broadcast your changes to search engines,
+including Google" ([Build a
+sitemap](https://developers.google.com/search/docs/crawling-indexing/sitemaps/build-sitemap)).
+IndexNow does not reach Google, so this is the feed-side push.
+
+**The hub: `https://pubsubhubbub.appspot.com/`**, Google's public hub.
+Chosen on 2026-11-17 from its own page,
+<https://pubsubhubbub.appspot.com/>, which says the hub "is run by Google
+as a service" (page footer ©2022), that it "conforms to the
+Pubsubhubbub 0.4 specification", and tells publishers to add an
+`atom:link` with `rel="hub"` and that `href` under `rss/channel`, then,
+"Whenever new content is added to a feed, notify the hub": a POST with
+`Content-Type: application/x-www-form-urlencoded`, `hub.mode=publish`
+and `hub.url=<feed>` ("may be repeated to indicate multiple feeds").
+The answer code comes from the PubSubHubbub 0.3 spec that page links,
+section 7.1: "the hub MUST return a 204 No Content response", even with
+no subscribers, and a 4xx or 5xx on error. The W3C WebSub Recommendation
+leaves the publish request unspecified, so it is used only for discovery
+(`rel="hub"` beside `rel="self"`). Whether the hub is still maintained is
+not stated anywhere (the page is dated 2022); the first ping's answer in
+the run log is the live check. No ping was sent while building this.
+
+**What the build does.** The page manifest that the IndexNow diff uses
+also records a SHA-256 of every feed's bytes (`feeds` in
+`<cache>/pages/<mode>.json`). When a feed is new or its bytes changed
+since the last successful build of the same mode, the build writes
+`.vercel/output/websub.json`, beside `indexnow.json` and not served:
+`{"hub": "https://pubsubhubbub.appspot.com/", "topics": [<feed URLs>]}`.
+No feed changed means no file. A feed's bytes change only when one of its
+own newest 50 Pieces does (`lastBuildDate` is the newest item's date, not
+the build clock), so: a new or changed Brief lists `/feed.xml` and
+`/briefs/feed.xml`; a new or changed Explainer lists `/feed.xml` and its
+Vertical's feed; an Explainer older than every feed's newest 50 lists
+nothing. The first Production build with this change lists every feed
+once, because their bytes gained the hub link. The build makes no
+network call (`builder/step_write_websub.go`).
+
+**What the Publish does.** The Cloudflare (Production) job sets
+`websub.json` aside with `indexnow.json`, and right after "Ping IndexNow"
+its step "Ping WebSub hub" runs `scripts/websub/ping.sh` when the
+repository variable `WEBSUB_ENABLED` is `true`. That is one form POST
+to the hub: `hub.mode=publish` and one `hub.url` per changed feed. A
+failed ping is only a warning: the Publish is already live, the job goes
+on and saves the cache, and those feeds are not re-sent (the hub hears
+about them at the next Publish that changes them). So a WebSub problem
+never makes the next build re-list unchanged URLs for IndexNow. QA
+Publishes and Previews delete the artefact and never ping. QA serves the
+same feed bytes (ADR-0004), whose `rel="self"` is the Production URL.
+
+**Turn it on** (once, from the repository root):
+
+```sh
+gh variable set WEBSUB_ENABLED --body true
+```
+
+`gh variable set WEBSUB_ENABLED --body false` turns it off again. The
+setup wizard sets it `false` and never turns it on.
+
+**Read the result.** After the next `scripts/publish.sh cf`, open the run
+("Publish PUBCF-…", not the one ending ": gate") and look at its summary,
+or print the ping's lines from the latest Production deploy run:
+
+```sh
+gh run view "$(gh run list --workflow publish.yml --limit 20 --json databaseId,displayTitle --jq '[.[] | select(.displayTitle | test("^Publish PUBCF-[0-9]+-[0-9]+$"))][0].databaseId')" --log | grep -E 'changed feed: |answered|no artefact: no feed'
+```
+
+- `https://pubsubhubbub.appspot.com/ answered 204 for 2 feed(s)`: the hub
+  took the notice. The run summary says the same, starting "WebSub:".
+- `no artefact: no feed changed, nothing to ping`: nothing to send.
+- `answered 4xx`/`5xx`/`no answer`: a yellow "WebSub ping failed"
+  warning in the run summary. The site is live and fine; check the hub's
+  page, and turn the variable off if the hub is gone.
+- No "Ping WebSub hub" lines at all: the step was skipped because
+  `WEBSUB_ENABLED` is not `true`.
 
 ### Crawl check
 
@@ -1597,17 +1682,18 @@ hops:
    production-mode build (images per `images.store`), the Target's adapter
    and the upload:
    - **Cloudflare** (`production` environment): `make build MODE=production`
-     -> set `indexnow.json` aside -> `make adapt
+     -> set `indexnow.json` and `websub.json` aside -> `make adapt
      TARGET=cloudflare` -> `cloudflare/wrangler-action@v4` running `wrangler
      deploy --config .vercel/output/wrangler.json --message <tag>` (Wrangler
      4.149.0, as in `package.json`) -> IndexNow ping when
-     `INDEXNOW_ENABLED` is `true` -> save the cache.
+     `INDEXNOW_ENABLED` is `true` -> WebSub hub ping when `WEBSUB_ENABLED`
+     is `true` (a failure only warns) -> save the cache.
    - **Vercel** (`qa` environment): `vercel pull --environment=production`
      -> `vercel build --prod` (runs `make build` with `MODE=production`;
      `@vercel/go` adds the subscribe function) ->
-     delete `indexnow.json` -> `make adapt TARGET=vercel` (QA's disallow-all
+     delete `indexnow.json` and `websub.json` -> `make adapt TARGET=vercel` (QA's disallow-all
      `robots.txt`) -> `vercel deploy --prebuilt --prod` -> save the cache.
-     QA never pings IndexNow.
+     QA never pings IndexNow or the WebSub hub.
 
 Why two hops: the build cache (`node_modules/.cache/hastcode`: encoded
 images, rendered diagrams, the IndexNow page manifest) must carry from one
@@ -1688,7 +1774,10 @@ GitHub repository secrets (workflows reference names only):
 | `VERCEL_PROJECT_ID` | publish (Vercel) | Same file. |
 
 Repository variable `INDEXNOW_ENABLED`: `false` until hastcode.com is
-served by Cloudflare, then `true`. GitHub environments `production` and
+served by Cloudflare, then `true`. Repository variable `WEBSUB_ENABLED`:
+`true` turns on the WebSub hub ping in Production Publishes; the setup
+wizard sets it `false` and you turn it on by hand (`gh variable set
+WEBSUB_ENABLED --body true`, see "WebSub hub ping"). GitHub environments `production` and
 `qa` are created on first use (protection rules optional). The publish
 workflow's hand-off job needs `actions: write`, which it requests itself.
 
@@ -1737,7 +1826,7 @@ scripts/setup-deploy.sh --from 13   # e.g. once the content threshold is met
 | 7 | Buttondown: the real newsletter's key and a test newsletter's key | `.env` `BUTTONDOWN_PROD_API_KEY`, `BUTTONDOWN_TEST_API_KEY`, `BUTTONDOWN_API_KEY` (= test, for `make dev`) |
 | 8 | First `wrangler deploy` of a local preview-mode build, so the Worker `hastcode` exists before any Preview; Worker secret `BUTTONDOWN_API_KEY` = test key | `.env` `WORKER_URL` |
 | 9 | What survives a `wrangler deploy` (no routes, no vars in the config): a dashboard custom domain on a throwaway `deploy-check.hastcode.com`, a dashboard variable, the secret | |
-| 10 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false` | `.env` `VERCEL_TOKEN`; GitHub secrets and variable |
+| 10 | Vercel token; every GitHub secret in the table above; `INDEXNOW_ENABLED=false`; `WEBSUB_ENABLED=false` (you turn it on by hand, "WebSub hub ping") | `.env` `VERCEL_TOKEN`; GitHub secrets and variables |
 | 11 | Push `main` (tests only) | |
 | 12 | First branch Preview (`deploy-check`, empty commit) and its checklist; `scripts/check-worker.sh` | `.env` `PREVIEW_URL` |
 | 13 | ADR-0001 content gate (≥ 30 published Explainers across all six Verticals, ≥ 20 Briefs, no `TODO(author)`), then the Google Analytics 4 Measurement ID in `site.yaml` (stops if missing, ADR-0008), then the first `scripts/publish.sh cf`, while hastcode.com still points at the old host | |
