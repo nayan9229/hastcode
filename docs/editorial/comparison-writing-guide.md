@@ -59,7 +59,7 @@ Frontmatter: `title`, `description`, `kind: comparison`, `vertical`, `tags`, `pu
 - **When each wins.** One paragraph per option: where it is the right choice and what to watch. Our inference, and the section says so.
 - **Sources.** Last, the Lead first, with at least one link.
 
-Aim for 2,000 to 2,800 words, each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
+Most land between 2,000 and 2,800 words. This is a ceiling to check, not a target: stop when the point is made. Google has no preferred word count, and padding is the "filler" its raters mark down. Keep each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
 
 ## Titles, descriptions and search intent
 

@@ -196,6 +196,11 @@ vanish by themselves after 7 days.
 MD=content/explainers/<vertical>/<slug>.md` fetches the Fact Pack from
 GitHub. `make refresh` re-fetches all of them; it exits with `Error 3`
 when anything changed, which is normal: review the diff, commit, push.
+If you ran the quickstart, add one line right after its command block
+saying when, on what machine, and whether it worked as written, e.g. "We
+ran the quickstart on 2026-11-17 on macOS 26, at v0.5.0: it worked as
+written" (leave the commands as they are, and skip the line if you did
+not run them).
 
 ## 7. Rules to remember
 

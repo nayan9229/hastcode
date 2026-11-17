@@ -51,7 +51,7 @@ Frontmatter: `title`, `description`, `kind: case-study`, `vertical`, `tags`, `pu
 
 ## Section by section
 
-- **Opening (before TL;DR).** One or two hook sentences: a sourced fact about the system that makes the Reader look twice (Titus: "launches millions of containers a week", then the opposite move). Then the AI-assistance note as a blockquote, exactly as the template has it.
+- **Opening (before TL;DR).** One or two hook sentences: a sourced fact about the system that makes the Reader look twice (Titus: "launches millions of containers a week", then the opposite move). End the hook with one sentence that says what this piece will show the Reader (the "nut graf"): "This is how that loop forms, and the three defences that break it." Then the AI-assistance note as a blockquote, exactly as the template has it.
 - **TL;DR.** Three to five bullets, answer first: what it is, why it was built, how it works, what it costs.
 - **At a glance.** The diagram, a sentence saying it is ours and linking the original, and the order the sections walk it.
 - **The problem.** What the old design did and who paid for it, in the Source's evidence.
@@ -62,7 +62,7 @@ Frontmatter: `title`, `description`, `kind: case-study`, `vertical`, `tags`, `pu
 - **What it makes possible.** Who uses it, what is next, and the lesson for the Reader's own systems.
 - **Sources.** Last, the Lead first, with at least one link.
 
-Aim for 2,000 to 2,800 words, each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
+Most land between 2,000 and 2,800 words. This is a ceiling to check, not a target: stop when the point is made. Google has no preferred word count, and padding is the "filler" its raters mark down. Keep each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
 
 ## Titles, descriptions and search intent
 
