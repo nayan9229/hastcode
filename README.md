@@ -328,7 +328,8 @@ exclude drafts (production only; Explainers
 and Briefs) 30, draw hero cards 35 (every Explainer and Brief without
 `hero`: the card is drawn, cached and registered as the hero source); validate ads config 5, analytics config 7, references 10, Brief references 12,
 Fact Packs 15, unique slugs 20, static page paths 25, Explainer skeleton 30, Repo Profile
-skeleton 32, Brief skeleton 35, section-length warning 40, verified gate 45, Review-overdue warning 50, validate heroes 50
+skeleton 32, Brief skeleton 35, section-length warning 40, prose warnings 41
+(`sentence-length`, `banned-word`, `question-heading`), verified gate 45, Review-overdue warning 50, validate heroes 50
 (Explainers and Briefs), author photos 55; transform render diagrams 10,
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30
 (and a Repo Profile's Fact Pack sources), insert Repo Profile fact sections 35,
@@ -382,6 +383,33 @@ slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
 `#fragment` optional); an unknown target is `broken-link`, a known one is
 rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
 ad slot follows "What happened".
+
+**Editorial warnings.** These point at prose and never fail a build;
+production and preview builds both print them, so `make release`, `make
+dev` and `make daily`'s page check show them. `section-length`
+(`step_validate_section_length.go`, Explainers only): an H2 section over
+250 words of prose, code excluded. The prose warnings
+(`step_validate_prose.go`, every Explainer kind and every Brief) turn
+voice rule 5 in `docs/editorial/house-byline-voice.md` into numbers:
+`sentence-length` is a sentence over 30 words (the message names its H2,
+or "the opening" before the first one, its first six words and its word
+count; words inside quotation marks count, and an inline code span counts
+as one word); `banned-word` is a word or phrase on rule 5's list
+(revolutionary, game-changing, magic, simply, easy, obviously, "it is
+important to note", "please note", and "just" before an instruction verb
+such as "just add" or "just run", never "just as", "just under", "just
+before" or "just in time"), skipped inside quotation marks (straight or
+curly double quotes: a Source's words) and inline code; `question-heading`
+is an H2 ending in "?" (H3s are never read, so a Repo Profile's FAQ
+questions never warn). They read paragraphs and list items only: never
+frontmatter, headings (but `question-heading`'s H2s), fenced code
+(Mermaid included), inline code, tables, blockquotes (the AI-assistance
+note), images, raw HTML or link URLs (a link's text is read). Signals and
+Changelog render after validation, so they are never seen, and a block
+still holding a `TODO(author)` hint is left to `author-placeholder`.
+Static pages are not Pieces and are not checked. Today's `content/` gives
+about 900 `sentence-length` warnings; the runbook says how to list only
+the errors.
 
 **Repo Profiles.** A `kind: repo-profile` Explainer keeps every Explainer
 rule (TL;DR first, Sources last with a link, a Mermaid fence) and adds the

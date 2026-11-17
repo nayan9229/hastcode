@@ -41,7 +41,7 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 
 ## The skeleton
 
-These are the template's H2s, in order, and exactly what `make lead KIND=brief` writes. Both are literal: the build accepts no other sections.
+These are the template's H2s, in order, and exactly what `make lead KIND=brief` writes. Both are literal: the build accepts no other sections. Only Repo Profile FAQ headings may be questions; every H2 is a statement.
 
 ```text
 ## What happened
@@ -62,7 +62,7 @@ Title: `{company}'s {event}: {the lesson}`, e.g. "GitHub's Dependabot backlog: a
 
 ## What the build checks
 
-`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
+`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). Warnings: `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?"; with a Brief's two literal headings it cannot fire alone, because `brief-sections` fails any other H2). They never read code, tables, blockquotes (the AI-assistance note) or link URLs. `section-length` does not check Briefs. The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
 
 The Friday roundup is an ordinary Brief; see [the Repo Profile writing guide](repo-profile-writing-guide.md#the-friday-roundup).
 

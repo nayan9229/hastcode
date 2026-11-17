@@ -24,8 +24,13 @@ ever overselling it.
    Explainer and a Related link.
 4. **Diagram first.** Choose the key diagram before writing. The H2 sections
    walk through it in order.
-5. **Plain language.** Define every term at first use. Short sentences.
-   No hype words ("revolutionary", "game-changing", "magic").
+5. **Plain language.** Define every term at first use. Short sentences:
+   about 20 words on average. Split anything over 30 unless it is a
+   deliberate list. Use the shortest sentences at the hardest points. No
+   hype or filler words: revolutionary, game-changing, magic, simply, just
+   (as in "just add"), easy, obviously, "it is important to note", "please
+   note". The build warns on both (`sentence-length`, `banned-word`); a
+   Source's words inside quotation marks are never reworded to clear one.
 6. **Optimistic, honest.** Name the trade-offs plainly, then close on what the
    design makes possible: "what could go right" without hiding the cost.
 7. **Show the receipts.** Every claim, number and quote links its

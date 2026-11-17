@@ -166,6 +166,28 @@ says `success`, the page is at `https://hastcode.com/briefs/<slug>/` or
 | `brief-explainer-link` | Brief does not link a live Explainer | Link one in "Why it matters" and in `explainers:` |
 | `review-overdue` | An Explainer's `reviewed:` date is old | Re-read it, update `reviewed:` |
 
+**Only want the errors?** Every build also prints hundreds of writing
+warnings (below), and the errors come first, so they scroll off the top.
+To see just the errors and the last line:
+
+```sh
+make build 2>&1 | grep -E '^(error|build failed)'
+```
+
+### Writing warnings (they never block anything)
+
+The build points at three writing habits. They are warnings: they never
+fail `make build`, never stop `make release`, and never block a Publish.
+Fix them when you edit; nothing already live has to change.
+
+| Warning says | Meaning | Fix |
+|---|---|---|
+| `sentence-length` | A sentence over 30 words. The message names the section, the first six words and the count | Split the sentence. A deliberate list may stay long. If it quotes a Source, split our own words around the quote; never change the quote |
+| `banned-word` | One of: revolutionary, game-changing, magic, simply, easy, obviously, "it is important to note", "please note", or "just" as in "just add" | Cut the word. Words inside quotation marks never warn |
+| `question-heading` | A `##` heading that ends in "?" | Restate it as the answer ("Why do terms only go up?" → "Terms only go up"). FAQ questions in a Repo Profile are fine |
+
+Code, tables, quotes in `>` boxes and link addresses are never checked.
+
 ### Missed a day? `make daily` fills it
 
 If you skip a morning, the next `make daily` looks back up to 3 days for
