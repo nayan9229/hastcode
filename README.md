@@ -31,7 +31,9 @@ make lint-workflows  # pinned actionlint over .github/workflows/
 test ./...`, about a minute; `go test -short ./...` skips the slow
 1,000-entry news-sitemap case). Build-seam tests skip, with the reason,
 when Node or the npm packages are missing, so run `npm ci` first or most
-of them will not run. `make vet` before committing. CI runs `make test`
+of them will not run. The review-queue test (`scripts/daily/report_test.go`)
+runs `scripts/daily/report.py` with `python3`, which must be on `PATH`
+(it is on GitHub's runners). `make vet` before committing. CI runs `make test`
 on every push (to `main`: that is all it runs) and before every Publish.
 
 **Check pages locally.** `make dev` builds in **preview mode** (drafts
@@ -930,13 +932,24 @@ while `BACKLOG`, default 4, Explainer drafts wait) Leads that can carry a
 Case Study, Concept or Comparison, explaining each rejection. Each pick
 goes through `make lead` one at a time and is renamed to its chosen slug;
 then `PARALLEL` (default 4) pairs of sessions draft each Piece by its kind's
-writing guide and fact-check it against its Sources (prompts in
+writing guide, self-edit it with the
+[self-edit checklist](docs/editorial/self-edit-checklist.md), and fact-check
+it against its Sources (prompts in
 `scripts/daily/`; `scripts/daily/check-page.sh` is the one command they may
 run: a preview build plus the page's size). A draft its Source cannot carry
 is removed. The drafts and the Author's check list
-(`.scratch/daily/<date>/review-queue.md`) are committed on the current
+(`.scratch/daily/<date>/review-queue.md`, written by
+`scripts/daily/report.py`) are committed on the current
 branch; nothing is pushed or tagged, and every draft keeps `draft: true` and
-no `verified:`. `make daily DRY=1` chooses only; `BRIEFS=all` takes every
+no `verified:`. The check list now carries self-edit boxes for each drafted
+Piece, beside "Drafter asks you to check" and "Fact-checker could not
+confirm": the [self-edit checklist](docs/editorial/self-edit-checklist.md)'s
+lines, unticked, with a Brief getting only the lines that fit a Brief
+(none for a Lead that was not drafted). The Author ticks them while reading
+the draft, before verifying it against its Sources; they check the writing,
+not the facts, never replace verification, and no agent ticks them
+(`scripts/daily/report_test.go`, run by `make test` on a fixture run, checks
+the queue). `make daily DRY=1` chooses only; `BRIEFS=all` takes every
 qualifying Brief. Run logs, each session's JSON and the run's Claude cost are
 under `.intake/daily/<run>/`. **Gap Days (ADR-0012):** a Publication Day in
 the last `LOOKBACK` (3) days with fewer than two Pieces, live or drafted,

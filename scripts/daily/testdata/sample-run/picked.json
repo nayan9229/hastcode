@@ -1,0 +1,5 @@
+[
+ {"id": "lead0001", "kind": "concept", "vertical": "distributed-systems", "slug": "retry-storms", "angle": "How retries amplify an outage", "path": "content/explainers/distributed-systems/retry-storms.md"},
+ {"id": "lead0002", "kind": "brief", "slug": "acme-queue-outage", "explainers": ["retry-storms"], "angle": "Acme's queue outage and retry storms", "path": "content/briefs/acme-queue-outage.md"},
+ {"id": "lead0003", "kind": "case-study", "vertical": "databases-storage", "slug": "thin-source", "angle": "A post too thin to carry a Case Study", "path": "content/explainers/databases-storage/thin-source.md"}
+]

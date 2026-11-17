@@ -80,11 +80,21 @@ Open `.scratch/daily/<today>/review-queue.md`. For each draft it lists:
 
 - the file,
 - a tick list "Drafter asks you to check",
-- a list "Fact-checker could not confirm" (check these hardest).
+- a list "Fact-checker could not confirm" (check these hardest),
+- a tick list "Self-edit before you verify": the
+  [self-edit checklist](editorial/self-edit-checklist.md) for that draft
+  (a Brief gets only the lines that fit a Brief).
 
-Open the draft, open its Source, check every ticked line against the
-Source. Fix wording in the draft yourself if needed. If a claim is wrong
-and cannot be fixed, delete the draft file (`git rm`).
+First, read the draft once and tick the self-edit boxes as you go. They
+check the writing (is the point clear, do the headings tell the story,
+are the sentences short), not the facts. Fix the writing in the draft
+yourself where a line fails. Ticking them is not verifying, and it never
+stands in for `verified:`.
+
+Then open the draft and its Source side by side and check every line of
+the other two lists against the Source. Fix wording in the draft yourself
+if needed. If a claim is wrong and cannot be fixed, delete the draft file
+(`git rm`).
 
 To see a draft as a web page: `make dev`, then open
 http://localhost:3000. Drafts show in this local preview.
@@ -167,7 +177,10 @@ needs `EXPLAINER=<slug>` naming the live Explainer it links. This writes a
 skeleton file with empty headings. Then open Claude Code in the repo and
 say: "Draft `content/explainers/<vertical>/<slug>.md` following
 `docs/editorial/<kind>-writing-guide.md` and `docs/editorial/house-byline-voice.md`,
+self-edit it with `docs/editorial/self-edit-checklist.md`,
 then fact-check every claim against its Source. Keep `draft: true`."
+Then go through the same checklist yourself while you read the draft,
+before you check its claims.
 Check the page size with
 `scripts/daily/check-page.sh content/explainers/<vertical>/<slug>.md /tmp/check`.
 
@@ -176,7 +189,8 @@ vanish by themselves after 7 days.
 
 **Option C, write from scratch, no Lead:** copy the template
 `docs/editorial/<kind>-template.md` into the right folder, keep
-`draft: true`, follow the writing guide.
+`draft: true`, follow the writing guide, then self-edit with
+`docs/editorial/self-edit-checklist.md` before you check the claims.
 
 **Repo Profiles** are different: `make fetch REPO=owner/name
 MD=content/explainers/<vertical>/<slug>.md` fetches the Fact Pack from
@@ -209,7 +223,7 @@ not run them).
 | `.scratch/daily/<date>/review-queue.md` | Your check list for that day's drafts |
 | `.intake/queue.md` | Current Leads with IDs (local, not committed) |
 | `.intake/daily/<run>/` | Logs and cost of each `make daily` run |
-| `docs/editorial/` | Templates and writing guides per kind |
+| `docs/editorial/` | Templates and writing guides per kind, and the self-edit checklist |
 | `sources.yaml` | The watched websites; add one with a reason in the commit |
 
 ## 9. Words
