@@ -46,8 +46,36 @@ follow "Runbook: get indexed, in order" in
 `docs/research/indexing-submission-channels.md`. In short: let
 PerplexityBot through in Cloudflare, turn on Always Use HTTPS, submit both
 sitemaps in Google Search Console, import the site into Bing Webmaster
-Tools. IndexNow already pings on every publish; don't send it by hand. Its
-"Weekly check" there is a 5-minute read-only look.
+Tools. IndexNow already pings on every publish; don't send it by hand.
+
+Weekly check (5 minutes, read-only, changes nothing). Run it on your
+laptop; nothing in GitHub runs it:
+
+```sh
+make crawl-check
+```
+
+It prints one `PASS` or `FAIL` line per check and a summary at the end.
+All `PASS`: nothing to do. Each `FAIL` line says what is wrong. The steps
+below are in "Runbook: get indexed, in order" in
+`docs/research/indexing-submission-channels.md`:
+
+- "Cloudflare is blocking PerplexityBot" (or another crawler): step 1,
+  set that crawler to Allow in AI Crawl Control.
+- "answers 200 instead of redirecting": step 2, turn on Always Use HTTPS.
+- "robots.txt stops ... crawling /": if the line it names is in
+  Cloudflare's managed block (the top of the file), step 1 item 5;
+  otherwise ask Claude, it is in our build.
+- "has lost our ... allow group" or "has no Sitemap: line": something in
+  front of the site rewrote robots.txt; ask Claude to look.
+- "https://www.hastcode.com/ answers ...": the www-to-hastcode.com
+  redirect rule in Cloudflare is gone; put it back.
+- "could not reach": your internet or the site is down; run it again.
+
+It sends crawler names from your own IP address, so it shows what
+Cloudflare does with each name, not what the real crawler sees. Then look
+at Search Console **Pages** and **Performance**, and Bing **IndexNow
+Insights**.
 
 ## 4. A normal morning
 
