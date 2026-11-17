@@ -2,7 +2,7 @@
 
 Use this after the draft is done and **before** the claim-by-claim check against Sources. It checks the writing, not the facts. The Author's verification is unchanged: every claim, number, quote and diagram is still checked against its Source, and only the Author sets `verified:` (ADR-0007, ADR-0009). Ticking a line here is not verification and never stands in for it.
 
-The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word; that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
+The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word, except the "One name per thing" and "Every number" lines, which follow voice rules 9 and 7; that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
 
 ## Where it is used
 
@@ -63,7 +63,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 ### Words
 
 - [ ] Every technical term is defined at first use, and kept where it is the right term.
-- [ ] One name per thing: the same term every time (no synonyms for the same component).
+- [ ] One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
 - [ ] No hype or filler: revolutionary, game-changing, magic, simply, just, easy, obviously, "it is important to note", "please note", "there is/are" openings.
 - [ ] At most one analogy, and it says where it stops being true.
 - [ ] No idioms or pop-culture references a non-native reader would miss.
@@ -82,7 +82,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 The writing side; the Author's verification checks the facts.
 
 - [ ] Every claim has its link where the claim is made.
-- [ ] Every number has a unit, a date or version, and its caveat. *(Repo Profile: a number the Fact Pack carries (stars, license, release dates, contributors) is pointed at in Signals, not retyped.)*
+- [ ] Every number has a unit, a date or version, what it is compared with, and its caveat. *(Repo Profile: a number the Fact Pack carries (stars, license, release dates, contributors) is pointed at in Signals, not retyped.)*
 - [ ] Quotes are exact, short, credited, and followed by our own analysis.
 - [ ] Each inference says "we infer" in its own sentence.
 
