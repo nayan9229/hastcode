@@ -118,7 +118,8 @@ func templateTree(md []byte) buildtest.Tree {
 func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule(t *testing.T) {
 	out, res := buildtest.Build(t, buildtest.Config(), templateTree(copyTemplate(t, true)))
 
-	rules := append([]string{"frontmatter", "tldr", "sources", "diagram", "fact-pack", "fact-pack-repo", "fact-sections", "hero-missing", "author-placeholder"}, repoProfileRules...)
+	rules := append([]string{"frontmatter", "tldr", "sources", "diagram", "fact-pack", "fact-pack-repo", "fact-sections", "hero-missing", "author-placeholder", "section-length"}, repoProfileRules...)
+	rules = append(rules, proseRules...)
 	for _, rule := range rules {
 		buildtest.RequireNoProblemRule(t, res, repoProfileFile, rule)
 	}
