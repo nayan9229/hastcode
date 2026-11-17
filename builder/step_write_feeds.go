@@ -57,18 +57,32 @@ func writeFeeds(s *site) error {
 		briefs = append(briefs, it)
 	}
 
-	if err := s.writeFeed(siteFeedURL, views.PublicationName, homeURL, views.Tagline, all); err != nil {
+	if err := s.writeFeed(siteFeed(), homeURL, views.Tagline, all); err != nil {
 		return err
 	}
-	if err := s.writeFeed(briefsFeedURL, views.PublicationName+": Briefs", briefsIndexURL, views.Tagline, briefs); err != nil {
+	if err := s.writeFeed(briefsFeed(), briefsIndexURL, views.Tagline, briefs); err != nil {
 		return err
 	}
 	for _, v := range s.sortedVerticals() {
-		if err := s.writeFeed(verticalFeedURL(v.Slug), views.PublicationName+": "+v.Name, verticalURL(v.Slug), views.Tagline, byVertical[v.Slug]); err != nil {
+		if err := s.writeFeed(verticalFeed(v), verticalURL(v.Slug), views.Tagline, byVertical[v.Slug]); err != nil {
 			return err
 		}
 	}
 	return nil
+}
+
+// siteFeed, briefsFeed and verticalFeed name each feed: Name is its
+// channel title, URL its path. writeFeeds writes them and page heads
+// advertise them (s.page, the Vertical hub and Briefs listings), so a
+// head link always names a feed the build wrote, under its own title.
+func siteFeed() views.Link { return views.Link{Name: views.PublicationName, URL: siteFeedURL} }
+
+func briefsFeed() views.Link {
+	return views.Link{Name: views.PublicationName + ": Briefs", URL: briefsFeedURL}
+}
+
+func verticalFeed(v Vertical) views.Link {
+	return views.Link{Name: views.PublicationName + ": " + v.Name, URL: verticalFeedURL(v.Slug)}
 }
 
 // feedItem is one piece in a feed, before encoding.
@@ -148,10 +162,12 @@ type rssCDATA struct {
 	Value string `xml:",cdata"`
 }
 
-// writeFeed writes one feed of items, newest first, at most feedLength.
+// writeFeed writes one feed of items (feed.Name the channel title,
+// feed.URL where it is written), newest first, at most feedLength.
 // lastBuildDate is the newest item's date (not the build clock), so an
 // unchanged site writes an unchanged feed.
-func (s *site) writeFeed(urlPath, title, link, description string, items []feedItem) error {
+func (s *site) writeFeed(feed views.Link, link, description string, items []feedItem) error {
+	urlPath, title := feed.URL, feed.Name
 	items = slices.Clone(items)
 	slices.SortStableFunc(items, func(a, b feedItem) int {
 		return cmp.Or(b.published.Compare(a.published), cmp.Compare(a.url, b.url))

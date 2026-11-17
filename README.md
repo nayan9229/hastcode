@@ -1216,6 +1216,17 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   Feed readers load no site CSS, so diagrams in feeds have their CSS
   variables resolved to the light palette (`views.FeedSafeDiagrams`);
   pages keep the themable variables.
+- **Feed links in `<head>`** (autodiscovery, so a feed reader, browser or
+  feed-intake service given any page URL finds the feed): every page
+  carries `<link rel="alternate" type="application/rss+xml" title="HastCode"
+  href="/feed.xml">`. Each page of a Vertical hub (`/{vertical}/`,
+  `/{vertical}/page/{n}/`) also carries that Vertical's feed, titled
+  "HastCode: <Vertical name>", and each page of the Briefs listing
+  (`/briefs/`, `/briefs/page/{n}/`) carries `/briefs/feed.xml`, titled
+  "HastCode: Briefs"; on those pages the site feed comes first. The title
+  is the feed's own channel title. The footer feed links stay. A browser
+  does not fetch these links while loading the page; they count toward
+  the 52 KB HTML size gate like the rest of the head.
 - **`/sitemap.xml`**: the canonical URL of every written page that is not
   noindex, once. `lastmod`: an Explainer's Review date (or publication, if
   later), a Brief's publication, else the newest `<time datetime>` on the

@@ -9,10 +9,11 @@ import (
 )
 
 // page returns the view model every page passes to views.Layout: head
-// fields (canonical from urlPath, default Open Graph) plus the site chrome
-// (header nav, footer links), ads and analytics. Every render step builds
-// its views.Page through this (or s.articlePage, which calls it) so the
-// canonical and chrome are never missing.
+// fields (canonical from urlPath, the site feed's autodiscovery link,
+// default Open Graph) plus the site chrome (header nav, footer links), ads
+// and analytics. Every render step builds its views.Page through this (or
+// s.articlePage, which calls it) so the canonical, feed link and chrome are
+// never missing.
 func (s *site) page(urlPath, title, description string) views.Page {
 	badge := views.OGBadge()
 	badge.URL = s.absURL(s.imageURL(badge.URL))
@@ -20,6 +21,7 @@ func (s *site) page(urlPath, title, description string) views.Page {
 		Title:       title,
 		Description: description,
 		Canonical:   s.absURL(urlPath),
+		Feeds:       []views.Link{siteFeed()},
 		Social:      views.Social{Type: "website", Title: title, Image: &badge, ImageAlt: views.OGBadgeAlt},
 		Chrome:      s.chrome(),
 		Ads:         views.Ads{Enabled: s.adsOn(), Client: s.cfg.AdSenseClient, Slots: s.cfg.AdSenseSlots},
