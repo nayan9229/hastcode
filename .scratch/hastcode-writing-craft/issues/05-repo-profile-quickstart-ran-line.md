@@ -1,0 +1,21 @@
+# 05: Repo Profile: "we ran the quickstart" line
+
+**What to build:** When the Author has run a Repo Profile's quickstart, the Profile can say so in one line, which gives the Reader first-hand experience next to the facts. Repo Profiles are grounded in the Fact Pack, the README and the release pages. They copy the quickstart verbatim, but nothing asks anyone to run it. The Search Quality Rater Guidelines' first E is first-hand Experience, and a run is the cheapest way to show it (`docs/research/article-writing-craft.md` §5.2 item 5). The line is optional because each run costs the Author time (§5.3 item 5, §7). Breakdown approved 2026-11-17.
+
+- **Where and what.** In "In 60 seconds", after the verbatim quickstart block, an optional line (§5.3 item 5): "When the Author has run the quickstart, say so in one line after the block: when, on what, and whether it worked as written. Never change the commands; report what happened." Shape: "We ran the quickstart on {date} on {OS / machine}, at {repo version}: it worked as written" or "…: it needed {what}". It is written in "we", the house voice (voice rule 8).
+- **The commands stay verbatim.** The line never edits, reorders or adds to the fenced block. If a step failed or needed a change, the line says so in prose and the block keeps the README's commands. That keeps the guide's quickstart-verbatim rule.
+- **It is opinion-side prose, not a fact.** The Fact Pack stays fetched and never hand-written (ADR-0005 keeps facts and opinion in different files; CLAUDE.md). The line is not put into the Fact Pack and does not restate what Signals shows. A Refresh never touches it. The date shows how old it is. (No 90-day Review rule for it: the Author dropped that on 2026-11-17.)
+- **Only the Author writes it.** Like `verified:` (ADR-0007), it is a first-hand claim that only the person who ran the commands can make. An agent drafting or editing a Profile never writes, fills in or changes the line, even if it ran the commands itself, and never turns the template's placeholder into a claim. The guide and the template comment both say this.
+- **Optional in the template.** A Profile without a run must build clean without any extra step. A required `TODO(author)` line would fail every production build until filled, so the template shows the line commented out, the way it already shows optional frontmatter (`hero`, `related`), or in some other form a Profile can skip. The template has no comment form in the body today: its optional lines are YAML comments in the frontmatter. So the chosen form must be checked against three things. (1) It must not show on the published page or in its Markdown twin (ADR-0011); the Markdown renderer drops raw HTML but may leave an "omitted" marker. (2) It must not count toward `section-length`, or toward ticket 02's prose warnings if that ticket has landed. (3) It must pass the Repo Profile template test, which today rejects any `{…}` token or `TODO(author)` left in the body that is not a "TODO(author): hint" it fills. Describing the line in the template's header comment, beside the other optional keys, meets all three.
+
+**Blocked by:** None (can start immediately)
+
+**Status:** ready-for-agent
+
+- [ ] The Repo Profile guide's "In 60 seconds" bullet carries the §5.3 item 5 wording, the line's shape, "never change the commands", and "only the Author writes it; an agent never does"
+- [ ] The Repo Profile template shows the optional line, placed after the quickstart block, in a form that a Profile skipping it builds clean with. Its comment says it is optional and Author-only. A Profile copied from the template and left as is shows nothing of the line on its page or its Markdown twin
+- [ ] The Repo Profile template test still passes: the template is still built against the skeleton rule, and its nine H2s, five FAQ questions and AI-assistance note are unchanged
+- [ ] A test or a preview build shows a filled Profile both with the line and without it: both build clean, and neither raises `repo-profile-sections` or `author-placeholder`
+- [ ] No existing Profile in `content/` gets the line from this ticket. Only the Author adds it, after a real run
+- [ ] The runbook's Repo Profiles paragraph (§6) adds one plain sentence: if you ran the quickstart, add the one line after it, with when, on what and whether it worked
+- [ ] `make test` passes

@@ -1,0 +1,25 @@
+# 05: WebSub hub (optional)
+
+**What to build:** When a Production Publish changes a feed, a WebSub hub hears about it within minutes instead of waiting for a crawler to come back. Google says "If you use Atom or RSS, you can use WebSub to broadcast your changes to search engines, including Google". IndexNow does not reach Google. The note infers that WebSub is the only push channel Google documents for feeds; that is its own reading, not a Google statement (`docs/research/indexing-submission-channels.md` §7 "WebSub", "Code-side follow-ups" 3). Today our feeds carry `atom:link rel="self"` but no `rel="hub"` (§0). This is optional: nothing else depends on it, and it stays off until the Author turns it on.
+
+- **Choose the hub first, from a primary source.** The note names Google's public hub (`pubsubhubbub.appspot.com`). Its page is dated ©2022, and whether it is still maintained is open (note, Open questions 11). Check the hub's own page and the response to one live publish request for `/feed.xml`. The W3C WebSub Recommendation does not define the ping: "The specific mechanism for the publisher to inform the hub is left unspecified". It mentions `hub.mode=publish` only in a note, as what some public hubs use. So take the request's format from the chosen hub's own documentation, and use the Recommendation only for discovery (`rel="hub"` / `rel="self"`). Record the chosen hub, its source and the date in README. If no hub can be shown to be maintained, stop: set this ticket to `needs-info` with what was found, and build nothing.
+- **Feeds name the hub.** Every feed (`/feed.xml`, `/briefs/feed.xml`, each `/<vertical>/feed.xml`) carries `atom:link rel="hub"` next to its existing `rel="self"`. The self link stays the feed's canonical Production URL, which is the WebSub topic. QA feeds are the same bytes (ADR-0004) and are never pinged.
+- **Each Production Publish pings the hub after the deploy is live, next to "Ping IndexNow".** It pings only the feeds whose bytes changed since the last Production build: no changed feed means no ping. A failed ping is a warning in the run summary. It does not fail the Publish or stop the cache save, so a WebSub problem never causes IndexNow to re-list unchanged URLs. QA Publishes and Previews never ping.
+- **Its own switch.** The ping runs only when a new repository variable (named like `INDEXNOW_ENABLED`, e.g. `WEBSUB_ENABLED`) is `true`. It defaults to off: the setup wizard sets it `false`, and the Author turns it on by hand.
+- Pinging a hub sends a notice to a third party. It is not a fetch from GitHub, so it is allowed in Actions under CLAUDE.md. The workflow still never fetches from GitHub.
+
+**Blocked by:** 02 (Feed link in page head)
+
+**Status:** ready-for-agent
+
+- [ ] Hub chosen, with its primary source and date recorded in README "Feeds, sitemaps, robots and IndexNow" (or the ticket set to `needs-info` with the evidence, and nothing built)
+- [ ] Build-seam test: every feed carries `rel="hub"` with the chosen hub and an unchanged `rel="self"`; every feed is still valid RSS 2.0
+- [ ] The build says which feeds changed since the last Production build. The list sits beside the IndexNow artefact and comes from the same manifest the IndexNow diff uses, which also records each feed's bytes. Feeds carry only the newest 50 Pieces each, and a Vertical feed holds only that Vertical's Explainers, never Briefs, so a feed is listed only when its own bytes changed. Tests:
+  - nothing changed → no feeds listed
+  - a new or changed Brief → `/feed.xml` and `/briefs/feed.xml`
+  - a new or changed Explainer within its feeds' newest 50 → `/feed.xml` and its Vertical's feed
+  - a changed Explainer older than the newest 50 of every feed → no feeds listed
+- [ ] Publish workflow: the hub ping runs in the Production job only, after the deploy and next to "Ping IndexNow", only when the new variable is `true`. It does nothing when no feed changed, and a failure warns without failing the job. The QA job never pings. `make lint-workflows` passes.
+- [ ] The variable is listed in three places: the publish workflow's header comment (next to `INDEXNOW_ENABLED`), README "Deploying" → "Secrets, variables and settings", and the setup wizard, which sets it `false`. README "Feeds, sitemaps, robots and IndexNow" says how to turn it on and how to read the ping's result in a run log.
+- [ ] `docs/author-runbook.md` has no IndexNow check of its own; section 3's "Getting found by search engines" paragraph only says IndexNow pings on every publish. Next to that line, add a copy-paste line to turn the hub ping on (`gh variable set …`) and one to check the latest run's ping result. Leave the rest of the paragraph as it is; tickets 01 and 03 edit it too.
+- [ ] `make test` passes; preview build passes

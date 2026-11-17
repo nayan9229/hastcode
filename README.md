@@ -1214,7 +1214,12 @@ actually wrote (a page the gate removed is in no feed or sitemap).
   `Bingbot`, `OAI-SearchBot`, `PerplexityBot`, both sitemap lines. Training
   crawlers (`GPTBot`, `Google-Extended`) fall under `*` (allowed). That is
   Production's file; on the QA Target (Vercel) the deploy adapter
-  overlays `User-agent: *` / `Disallow: /` (see "Deploying").
+  overlays `User-agent: *` / `Disallow: /` (see "Deploying"). Live, the
+  file is not what the build emits: Cloudflare's managed robots.txt
+  prepends a `Content-Signal` line and `Disallow` groups for ~31 crawlers
+  (`GPTBot`, `ClaudeBot`, `CCBot`, `Google-Extended`, `Baiduspider`, ...),
+  and the edge also 403s some bots regardless of robots.txt (PerplexityBot
+  as of 2026-11-16). See `docs/research/indexing-submission-channels.md`.
 - **IndexNow**: `indexnow_key` in `site.yaml` (public by design; keep it
   stable) is served as `/<key>.txt`. The build diffs every indexable page's
   `<main>` hash against the previous successful build's manifest

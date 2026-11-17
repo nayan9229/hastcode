@@ -41,6 +41,14 @@ You need these installed and working once:
 
 Quick health check: `make check` must end with `ok` lines and no `FAIL`.
 
+Getting found by search engines (one time, by hand, about 40 minutes):
+follow "Runbook: get indexed, in order" in
+`docs/research/indexing-submission-channels.md`. In short: let
+PerplexityBot through in Cloudflare, turn on Always Use HTTPS, submit both
+sitemaps in Google Search Console, import the site into Bing Webmaster
+Tools. IndexNow already pings on every publish; don't send it by hand. Its
+"Weekly check" there is a 5-minute read-only look.
+
 ## 4. A normal morning
 
 ### Step 1: draft today's pieces
