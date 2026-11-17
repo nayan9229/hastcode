@@ -25,7 +25,7 @@ Each line applies to every kind unless it carries a note:
 
 **Comparison.** Every line applies. The opening's closing question, the one the piece answers, does the nut graf's job ([the Comparison writing guide](comparison-writing-guide.md)).
 
-**Repo Profile.** Its FAQ `###` questions are the one place question headings are allowed. Its quickstart in "In 60 seconds" stays verbatim. A number the Fact Pack carries is pointed at in Signals, not retyped ("Do not retype what the Fact Pack carries", [the Repo Profile writing guide](repo-profile-writing-guide.md#ground-every-claim)). `make daily` does not draft Repo Profiles, so their notes never reach the review queue.
+**Repo Profile.** Its FAQ `###` questions are the one place question headings are allowed. Its quickstart in "In 60 seconds" stays verbatim. A number the Fact Pack carries is pointed at in Signals, not retyped ("Do not retype what the Fact Pack carries", [the Repo Profile writing guide](repo-profile-writing-guide.md#ground-every-claim)). The optional "We ran the quickstart" line after the block is the Author's alone; a self-edit never writes or changes it. `make daily` does not draft Repo Profiles, so their notes never reach the review queue.
 
 ## The checklist
 
