@@ -38,8 +38,11 @@ func verticalHubPage(s *site, v Vertical, lp listingPage[*content.Explainer]) vi
 	if description == "" {
 		description = "Explainers on " + v.Name + ": how real systems are built."
 	}
-	return s.listingPage(lp, v.Name, description, verticalURL(v.Slug),
+	page := s.listingPage(lp, v.Name, description, verticalURL(v.Slug),
 		"No Explainers in "+v.Name+" yet.")
+	// The hub also advertises its Vertical's feed, after the site feed.
+	page.Page.Feeds = append(page.Page.Feeds, verticalFeed(v))
+	return page
 }
 
 // listingPage is the view model for one page of an Explainer listing

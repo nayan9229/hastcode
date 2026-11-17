@@ -36,5 +36,6 @@ func briefsIndexPage(s *site, lp listingPage[*content.Brief]) views.BriefsIndexP
 	page := s.page(lp.URL, heading+" | "+views.PublicationName, briefsIndexDescription)
 	page.Breadcrumbs = trail
 	page.StructuredData = append(page.StructuredData, s.breadcrumbs(trail))
+	page.Feeds = append(page.Feeds, briefsFeed()) // after the site feed
 	return views.BriefsIndexPage{Page: page, Heading: heading, Items: s.briefItems(lp.Items), Pagination: lp.Pagination}
 }

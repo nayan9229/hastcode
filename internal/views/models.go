@@ -34,6 +34,11 @@ type Page struct {
 	// (ADR-0011), linked as rel="alternate"; empty on pages without one
 	// (only Pieces have a twin).
 	MarkdownTwin string
+	// Feeds are the RSS feeds the head advertises for autodiscovery
+	// (rel="alternate" type="application/rss+xml"), in order: Name is the
+	// feed's channel title, URL its site-relative path. Every page has
+	// the site feed; a Vertical hub or Briefs listing adds its own.
+	Feeds []Link
 	// Social is the Open Graph / Twitter card preview.
 	Social Social
 	// Breadcrumbs is the trail from Home to this page (site-relative

@@ -2,7 +2,9 @@ package views
 
 // Head is the <head> every page carries: charset, viewport, title,
 // description, robots (max-image-preview:large for Discover, or noindex),
-// canonical, Open Graph/Twitter card, both theme-colors, the inline theme
+// canonical, the Markdown twin and RSS feed autodiscovery links
+// (rel="alternate"; a browser does not fetch them while loading), Open
+// Graph/Twitter card, both theme-colors, the inline theme
 // script (before the stylesheet so a stored override applies before first
 // paint), the inline stylesheet (ADR-0006), the SVG mark as an embedded favicon, the hero preload
 // on article pages, JSON-LD and (when configured) analytics.
@@ -21,6 +23,9 @@ templ Head(p Page) {
 	}
 	if p.MarkdownTwin != "" {
 		<link rel="alternate" type="text/markdown" href={ p.MarkdownTwin }/>
+	}
+	for _, f := range p.Feeds {
+		<link rel="alternate" type="application/rss+xml" title={ f.Name } href={ f.URL }/>
 	}
 	@SocialMeta(p)
 	<meta name="color-scheme" content="light dark"/>
