@@ -19,18 +19,18 @@ NOTE = re.compile(r"\s*\*\(([^*]*)\)\*\s*$")
 def checklist():
     """[(group, line, [notes])] from the checklist doc ([] when it is missing)."""
     items, group, inside = [], None, False
-    text = CHECKLIST.read_text() if CHECKLIST.exists() else ""
-    for raw in text.splitlines():
+    body = CHECKLIST.read_text() if CHECKLIST.exists() else ""
+    for raw in body.splitlines():
         if raw.startswith("## "):
             inside = raw == "## The checklist"
         elif inside and raw.startswith("### "):
             group = raw[4:].strip()
         elif inside and group and raw.startswith("- [ ] "):
-            text, notes = raw[6:].rstrip(), []
-            while (m := NOTE.search(text)):
+            line_text, notes = raw[6:].rstrip(), []
+            while (m := NOTE.search(line_text)):
                 notes.insert(0, m.group(1))
-                text = text[:m.start()]
-            items.append((group, text, notes))
+                line_text = line_text[:m.start()]
+            items.append((group, line_text, notes))
     return items
 
 KIND_NAMES = {"brief": "Brief", "case-study": "Case Study", "concept": "Concept",

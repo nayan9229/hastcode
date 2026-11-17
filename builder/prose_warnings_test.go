@@ -145,6 +145,12 @@ func TestProseWarnings_JustInItsOtherSensesAndQuotedWordsDoNotWarn(t *testing.T)
 		"The leader steps in just in time.",
 		`The paper calls it "simply a log" and moves on.`,
 		"The README says “just add a node” and stops there.",
+		"The paper calls it ‘simply a log’ and moves on.",
+		"The README’s author calls it ‘simply a log’ and moves on.",
+		"The job is just run once a day.",
+		"Each task was just added to the queue.",
+		"The file starts with a magic number.",
+		"Each segment opens with four magic bytes.",
 	} {
 		t.Run(prose, func(t *testing.T) {
 			res := buildProse(t, proseHeading, prose)
@@ -152,4 +158,45 @@ func TestProseWarnings_JustInItsOtherSensesAndQuotedWordsDoNotWarn(t *testing.T)
 			buildtest.RequireNoProblemRule(t, res, raftFile, "banned-word")
 		})
 	}
+}
+
+func TestProseWarnings_ApostrophesAreNotQuotes(t *testing.T) {
+	// A curly apostrophe never opens a quotation, so a banned word after
+	// one still warns.
+	res := buildProse(t, proseHeading, "Raft’s election is simply a vote.")
+
+	buildtest.RequireWarningRule(t, res, raftFile, "banned-word", `"simply"`)
+}
+
+func TestProseWarnings_SentenceEnds(t *testing.T) {
+	for _, tc := range []struct {
+		name, prose string
+		warn        bool
+	}{
+		// "Fig. 3" and "No. 5" are abbreviations before a number, not
+		// sentence ends: 16 + 16 words stay one 32-word sentence.
+		{"Fig. before a number", sentenceNoStop(16) + " in Fig. 3 then" + strings.Repeat(" term", 12) + ".", true},
+		{"No. before a number", sentenceNoStop(16) + " in No. 5 then" + strings.Repeat(" term", 12) + ".", true},
+		// "no." before a capital still ends a sentence.
+		{"no. ends a sentence", sentenceNoStop(15) + " no. Then" + strings.Repeat(" term", 15) + ".", false},
+		// A next sentence that opens with a lower-case brand (iOS, gRPC)
+		// is still a new sentence.
+		{"lower-case brand starts a sentence", sentence(20) + " iOS" + strings.Repeat(" term", 18) + ".", false},
+		{"gRPC starts a sentence", sentence(20) + " gRPC" + strings.Repeat(" term", 18) + ".", false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			res := buildProse(t, proseHeading, tc.prose)
+
+			if tc.warn {
+				buildtest.RequireWarningRule(t, res, raftFile, "sentence-length", "## "+proseHeading)
+			} else {
+				buildtest.RequireNoProblemRule(t, res, raftFile, "sentence-length")
+			}
+		})
+	}
+}
+
+// sentenceNoStop is sentence(n) without its full stop.
+func sentenceNoStop(n int) string {
+	return strings.TrimSuffix(sentence(n), ".")
 }

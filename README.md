@@ -395,12 +395,18 @@ voice rule 5 in `docs/editorial/house-byline-voice.md` into numbers:
 `sentence-length` is a sentence over 30 words (the message names its H2,
 or "the opening" before the first one, its first six words and its word
 count; words inside quotation marks count, and an inline code span counts
-as one word); `banned-word` is a word or phrase on rule 5's list
-(revolutionary, game-changing, magic, simply, easy, obviously, "it is
-important to note", "please note", and "just" before an instruction verb
-such as "just add" or "just run", never "just as", "just under", "just
-before" or "just in time"), skipped inside quotation marks (straight or
-curly double quotes: a Source's words) and inline code; `question-heading`
+as one word; a full stop ends a sentence except after "e.g.", "i.e.",
+"vs.", "cf.", "approx.", "Fig.", an initial, or "No." before a number;
+known limits: a sentence ending on one capital letter ("Plan B.") is read
+as an initial, and one opening with an all lower-case word ("npm",
+"etcd") is not split off, so either can join two sentences into one
+warning); `banned-word` is a word or phrase on rule 5's banned list (the list
+lives in rule 5; the code's copy is `banned`, with `fillerJust` for the
+instruction verbs after "just" and `technicalMagic` for "magic number"
+and "magic bytes", which never warn; "just" after a form of "be", as in
+"is just run once", never warns either), skipped inside quotation marks
+(straight or curly double quotes, or curly single quotes: a Source's
+words) and inline code; `question-heading`
 is an H2 ending in "?" (H3s are never read, so a Repo Profile's FAQ
 questions never warn). They read paragraphs and list items only: never
 frontmatter, headings (but `question-heading`'s H2s), fenced code
@@ -581,7 +587,7 @@ visits are never counted and Lighthouse CI measures the page's own code
 says so and is linked from every page's footer.
 Everything must work without JS.
 
-**Tests.** Six seams are tested, and only these (spec "Testing
+**Tests.** These seams are tested, and only these (spec "Testing
 Decisions", plus the Release seam of ADR-0012: `internal/release`'s
 `GapDays`, `Redate`, `NewPlan` and `Apply` on a temp content tree,
 package `release_test`, helpers `piece` and `clock`, and the Crawl-check
@@ -591,7 +597,12 @@ the three addresses, package `crawlcheck_test`, helpers `newStandIn`,
 `network_test.go`, and the WebSub ping seam: `scripts/websub/ping.sh`
 run with bash against a local stand-in hub, plus `publish.yml`'s step
 order and the wizard's `WEBSUB_ENABLED`, package `websub`, helpers
-`standInHub`, `runPing`, `notice`, `readWorkflow` in `ping_test.go`): the Build seam, the Subscribe HTTP seam, the Fetch seam
+`standInHub`, `runPing`, `notice`, `readWorkflow` in `ping_test.go`,
+and the Daily review-queue seam: `scripts/daily/report.py` run with
+python3 on the fixture run directory `scripts/daily/testdata/sample-run`
+from a scratch repo root, asserting on the review queue it writes (the
+self-edit boxes, never ticked) and on `draft.md` naming the checklist,
+package `daily`, helpers `writeQueue` and `entry` in `report_test.go`): the Build seam, the Subscribe HTTP seam, the Fetch seam
 (`internal/factpack` against an in-process GitHub), the Intake seam
 (`internal/intake`'s `Run`/`Dismiss`/`Pick` against `httptest` publishers,
 a temp state directory and a fixed clock, asserting on the queue file,
@@ -1341,8 +1352,24 @@ section 7.1: "the hub MUST return a 204 No Content response", even with
 no subscribers, and a 4xx or 5xx on error. The W3C WebSub Recommendation
 leaves the publish request unspecified, so it is used only for discovery
 (`rel="hub"` beside `rel="self"`). Whether the hub is still maintained is
-not stated anywhere (the page is dated 2022); the first ping's answer in
-the run log is the live check. No ping was sent while building this.
+not stated anywhere (the page is dated 2022).
+
+**Live check: not done yet.** Ticket
+`.scratch/hastcode-indexing/issues/05-websub-hub.md` asks for one live
+publish request for `/feed.xml` before the hub counts as chosen. No agent
+sends one (it notifies a third party), so it is the Author's step, done
+once, before turning the switch on:
+
+```sh
+curl -sS -o /dev/null -w '%{http_code}\n' -d hub.mode=publish -d hub.url=https://hastcode.com/feed.xml https://pubsubhubbub.appspot.com/
+```
+
+`204` means the hub is up and took the notice: write the code and the
+date here, in place of "not done yet", then turn the ping on. Anything
+else (a 4xx or 5xx, or no answer): leave `WEBSUB_ENABLED` false and set
+the ticket back to `needs-info` with what came back. The feeds' `rel="hub"`
+link is harmless either way: a reader that finds no working hub just
+polls the feed.
 
 **What the build does.** The page manifest that the IndexNow diff uses
 also records a SHA-256 of every feed's bytes (`feeds` in
@@ -1356,7 +1383,7 @@ the build clock), so: a new or changed Brief lists `/feed.xml` and
 `/briefs/feed.xml`; a new or changed Explainer lists `/feed.xml` and its
 Vertical's feed; an Explainer older than every feed's newest 50 lists
 nothing. The first Production build with this change lists every feed
-once, because their bytes gained the hub link. The build makes no
+once, because the previous manifest records no feed hashes yet. The build makes no
 network call (`builder/step_write_websub.go`).
 
 **What the Publish does.** The Cloudflare (Production) job sets
@@ -1371,7 +1398,8 @@ never makes the next build re-list unchanged URLs for IndexNow. QA
 Publishes and Previews delete the artefact and never ping. QA serves the
 same feed bytes (ADR-0004), whose `rel="self"` is the Production URL.
 
-**Turn it on** (once, from the repository root):
+**Turn it on** (once, from the repository root, only after the live
+check above answered `204`):
 
 ```sh
 gh variable set WEBSUB_ENABLED --body true

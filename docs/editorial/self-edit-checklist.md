@@ -42,7 +42,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 - [ ] Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
 - [ ] Hook: one real, linked moment (system, number, failure), not a definition or history. *(not in a Brief)* *(Repo Profile: one sentence, a sourced fact about the repository; a number the Fact Pack carries is pointed at in Signals, not retyped.)*
 - [ ] Nut graf: the hook's last sentence says what this piece gives the Reader. *(not in a Brief)* *(Comparison: the opening's closing question, the one the piece answers, does this job.)* *(Repo Profile: the hook is one sentence; the TL;DR that follows says what the Reader gets.)*
-- [ ] TL;DR: the answer in plain words; a reader who stops here is not misled. *(not in a Brief)* *(Repo Profile: its three bullets: what it is, the design choice that sets it apart, who should adopt it today.)*
+- [ ] TL;DR: the answer in plain words; a reader who stops here is not misled. *(not in a Brief)* *(Repo Profile: three to five bullets, the template's three first: what it is, the design choice that sets it apart, who should adopt it today.)*
 - [ ] Only the AI-assistance note comes before "What happened". *(Brief only)*
 
 ### Structure
@@ -64,7 +64,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 
 - [ ] Every technical term is defined at first use, and kept where it is the right term.
 - [ ] One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
-- [ ] No hype or filler: revolutionary, game-changing, magic, simply, just, easy, obviously, "it is important to note", "please note", "there is/are" openings.
+- [ ] No hype or filler word from voice rule 5's banned list (`house-byline-voice.md`), and no "there is/are" openings.
 - [ ] At most one analogy, and it says where it stops being true.
 - [ ] No idioms or pop-culture references a non-native reader would miss.
 

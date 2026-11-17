@@ -16,3 +16,15 @@
 - [ ] The real `content/` still builds in production mode with the 52 KB HTML size gate (rule `html-size`) unchanged. If a live page would go over, stop and ask the Author; do not raise the gate. Lighthouse CI passes on the Preview.
 - [ ] README "Feeds, sitemaps, robots and IndexNow" says pages advertise the feeds in `<head>` (site feed everywhere, Vertical and Briefs feeds on their listings)
 - [ ] `make test` passes; preview build passes
+
+## Comments
+
+**Production build check, 2026-11-17** (code review follow-up, branch `integration/indexing-writing-craft`). `go run ./cmd/builder -content content -mode production` over today's `content/`, into a scratch output with its own build cache: it built with no errors (930 warnings, all prose and section warnings). Gate unchanged: `maxHTMLBytes = 52 * 1024` (53,248 bytes, without the inline stylesheet). Largest pages, measured the same way:
+
+| Page | Bytes without the stylesheet |
+|---|---|
+| `/languages-runtimes/g1-region-based-garbage-collection/` | 52,932 (316 under) |
+| `/databases-storage/dump-restore-vs-logical-vs-trigger-replication/` | 52,494 |
+| `/languages-runtimes/structured-concurrency/` | 51,566 |
+
+So no live page goes over, but the largest has only 316 bytes left: a longer Piece of that size, or another head link, will hit `html-size`. Lighthouse CI was **not** run: it runs on a Preview, and agents do not push or deploy. It runs on the next pushed Preview; check its result there.

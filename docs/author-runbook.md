@@ -49,7 +49,16 @@ sitemaps in Google Search Console, import the site into Bing Webmaster
 Tools. IndexNow already pings on every publish; don't send it by hand.
 
 Optional: also tell Google's WebSub hub when a feed changes. It is off
-until you run this once (README "WebSub hub ping"):
+until you turn it on. First, check once that the hub still answers (this
+sends it one notice about `/feed.xml`; nothing else):
+
+```sh
+curl -sS -o /dev/null -w '%{http_code}\n' -d hub.mode=publish -d hub.url=https://hastcode.com/feed.xml https://pubsubhubbub.appspot.com/
+```
+
+It should print `204`. Write that and today's date into README "WebSub
+hub ping" (the "Live check" line). If it prints anything else, stop here
+and leave the ping off. On `204`, turn it on:
 
 ```sh
 gh variable set WEBSUB_ENABLED --body true
@@ -197,7 +206,7 @@ Fix them when you edit; nothing already live has to change.
 | Warning says | Meaning | Fix |
 |---|---|---|
 | `sentence-length` | A sentence over 30 words. The message names the section, the first six words and the count | Split the sentence. A deliberate list may stay long. If it quotes a Source, split our own words around the quote; never change the quote |
-| `banned-word` | One of: revolutionary, game-changing, magic, simply, easy, obviously, "it is important to note", "please note", or "just" as in "just add" | Cut the word. Words inside quotation marks never warn |
+| `banned-word` | A hype or filler word from the banned list in voice rule 5 (`docs/editorial/house-byline-voice.md`) | Cut the word. Words inside quotation marks never warn. A product's name is not hype (Dropbox's "Magic Pocket"): leave that warning |
 | `question-heading` | A `##` heading that ends in "?" | Restate it as the answer ("Why do terms only go up?" → "Terms only go up"). FAQ questions in a Repo Profile are fine |
 
 Code, tables, quotes in `>` boxes and link addresses are never checked.

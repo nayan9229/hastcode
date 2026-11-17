@@ -27,10 +27,13 @@ ever overselling it.
 5. **Plain language.** Define every term at first use. Short sentences:
    about 20 words on average. Split anything over 30 unless it is a
    deliberate list. Use the shortest sentences at the hardest points. No
-   hype or filler words: revolutionary, game-changing, magic, simply, just
-   (as in "just add"), easy, obviously, "it is important to note", "please
-   note". The build warns on both (`sentence-length`, `banned-word`); a
-   Source's words inside quotation marks are never reworded to clear one.
+   hype or filler words: revolutionary, game-changing, magic (a technical
+   term such as "magic number" is fine), simply, just (as an instruction:
+   "just add", "just run"), easy, obviously, "it is important to note",
+   "please note". The build warns on both (`sentence-length`,
+   `banned-word`); a Source's words inside quotation marks are never
+   reworded to clear one. This is the list's one home: other docs point
+   here, and `builder/step_validate_prose.go` holds the build's copy.
 6. **Optimistic, honest.** Name the trade-offs plainly, then close on what the
    design makes possible: "what could go right" without hiding the cost.
 7. **Show the receipts.** Every claim, number and quote links its

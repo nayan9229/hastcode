@@ -114,6 +114,18 @@ func TestNonCrawlerRequestsSayWhoIsAsking(t *testing.T) {
 	}
 }
 
+func TestCrawlersSendARealChromeVersion(t *testing.T) {
+	// Google, Bing and Amazon publish "Chrome/W.X.Y.Z" as a placeholder
+	// for the Chrome version their crawler runs. No real crawler sends the
+	// letters, and an edge rule matching on a version pattern could treat
+	// them differently, so the check sends a concrete version.
+	for _, c := range crawlcheck.Crawlers {
+		if strings.Contains(c.UserAgent, "W.X.Y.Z") {
+			t.Errorf("%s sends the placeholder Chrome/W.X.Y.Z; send a concrete version", c.Name)
+		}
+	}
+}
+
 func TestNoWorkflowRunsIt(t *testing.T) {
 	// Local only: from CI's IP addresses it would test a different path
 	// through Cloudflare's edge (README "Crawl check").

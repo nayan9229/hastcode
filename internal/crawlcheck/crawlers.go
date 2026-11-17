@@ -5,7 +5,8 @@ type Crawler struct {
 	// Name is how the output names it.
 	Name string
 	// UserAgent is the full user-agent string its owner publishes, sent
-	// verbatim (placeholders such as Chrome/W.X.Y.Z included).
+	// verbatim, except that a "Chrome/W.X.Y.Z" placeholder is filled with
+	// chromeVersion.
 	UserAgent string
 	// Tokens are the robots.txt product tokens it obeys, most specific
 	// first: the first token some group names decides its rules, and with
@@ -14,6 +15,14 @@ type Crawler struct {
 	// Source is the owner's page the string and tokens come from.
 	Source string
 }
+
+// chromeVersion fills the "Chrome/W.X.Y.Z" placeholder that Google, Bing
+// and Amazon publish in their crawlers' strings: those crawlers run a
+// current stable Chrome and send its version, never the letters, so an
+// edge rule matching a version pattern treats this check like them. Taken
+// from a stable Chrome install on 2026-11-17; update it with the other
+// strings.
+const chromeVersion = "157.0.8103.79"
 
 // Crawlers are the search and answer crawlers we want reaching the site
 // (docs/research/indexing-submission-channels.md §0, §4, §6). Training
@@ -25,7 +34,7 @@ type Crawler struct {
 var Crawlers = []Crawler{
 	{
 		Name:      "Googlebot",
-		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/W.X.Y.Z Safari/537.36",
+		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/" + chromeVersion + " Safari/537.36",
 		Tokens:    []string{"Googlebot"},
 		Source:    "https://developers.google.com/search/docs/crawling-indexing/google-common-crawlers",
 	},
@@ -34,7 +43,7 @@ var Crawlers = []Crawler{
 		// 4) and could not be read on 2026-11-17; this is the desktop
 		// string Bing has published there. Check it in a browser.
 		Name:      "Bingbot",
-		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/W.X.Y.Z Safari/537.36",
+		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm) Chrome/" + chromeVersion + " Safari/537.36",
 		Tokens:    []string{"Bingbot"},
 		Source:    "https://www.bing.com/webmasters/help/which-crawlers-does-bing-use-8c184ec0",
 	},
@@ -81,7 +90,7 @@ var Crawlers = []Crawler{
 	},
 	{
 		Name:      "Amzn-SearchBot",
-		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Amzn-SearchBot/0.1) Chrome/W.X.Y.Z Safari/537.36",
+		UserAgent: "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Amzn-SearchBot/0.1) Chrome/" + chromeVersion + " Safari/537.36",
 		Tokens:    []string{"Amzn-SearchBot"},
 		Source:    "https://developer.amazon.com/amazonbot",
 	},

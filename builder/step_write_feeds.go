@@ -21,7 +21,9 @@ func init() {
 // rss/channel, and a form POST hub.mode=publish&hub.url=<feed> after each
 // update. The rel="self" link beside it is the WebSub topic. The build
 // never pings: step_write_websub.go lists the changed feeds for the
-// post-deploy step. README "Feeds, sitemaps, robots and IndexNow".
+// post-deploy step. No live publish request has been sent yet: the
+// Author sends one before turning WEBSUB_ENABLED on (README "WebSub hub
+// ping", "Live check").
 const webSubHub = "https://pubsubhubbub.appspot.com/"
 
 // feedLength is how many of the newest pieces each feed carries. Feeds
