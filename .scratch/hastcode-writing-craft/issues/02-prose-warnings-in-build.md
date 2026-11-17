@@ -26,3 +26,23 @@
 - [ ] The runbook says in plain words what the three warnings mean, that they never block `make release` or a Publish, and what to do (split the sentence, cut the word, restate the heading), next to the "If `make build` fails" table
 - [ ] Each writing guide's "The skeleton" gains one line (§5.3 item 9, confirmed by the Author on 2026-11-17): "Only Repo Profile FAQ headings may be questions; every H2 is a statement."
 - [ ] `make test` passes
+
+## Comments
+
+**Implementer (W02), 2026-11-17:** Built on `impl/w02` (`builder/step_validate_prose.go`, validate 41; prose extraction `internal/markdown/prose.go`; tests `builder/prose_warnings_test.go`).
+
+Preview build over today's `content/` (`go run ./cmd/builder -mode preview -skip-search-index`, 74 Pieces): succeeds, 0 errors, 937 warnings.
+
+| Rule | Build | Baseline above |
+|---|---|---|
+| `sentence-length` | 918 warnings in 69 Pieces | 912 sentences over 30 words in 69 Pieces |
+| `banned-word` | 18 in 17 Pieces: "simply" 10, "easy" 7, "just check" 1 | "simply" 10, "easy" 7, "just" 25 uses (most not filler) |
+| `question-heading` | 0 | 0 question H2s |
+
+Why they differ: the build splits sentences its own way (at `.`, `!` or `?` followed by a space and a capital, digit, quote, bracket or code; never after "e.g.", "i.e.", "vs." or an initial), counts an inline code span as one word and skips tokens with no letter or digit (a lone dash). The throwaway script split differently, so six more sentences cross 30 words here. "just" warns only before an instruction verb (a fixed list: add, run, use, check, …), so only one of the 25 uses is filler ("Just check first", github-agent-scale-git). One "easy" is in "easy-to-use", which warns because a hyphen is a word boundary.
+
+Errors among the warnings: with one error added to a copy of `content/` (a bad `source_url`), the error is line 1 of 939 lines of output, so it scrolls off the top; the last line does count it ("build failed: 1 error(s), 936 warning(s)"). The runbook now gives `make build 2>&1 | grep -E '^(error|build failed)'` to list only the errors.
+
+Brief: a question H2 in a Brief warns `question-heading`, but the Brief skeleton's `brief-sections` already fails any H2 other than its two literal ones, so that build fails on `brief-sections` (never on `question-heading`). The test checks exactly that.
+
+A block that still holds a `TODO(author)` hint is skipped: it is a skeleton's placeholder, which `author-placeholder` reports (the picked-skeleton test in `internal/intake` expects only that warning).

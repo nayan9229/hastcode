@@ -11,6 +11,6 @@ Write: replace every TODO(author), including title, description (150 characters 
 {{LIMITS}}
 
 Check with: scripts/daily/check-page.sh {{PATH}} {{OUT}}
-It prints any build error or warning naming your file and the page's size in bytes. Fix every one. Warnings for other files are not yours.
+It prints any build error or warning naming your file and the page's size in bytes. Fix every one. Warnings for other files are not yours. For sentence-length, split the sentence; one that is a deliberate list may stay long. For banned-word, cut the word. For question-heading, restate the H2 as its answer. A Source's quoted words are never reworded to clear a warning: split our own words around the quote instead.
 
 If, after reading the Source, it cannot carry a {{KIND}} that meets the guide, do not draft: leave the file untouched and return status not-viable with the reason.

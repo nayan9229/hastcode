@@ -24,7 +24,7 @@ After that, a weekly `make refresh`, run by the Author locally and committed, ke
 
 ## Section by section
 
-The build fails unless the nine H2s appear exactly as in the template, in that order. Headings match byte for byte, with a straight apostrophe in "Don't".
+The build fails unless the nine H2s appear exactly as in the template, in that order. Headings match byte for byte, with a straight apostrophe in "Don't". Only Repo Profile FAQ headings may be questions; every H2 is a statement: the FAQ questions are `###` under `## FAQ`, which `question-heading` never reads.
 
 - **Opening (before TL;DR).** One hook sentence: a sourced fact that makes the Reader look twice. Then the AI-assistance note as a blockquote, exactly as the template has it.
 - **TL;DR.** Three to five bullets. Answer first: what it is, what sets it apart, who should adopt it.
@@ -49,7 +49,7 @@ The description is one sentence of 150 characters or fewer that names the reposi
 
 ## What the build checks
 
-`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (Fact Pack unchanged upstream for over 30 days: the repository may be dormant; check it at the next Review), `section-length` (an H2 over 250 words).
+`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (Fact Pack unchanged upstream for over 30 days: the repository may be dormant; check it at the next Review), `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it; the FAQ's `###` questions never warn). The three prose warnings never read code (the quickstart block included), tables, blockquotes, link URLs, or the Signals and Changelog the build renders from the Fact Pack.
 
 ## The Friday roundup
 

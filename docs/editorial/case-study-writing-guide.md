@@ -31,7 +31,7 @@ A Case Study (`GLOSSARY.md`) reconstructs how one real, named system is built, f
 
 ## The skeleton
 
-These are the template's H2s, in order, and exactly what `make lead` writes for a Case Study. Only `TL;DR` and `Sources` are literal; rename every other heading to a plain sentence that states its point ("Why sharing a kernel ran out of road"), and add one H2 per part of the diagram.
+These are the template's H2s, in order, and exactly what `make lead` writes for a Case Study. Only `TL;DR` and `Sources` are literal; rename every other heading to a plain sentence that states its point ("Why sharing a kernel ran out of road"), and add one H2 per part of the diagram. Only Repo Profile FAQ headings may be questions; every H2 is a statement (`question-heading` warns on an H2 ending in "?").
 
 ```text
 ## TL;DR
@@ -75,7 +75,7 @@ The title stays under about 70 characters. The description is one sentence of 15
 
 ## What the build checks
 
-`tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `review-overdue`.
+`tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it), `review-overdue`. The three prose warnings never read code, tables, blockquotes or link URLs.
 
 ## What the first one taught us
 
