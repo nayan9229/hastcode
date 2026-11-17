@@ -33,6 +33,25 @@ type pageIndex struct {
 	changed []string
 	// manifest is what savePageManifest stores for the next build.
 	manifest pageManifest
+	// prevFeeds is the previous build's feed hashes (manifest.Feeds);
+	// changedFeeds the absolute URLs of feeds recordFeed found new or
+	// changed against them, in the order the feeds were written.
+	prevFeeds    map[string]string
+	changedFeeds []string
+}
+
+// recordFeed notes the bytes of the feed at absolute URL u in the
+// manifest and whether they differ from the previous build's. Feeds are
+// hashed whole: a feed's bytes change only when one of its own items
+// (its newest 50 pieces) does, because lastBuildDate is the newest item's
+// date, not the build clock.
+func (idx *pageIndex) recordFeed(u string, data []byte) {
+	sum := sha256.Sum256(data)
+	hash := hex.EncodeToString(sum[:])
+	idx.manifest.Feeds[u] = hash
+	if idx.prevFeeds[u] != hash {
+		idx.changedFeeds = append(idx.changedFeeds, u)
+	}
 }
 
 // indexedPage is one indexable HTML page.
@@ -51,6 +70,9 @@ type indexedPage struct {
 type pageManifest struct {
 	SiteURL string                   `json:"site_url"`
 	Pages   map[string]manifestEntry `json:"pages"` // by canonical URL
+	// Feeds is the SHA-256 of each feed's bytes, by absolute feed URL
+	// (its rel="self"); the WebSub step lists the feeds that changed.
+	Feeds map[string]string `json:"feeds,omitempty"`
 }
 
 type manifestEntry struct {
@@ -77,7 +99,10 @@ func indexWrittenPages(s *site) error {
 	contentDates := s.contentDates()
 	now := s.cfg.Now.UTC().Format(time.RFC3339)
 
-	idx := &pageIndex{manifest: pageManifest{SiteURL: s.cfg.SiteURL, Pages: map[string]manifestEntry{}}}
+	idx := &pageIndex{
+		manifest:  pageManifest{SiteURL: s.cfg.SiteURL, Pages: map[string]manifestEntry{}, Feeds: map[string]string{}},
+		prevFeeds: prev.Feeds,
+	}
 	root := filepath.Join(s.out.Dir, "static")
 	err = filepath.WalkDir(root, func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(p, ".html") {

@@ -15,6 +15,15 @@ func init() {
 	registerStep(phaseWrite, 20, "write feeds", writeFeeds)
 }
 
+// webSubHub is the WebSub hub every feed names (atom:link rel="hub"):
+// Google's public hub. Its own page (https://pubsubhubbub.appspot.com/,
+// read 2026-11-17) asks publishers for exactly this link under
+// rss/channel, and a form POST hub.mode=publish&hub.url=<feed> after each
+// update. The rel="self" link beside it is the WebSub topic. The build
+// never pings: step_write_websub.go lists the changed feeds for the
+// post-deploy step. README "Feeds, sitemaps, robots and IndexNow".
+const webSubHub = "https://pubsubhubbub.appspot.com/"
+
 // feedLength is how many of the newest pieces each feed carries. Feeds
 // are full text, so the cap keeps /feed.xml a reasonable download.
 const feedLength = 50
@@ -127,19 +136,19 @@ type rssDoc struct {
 }
 
 type rssChannel struct {
-	Title         string    `xml:"title"`
-	Link          string    `xml:"link"`
-	Description   string    `xml:"description"`
-	Language      string    `xml:"language"`
-	Self          rssSelf   `xml:"atom:link"`
-	LastBuildDate string    `xml:"lastBuildDate,omitempty"`
-	Items         []rssItem `xml:"item"`
+	Title         string        `xml:"title"`
+	Link          string        `xml:"link"`
+	Description   string        `xml:"description"`
+	Language      string        `xml:"language"`
+	AtomLinks     []rssAtomLink `xml:"atom:link"` // rel="self", then rel="hub"
+	LastBuildDate string        `xml:"lastBuildDate,omitempty"`
+	Items         []rssItem     `xml:"item"`
 }
 
-type rssSelf struct {
+type rssAtomLink struct {
 	Href string `xml:"href,attr"`
 	Rel  string `xml:"rel,attr"`
-	Type string `xml:"type,attr"`
+	Type string `xml:"type,attr,omitempty"`
 }
 
 type rssItem struct {
@@ -184,7 +193,10 @@ func (s *site) writeFeed(feed views.Link, link, description string, items []feed
 			Link:        s.absURL(link),
 			Description: description,
 			Language:    "en",
-			Self:        rssSelf{Href: s.absURL(urlPath), Rel: "self", Type: "application/rss+xml"},
+			AtomLinks: []rssAtomLink{
+				{Href: s.absURL(urlPath), Rel: "self", Type: "application/rss+xml"},
+				{Href: webSubHub, Rel: "hub"},
+			},
 		},
 	}
 	if len(items) > 0 {
@@ -203,5 +215,12 @@ func (s *site) writeFeed(feed views.Link, link, description string, items []feed
 			Content:     rssCDATA{Value: it.html},
 		})
 	}
-	return s.writeXML(urlPath, doc)
+	data, err := encodeXML(doc)
+	if err != nil {
+		return err
+	}
+	if s.index != nil {
+		s.index.recordFeed(s.absURL(urlPath), data)
+	}
+	return s.out.WriteStatic(urlPath, data)
 }
