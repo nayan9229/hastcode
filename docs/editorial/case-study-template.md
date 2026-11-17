@@ -23,7 +23,7 @@ author: mira-vance
 draft: true
 ---
 
-TODO(author): the hook, one or two sentences: a sourced fact about {system} (a number, a design choice, an incident) that makes a backend engineer look twice, linked to the Lead.
+TODO(author): the hook, one or two sentences: a sourced fact about {system} (a number, a design choice, an incident) that makes a backend engineer look twice, linked to the Lead. End the hook with one sentence that says what this piece will show the Reader (the "nut graf"), e.g. "This is how {company} built {system}, the options it turned down, and what it costs."
 
 > Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
 

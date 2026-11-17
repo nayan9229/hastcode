@@ -46,8 +46,36 @@ follow "Runbook: get indexed, in order" in
 `docs/research/indexing-submission-channels.md`. In short: let
 PerplexityBot through in Cloudflare, turn on Always Use HTTPS, submit both
 sitemaps in Google Search Console, import the site into Bing Webmaster
-Tools. IndexNow already pings on every publish; don't send it by hand. Its
-"Weekly check" there is a 5-minute read-only look.
+Tools. IndexNow already pings on every publish; don't send it by hand.
+
+Weekly check (5 minutes, read-only, changes nothing). Run it on your
+laptop; nothing in GitHub runs it:
+
+```sh
+make crawl-check
+```
+
+It prints one `PASS` or `FAIL` line per check and a summary at the end.
+All `PASS`: nothing to do. Each `FAIL` line says what is wrong. The steps
+below are in "Runbook: get indexed, in order" in
+`docs/research/indexing-submission-channels.md`:
+
+- "Cloudflare is blocking PerplexityBot" (or another crawler): step 1,
+  set that crawler to Allow in AI Crawl Control.
+- "answers 200 instead of redirecting": step 2, turn on Always Use HTTPS.
+- "robots.txt stops ... crawling /": if the line it names is in
+  Cloudflare's managed block (the top of the file), step 1 item 5;
+  otherwise ask Claude, it is in our build.
+- "has lost our ... allow group" or "has no Sitemap: line": something in
+  front of the site rewrote robots.txt; ask Claude to look.
+- "https://www.hastcode.com/ answers ...": the www-to-hastcode.com
+  redirect rule in Cloudflare is gone; put it back.
+- "could not reach": your internet or the site is down; run it again.
+
+It sends crawler names from your own IP address, so it shows what
+Cloudflare does with each name, not what the real crawler sees. Then look
+at Search Console **Pages** and **Performance**, and Bing **IndexNow
+Insights**.
 
 ## 4. A normal morning
 
@@ -80,11 +108,21 @@ Open `.scratch/daily/<today>/review-queue.md`. For each draft it lists:
 
 - the file,
 - a tick list "Drafter asks you to check",
-- a list "Fact-checker could not confirm" (check these hardest).
+- a list "Fact-checker could not confirm" (check these hardest),
+- a tick list "Self-edit before you verify": the
+  [self-edit checklist](editorial/self-edit-checklist.md) for that draft
+  (a Brief gets only the lines that fit a Brief).
 
-Open the draft, open its Source, check every ticked line against the
-Source. Fix wording in the draft yourself if needed. If a claim is wrong
-and cannot be fixed, delete the draft file (`git rm`).
+First, read the draft once and tick the self-edit boxes as you go. They
+check the writing (is the point clear, do the headings tell the story,
+are the sentences short), not the facts. Fix the writing in the draft
+yourself where a line fails. Ticking them is not verifying, and it never
+stands in for `verified:`.
+
+Then open the draft and its Source side by side and check every line of
+the other two lists against the Source. Fix wording in the draft yourself
+if needed. If a claim is wrong and cannot be fixed, delete the draft file
+(`git rm`).
 
 To see a draft as a web page: `make dev`, then open
 http://localhost:3000. Drafts show in this local preview.
@@ -189,7 +227,10 @@ needs `EXPLAINER=<slug>` naming the live Explainer it links. This writes a
 skeleton file with empty headings. Then open Claude Code in the repo and
 say: "Draft `content/explainers/<vertical>/<slug>.md` following
 `docs/editorial/<kind>-writing-guide.md` and `docs/editorial/house-byline-voice.md`,
+self-edit it with `docs/editorial/self-edit-checklist.md`,
 then fact-check every claim against its Source. Keep `draft: true`."
+Then go through the same checklist yourself while you read the draft,
+before you check its claims.
 Check the page size with
 `scripts/daily/check-page.sh content/explainers/<vertical>/<slug>.md /tmp/check`.
 
@@ -198,12 +239,18 @@ vanish by themselves after 7 days.
 
 **Option C, write from scratch, no Lead:** copy the template
 `docs/editorial/<kind>-template.md` into the right folder, keep
-`draft: true`, follow the writing guide.
+`draft: true`, follow the writing guide, then self-edit with
+`docs/editorial/self-edit-checklist.md` before you check the claims.
 
 **Repo Profiles** are different: `make fetch REPO=owner/name
 MD=content/explainers/<vertical>/<slug>.md` fetches the Fact Pack from
 GitHub. `make refresh` re-fetches all of them; it exits with `Error 3`
 when anything changed, which is normal: review the diff, commit, push.
+If you ran the quickstart, add one line right after its command block
+saying when, on what machine, and whether it worked as written, e.g. "We
+ran the quickstart on 2026-11-17 on macOS 26, at v0.5.0: it worked as
+written" (leave the commands as they are, and skip the line if you did
+not run them).
 
 ## 7. Rules to remember
 
@@ -226,7 +273,7 @@ when anything changed, which is normal: review the diff, commit, push.
 | `.scratch/daily/<date>/review-queue.md` | Your check list for that day's drafts |
 | `.intake/queue.md` | Current Leads with IDs (local, not committed) |
 | `.intake/daily/<run>/` | Logs and cost of each `make daily` run |
-| `docs/editorial/` | Templates and writing guides per kind |
+| `docs/editorial/` | Templates and writing guides per kind, and the self-edit checklist |
 | `sources.yaml` | The watched websites; add one with a reason in the commit |
 
 ## 9. Words

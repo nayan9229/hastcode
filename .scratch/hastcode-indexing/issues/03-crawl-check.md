@@ -30,3 +30,44 @@ Limits, stated in its output and in the README: it sends crawler user-agent stri
 - [ ] Run it once against live Production and paste the output here. The only failures should be the parts of ticket 01 not yet done: PerplexityBot and http if it hasn't started, none if it is finished.
 - [ ] `docs/author-runbook.md`: today its "Getting found by search engines" paragraph (section 3) points to the note's hand-typed "Weekly check". It now gives a weekly check of its own: `make crawl-check` to copy and paste, what a failure means and which runbook step in the note fixes it, then the Search Console and Bing reports to look at. README documents the target beside "Feeds, sitemaps, robots and IndexNow", and the Makefile comment explains it like the other targets. Keep the paragraph's other lines (the get-indexed steps, the IndexNow line, any hub-ping lines from ticket 05) as they are; tickets 01 and 05 edit the same paragraph.
 - [ ] `make test` passes; `make lint-workflows` passes
+
+## Comments
+
+**Live run, 2026-11-17** (`make crawl-check` from the Author's laptop, before ticket 01). The two failures are the parts of ticket 01 not yet done: PerplexityBot and the http redirect.
+
+```
+go run ./cmd/crawlcheck -config site.yaml 
+crawl-check: read-only GETs to https://hastcode.com, http://hastcode.com and https://www.hastcode.com.
+It sends crawler user agents from this machine's IP address, so it shows what Cloudflare does with each user agent, not what a verified crawler sees from its own addresses.
+PASS robots.txt has our Googlebot allow group
+PASS robots.txt has our Bingbot allow group
+PASS robots.txt has our OAI-SearchBot allow group
+PASS robots.txt has our PerplexityBot allow group
+PASS robots.txt has Sitemap: https://hastcode.com/sitemap.xml
+PASS robots.txt has Sitemap: https://hastcode.com/news-sitemap.xml
+PASS robots.txt lets Googlebot crawl / (it follows the Googlebot group)
+PASS robots.txt lets Bingbot crawl / (it follows the Bingbot group)
+PASS robots.txt lets OAI-SearchBot crawl / (it follows the OAI-SearchBot group)
+PASS robots.txt lets PerplexityBot crawl / (it follows the PerplexityBot group)
+PASS robots.txt lets Claude-SearchBot crawl / (it follows the * groups)
+PASS robots.txt lets Applebot crawl / (it follows the Googlebot group)
+PASS robots.txt lets DuckDuckBot crawl / (it follows the * groups)
+PASS robots.txt lets YandexBot crawl / (it follows the * groups)
+PASS robots.txt lets Amzn-SearchBot crawl / (it follows the * groups)
+PASS Googlebot gets 200 on / and /sitemap.xml
+PASS Bingbot gets 200 on / and /sitemap.xml
+PASS OAI-SearchBot gets 200 on / and /sitemap.xml
+FAIL Cloudflare is blocking PerplexityBot: 403 on / and /sitemap.xml with its user agent. Fix: runbook step 1 in docs/research/indexing-submission-channels.md
+PASS Claude-SearchBot gets 200 on / and /sitemap.xml
+PASS Applebot gets 200 on / and /sitemap.xml
+PASS DuckDuckBot gets 200 on / and /sitemap.xml
+PASS YandexBot gets 200 on / and /sitemap.xml
+PASS Amzn-SearchBot gets 200 on / and /sitemap.xml
+FAIL http://hastcode.com/ answers 200 instead of redirecting to https://hastcode.com/: turn on Always Use HTTPS (runbook step 2 in docs/research/indexing-submission-channels.md)
+PASS https://www.hastcode.com/ redirects (301) to https://hastcode.com/
+crawl-check: 2 of 26 checks failed.
+exit status 1
+make: *** [crawl-check] Error 1
+```
+
+User-agent strings: Googlebot, OAI-SearchBot, PerplexityBot, Applebot, DuckDuckBot, YandexBot and Amzn-SearchBot were checked against their owners' pages on 2026-11-17. Bing's crawler page is client-rendered and could not be read, so Bingbot's is the desktop string Bing has published; Anthropic publishes only the `Claude-SearchBot` token, not a full string, so that one follows the shape of Anthropic's other crawlers' strings. Both are noted in `internal/crawlcheck/crawlers.go`.

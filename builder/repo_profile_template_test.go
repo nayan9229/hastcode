@@ -153,3 +153,113 @@ func TestRepoProfileTemplate_UnfilledHintsFailAProductionBuild(t *testing.T) {
 		buildtest.RequireNoProblemRule(t, res, repoProfileFile, rule)
 	}
 }
+
+// The quickstart-ran line (docs/editorial/repo-profile-writing-guide.md,
+// "In 60 seconds") is the Author's own report of running the quickstart.
+// It is optional and Author-only, so the template offers it in its header
+// comment, beside the other optional keys, never as a body line a Profile
+// would have to fill or delete.
+
+// quickstartRanComment is the template's header comment that offers the
+// line: the run of frontmatter comment lines that mentions it, joined.
+func quickstartRanComment(t *testing.T) string {
+	t.Helper()
+	data, err := os.ReadFile(filepath.Join(buildtest.RepoRoot(), filepath.FromSlash(templateFile)))
+	if err != nil {
+		t.Fatal(err)
+	}
+	rest, _ := strings.CutPrefix(string(data), "---\n")
+	fm, _, _ := strings.Cut(rest, "\n---\n")
+	var block []string
+	for _, line := range strings.Split(fm+"\n", "\n") {
+		comment, isComment := strings.CutPrefix(line, "#")
+		switch {
+		case isComment:
+			block = append(block, strings.TrimSpace(comment))
+		case strings.Contains(strings.Join(block, " "), "We ran the quickstart"):
+			return strings.Join(block, " ")
+		default:
+			block = nil
+		}
+	}
+	t.Fatalf("%s's header comment does not offer the optional \"We ran the quickstart\" line", templateFile)
+	return ""
+}
+
+func TestRepoProfileTemplate_OffersTheQuickstartRanLineAsOptionalAndAuthorOnly(t *testing.T) {
+	comment := quickstartRanComment(t)
+	for _, want := range []string{
+		"Optional",
+		`after the quickstart block in "In 60 seconds"`,
+		"when, on what, and whether it worked as written",
+		"Never change the commands",
+		"Only the Author writes it",
+		"an agent never does",
+	} {
+		if !strings.Contains(comment, want) {
+			t.Errorf("the quickstart-ran comment does not say %q:\n%s", want, comment)
+		}
+	}
+}
+
+// ranLine is the line as an Author writes it after a real run.
+const ranLine = "We ran the quickstart on 2026-11-17 on macOS 26 (Apple M3), at Iggy 0.5.0: it worked as written."
+
+// withRanLine puts ranLine after the quickstart block, where the guide
+// says it goes: the first fence closed under "## In 60 seconds".
+func withRanLine(t *testing.T, md []byte) []byte {
+	t.Helper()
+	head, rest, ok := strings.Cut(string(md), "## In 60 seconds\n")
+	if !ok {
+		t.Fatal("the template has no In 60 seconds section")
+	}
+	open := strings.Index(rest, "```")
+	if open < 0 {
+		t.Fatal("the In 60 seconds section has no fenced quickstart block")
+	}
+	closing := strings.Index(rest[open+3:], "\n```\n")
+	if closing < 0 {
+		t.Fatal("the quickstart block is never closed")
+	}
+	end := open + 3 + closing + len("\n```\n")
+	return []byte(head + "## In 60 seconds\n" + rest[:end] + "\n" + ranLine + "\n" + rest[end:])
+}
+
+func TestRepoProfileTemplate_BuildsCleanWithAndWithoutTheQuickstartRanLine(t *testing.T) {
+	for _, tc := range []struct {
+		name    string
+		md      []byte
+		withRan bool
+	}{
+		{"skipped", copyTemplate(t, true), false},
+		{"written by the Author", withRanLine(t, copyTemplate(t, true)), true},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			out, res := buildtest.Build(t, buildtest.Config(), templateTree(tc.md))
+			for _, rule := range append([]string{"author-placeholder", "section-length"}, repoProfileRules...) {
+				buildtest.RequireNoProblemRule(t, res, repoProfileFile, rule)
+			}
+			if len(res.Errors) != 0 {
+				t.Fatalf("the Profile must build clean:\n%s", res)
+			}
+
+			page := buildtest.Page(t, out, repoProfilePath)
+			article, _ := page.Find("article").Html()
+			twin := readStatic(t, out, strings.TrimSuffix(repoProfilePath, "/")+".md")
+			for where, text := range map[string]string{"page": article, "Markdown twin": twin} {
+				if strings.Contains(text, "omitted") {
+					t.Errorf("the %s carries an omitted-HTML marker", where)
+				}
+				if got := strings.Contains(text, "We ran the quickstart"); got != tc.withRan {
+					t.Errorf("the %s shows the quickstart-ran line = %v, want %v", where, got, tc.withRan)
+				}
+			}
+			if tc.withRan {
+				after := page.Find("article pre").First().NextAllFiltered("p").First().Text()
+				if after != ranLine {
+					t.Errorf("the paragraph after the quickstart block = %q, want the line", after)
+				}
+			}
+		})
+	}
+}

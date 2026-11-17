@@ -41,7 +41,11 @@ ever overselling it.
 ## Drafting pipeline
 
 Pitch (one sentence: the idea and why it matters) → source notes (first-party
-links only) → diagram outline (Mermaid) → draft in this voice → verify every
-claim → edit → publish under `author: mira-vance`.
+links only) → diagram outline (Mermaid) → draft in this voice → self-edit
+with [the checklist](self-edit-checklist.md) → verify every claim → edit →
+publish under `author: mira-vance`.
+
+The self-edit checks the writing, not the facts. It comes before the
+Author's verification against Sources and never replaces it.
 
 Pieces drafted with AI assistance carry the disclosure in the Editorial Policy.

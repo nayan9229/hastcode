@@ -14,7 +14,7 @@ MODE    ?= production
 # Extra builder flags, e.g. FLAGS=-skip-search-index with MODE=preview.
 FLAGS   ?=
 
-.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh intake lead lead-dismiss daily release
+.PHONY: generate build test vet check dev adapt prune-images lint-workflows fetch refresh intake lead lead-dismiss daily release crawl-check
 
 # `make dev`: build (preview mode by default, so drafts show) and serve the
 # output plus the subscribe function behind the built config.json routes
@@ -139,6 +139,23 @@ daily: generate
 FILES ?=
 release: generate
 	FILES="$(FILES)" DRY="$(DRY)" scripts/release.sh
+
+# `make crawl-check`: the weekly read-only check that search and answer
+# crawlers can still reach live Production (site.yaml site_url). It reads
+# /robots.txt (our allow groups, both Sitemap: lines, no group, Cloudflare's
+# prepended managed block included, disallowing / for a crawler we want),
+# GETs / and /sitemap.xml with each crawler's published user agent (a 403
+# means Cloudflare is blocking it), and checks that http:// and www.
+# redirect to the site. One line per check, a summary, exit 0 when all
+# pass, 1 on any failure (a network error or timeout included). GET
+# only; never IndexNow, a WebSub hub or a search engine API. Local only,
+# like `make intake`, never in GitHub Actions: CI's IP addresses would
+# take a different path through Cloudflare. CRAWL_FLAGS overrides an
+# address, e.g. CRAWL_FLAGS='-www https://www.example.com'.
+# See README "Feeds, sitemaps, robots and IndexNow".
+CRAWL_FLAGS ?=
+crawl-check: generate
+	go run ./cmd/crawlcheck -config $(CONFIG) $(CRAWL_FLAGS)
 
 lead: generate
 	@test -n "$(ID)" || { echo "usage: make lead ID=<id> [KIND=…] [VERTICAL=…] [EXPLAINER=slug[,slug]] (IDs are in $(INTAKE_STATE)/queue.md; a Brief needs EXPLAINER=)" >&2; exit 2; }
