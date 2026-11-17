@@ -13,7 +13,8 @@
 #      exists (newest tag wins; the run summary names it), else builds the
 #      tagged commit once in production mode (images per site.yaml
 #      images.store), applies the
-#      Target's deploy adapter and deploys; Cloudflare then pings IndexNow.
+#      Target's deploy adapter and deploys; Cloudflare then pings IndexNow
+#      and, when WEBSUB_ENABLED is on, the WebSub hub.
 # Why the hop: the build cache (encoded images, rendered diagrams, the
 # IndexNow page manifest) must persist from one Publish to the next, and
 # GitHub's cache is scoped by ref: "Workflow runs also cannot restore caches
@@ -28,8 +29,10 @@
 # Secrets (names only; values from scripts/setup-deploy.sh, see README
 # "Deploying"): CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID, VERCEL_TOKEN,
 # VERCEL_ORG_ID,
-# VERCEL_PROJECT_ID. Variable: INDEXNOW_ENABLED ("true" once hastcode.com
-# is served by Cloudflare).
+# VERCEL_PROJECT_ID. Variables: INDEXNOW_ENABLED ("true" once hastcode.com
+# is served by Cloudflare); WEBSUB_ENABLED ("true" turns on the WebSub hub
+# ping; the setup wizard sets it "false" and the Author turns it on by
+# hand).
 name: Publish
 run-name: >-
   ${{ github.event_name == 'push' && format('Publish {0}: gate', github.ref_name) || format('Publish {0}', inputs.tag) }}
@@ -173,15 +176,21 @@ jobs:
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
           R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
         run: make build MODE=production
-      # Not part of the site (it sits beside static/, so it would not be
-      # served anyway): keep it for the ping after the deploy.
-      - name: Set aside the IndexNow artefact
+      # Not part of the site (they sit beside static/, so they would not be
+      # served anyway): keep them for the pings after the deploy.
+      - name: Set aside the IndexNow and WebSub artefacts
         run: |
           if [ -f .vercel/output/indexnow.json ]; then
             mv .vercel/output/indexnow.json "$RUNNER_TEMP/indexnow.json"
             jq -r '"\(.urlList | length) changed URL(s)"' "$RUNNER_TEMP/indexnow.json"
           else
             echo "nothing changed since the last Production build"
+          fi
+          if [ -f .vercel/output/websub.json ]; then
+            mv .vercel/output/websub.json "$RUNNER_TEMP/websub.json"
+            jq -r '"\(.topics | length) changed feed(s): \(.topics | join(" "))"' "$RUNNER_TEMP/websub.json"
+          else
+            echo "no feed changed since the last Production build"
           fi
       # Deploy-adapter rule: removes config.json (Vercel's manifest).
       - run: make adapt TARGET=cloudflare
@@ -216,6 +225,17 @@ jobs:
           curl -fsS -X POST https://api.indexnow.org/indexnow \
             -H 'Content-Type: application/json; charset=utf-8' \
             --data-binary @"$RUNNER_TEMP/indexnow.json" -w '%{http_code}\n'
+      # WebSub (README "Feeds, sitemaps, robots and IndexNow"): Production
+      # only (this job), after the deploy is live, when WEBSUB_ENABLED is
+      # "true". No artefact (no feed changed): nothing is sent. Otherwise
+      # one form POST to the hub the artefact names (hub.mode=publish, one
+      # hub.url per changed feed); the hub answers 204. A failed ping only
+      # warns (a warning and a run-summary line) and the job goes on to
+      # save the cache, so a WebSub problem never makes the next build
+      # re-list unchanged URLs for IndexNow.
+      - name: Ping WebSub hub
+        if: vars.WEBSUB_ENABLED == 'true'
+        run: scripts/websub/ping.sh "$RUNNER_TEMP/websub.json"
       - uses: actions/cache/save@v6
         with:
           path: *build-cache
@@ -262,8 +282,10 @@ jobs:
       - name: Build (production mode)
         env: *r2-env
         run: MODE=production vercel build --prod --token="$VERCEL_TOKEN"
-      # QA never pings IndexNow; keep the artefact out of the upload.
+      # QA never pings IndexNow or a WebSub hub; keep the artefacts out of
+      # the upload.
       - run: rm -f .vercel/output/indexnow.json
+      - run: rm -f .vercel/output/websub.json
       # Deploy-adapter rule: removes wrangler.json, static/_headers and
       # static/_redirects; overlays the disallow-all static/robots.txt.
       # Must run before the upload, or QA serves Production's robots.txt.

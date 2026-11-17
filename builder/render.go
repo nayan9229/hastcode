@@ -69,15 +69,24 @@ func (s *site) writePage(urlPath string, c templ.Component) error {
 
 // writeXML writes v as an indented UTF-8 XML document at urlPath.
 func (s *site) writeXML(urlPath string, v any) error {
+	data, err := encodeXML(v)
+	if err != nil {
+		return err
+	}
+	return s.out.WriteStatic(urlPath, data)
+}
+
+// encodeXML is v as the bytes writeXML writes.
+func encodeXML(v any) ([]byte, error) {
 	var buf bytes.Buffer
 	buf.WriteString(xml.Header)
 	enc := xml.NewEncoder(&buf)
 	enc.Indent("", "  ")
 	if err := enc.Encode(v); err != nil {
-		return err
+		return nil, err
 	}
 	buf.WriteByte('\n')
-	return s.out.WriteStatic(urlPath, buf.Bytes())
+	return buf.Bytes(), nil
 }
 
 // isWritten reports whether the build wrote a file for urlPath ("/a/" is
