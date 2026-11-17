@@ -8,10 +8,11 @@ A Concept (`GLOSSARY.md`) defines and teaches one named architectural idea or pa
 2. **Source notes.** Find who named the idea (the paper, the RFC, the original post) and the first-party accounts of it in real systems. A Lead is often the newest post in a long thread: follow it back.
 3. **Diagram first.** Draw the mechanism in Mermaid: the loop, the states, the flow. It is the "how it works" section.
 4. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
-5. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: counts that differ between a paper's abstract and its body, a paraphrase of a formula, a URL that now redirects. The Author checks these first.
-6. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
-7. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
-8. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+5. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. `make daily` puts the same boxes, unticked, under each draft in the Author's review queue; they are the Author's to tick.
+6. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: counts that differ between a paper's abstract and its body, a paraphrase of a formula, a URL that now redirects. The Author checks these first.
+7. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
+8. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
+9. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 
 ## Ground every claim
 
@@ -49,7 +50,7 @@ Frontmatter: `title`, `description`, `kind: concept`, `vertical`, `tags`, `publi
 
 ## Section by section
 
-- **Opening (before TL;DR).** A real, sourced moment the idea happened to a named system, told concretely: the 2015 DynamoDB disruption, minute by minute, ending on "What held DynamoDB down for hours was its own retry traffic." No definition yet. Then the AI-assistance note as a blockquote, exactly as the template has it.
+- **Opening (before TL;DR).** A real, sourced moment the idea happened to a named system, told concretely: the 2015 DynamoDB disruption, minute by minute, ending on "What held DynamoDB down for hours was its own retry traffic." No definition yet. End the hook with one sentence that says what this piece will show the Reader (the "nut graf"): "This is how that loop forms, and the three defences that break it." Then the AI-assistance note as a blockquote, exactly as the template has it.
 - **TL;DR.** Three to five bullets, answer first: the definition, the mechanism, how common it is, what to do and its cost.
 - **What it is.** The definition from the people who named it, quoted short and credited, then in our words. Say what does not count.
 - **How it works.** The diagram, walked in order with one worked example that puts numbers on each box (the HotOS paper's 280 → 560 QPS).
@@ -60,7 +61,7 @@ Frontmatter: `title`, `description`, `kind: concept`, `vertical`, `tags`, `publi
 - **What it makes possible.** What the Reader can now do or measure, and where to try it.
 - **Sources.** Last, the Lead first, with at least one link.
 
-Aim for 2,000 to 2,800 words, each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
+Most land between 2,000 and 2,800 words. This is a ceiling to check, not a target: stop when the point is made. Google has no preferred word count, and padding is the "filler" its raters mark down. Keep each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
 
 ## Titles, descriptions and search intent
 

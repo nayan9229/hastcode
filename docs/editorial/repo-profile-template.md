@@ -18,6 +18,12 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [raft-leader-election]
+# Optional: if you ran the quickstart yourself, add one line after the
+# quickstart block in "In 60 seconds": when, on what, and whether it worked
+# as written, e.g. "We ran the quickstart on {date} on {OS / machine}, at
+# {repo version}: it worked as written" (or "…: it needed {what}"). Never
+# change the commands; report what happened. Only the Author writes it, after
+# a real run; an agent never does. Without a run, leave it out.
 draft: true
 ---
 
