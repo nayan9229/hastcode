@@ -20,12 +20,12 @@ After that, a weekly `make refresh`, run by the Author locally and committed, ke
 
 - **Three sources, in this order:** the Fact Pack, the README, the release pages (then the repository's own docs and code). No star trackers, no other outlets' summaries, no "people say".
 - **Link inline** where you make the claim. Sources lists the README and every release page or doc you cited; the build adds the Fact Pack's sources itself (the repository, releases, contributors, `.github` and README pages on github.com), once each, so citing one of those pages yourself does not repeat it.
-- **Do not retype what the Fact Pack carries.** Stars, license, language, release dates and contributor counts render on the card and in Signals, and a Refresh keeps them current. A number in your prose goes stale on the next Refresh. Point at it ("the release cadence in Signals") or say what it means ("releases every few weeks since 2025").
+- **Do not retype what the Fact Pack carries.** Stars, license, language, release dates and contributor counts render on the card and in Signals, and a Refresh keeps them current. A number in your prose goes stale on the next Refresh. Point at it ("the release cadence in Signals") or say what it means ("releases every few weeks since 2025"). Pointing at Signals meets the house rule that every number carries its unit, date and comparison ([voice rule 7](house-byline-voice.md#voice-rules)).
 - **Say "we infer"** when you reconstruct something the sources leave open.
 
 ## Section by section
 
-The build fails unless the nine H2s appear exactly as in the template, in that order. Headings match byte for byte, with a straight apostrophe in "Don't".
+The build fails unless the nine H2s appear exactly as in the template, in that order. Headings match byte for byte, with a straight apostrophe in "Don't". Only Repo Profile FAQ headings may be questions; every H2 is a statement: the FAQ questions are `###` under `## FAQ`, which `question-heading` never reads.
 
 - **Opening (before TL;DR).** One hook sentence: a sourced fact that makes the Reader look twice. Then the AI-assistance note as a blockquote, exactly as the template has it.
 - **TL;DR.** Three to five bullets. Answer first: what it is, what sets it apart, who should adopt it.
@@ -50,7 +50,7 @@ The description is one sentence of 150 characters or fewer that names the reposi
 
 ## What the build checks
 
-`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (Fact Pack unchanged upstream for over 30 days: the repository may be dormant; check it at the next Review), `section-length` (an H2 over 250 words).
+`repo-profile-sections` (headings missing, extra or out of order), `repo-profile-fact-section` (a hand-written Signals or Changelog), `repo-profile-faq` (five to eight questions), `tldr`, `diagram`, `sources`, `fact-pack` and `fact-pack-repo` (Fact Pack missing, unparsable or for another repository), `author-placeholder` (a `TODO(author)` left in a production build). Warnings: `fact-pack-stale` (Fact Pack unchanged upstream for over 30 days: the repository may be dormant; check it at the next Review), `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it; the FAQ's `###` questions never warn). The three prose warnings never read code (the quickstart block included), tables, blockquotes, link URLs, or the Signals and Changelog the build renders from the Fact Pack.
 
 ## The Friday roundup
 

@@ -24,14 +24,27 @@ ever overselling it.
    Explainer and a Related link.
 4. **Diagram first.** Choose the key diagram before writing. The H2 sections
    walk through it in order.
-5. **Plain language.** Define every term at first use. Short sentences.
-   No hype words ("revolutionary", "game-changing", "magic").
+5. **Plain language.** Define every term at first use. Short sentences:
+   about 20 words on average. Split anything over 30 unless it is a
+   deliberate list. Use the shortest sentences at the hardest points. No
+   hype or filler words: revolutionary, game-changing, magic, simply, just
+   (as in "just add"), easy, obviously, "it is important to note", "please
+   note". The build warns on both (`sentence-length`, `banned-word`); a
+   Source's words inside quotation marks are never reworded to clear one.
 6. **Optimistic, honest.** Name the trade-offs plainly, then close on what the
    design makes possible: "what could go right" without hiding the cost.
 7. **Show the receipts.** Every claim, number and quote links its
-   first-party source. Say "we infer" when reconstructing.
+   first-party source. Say "we infer" when reconstructing. Every number
+   carries its unit, its date or version, and what it is compared with. In a
+   Repo Profile, pointing at Signals meets this for a number the Fact Pack
+   carries (stars, license, release dates, contributors): Signals shows it
+   with its date, so never retype it into prose.
 8. **Talk to the Reader.** Second person is fine ("you'd expect..."); first
    person singular is not, because Mira is a team voice. Use "we".
+9. **One name per thing.** Pick the Source's term and use it every time;
+   mention a synonym once, in brackets, if Readers search for it.
+10. **At most one analogy.** Analogies: at most one per piece, and say where
+    it stops being true. This is a house choice, not a research finding.
 
 ## Drafting pipeline
 

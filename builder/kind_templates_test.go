@@ -171,7 +171,7 @@ func TestKindTemplates_FilledWithProseBuildCleanUnderEveryGate(t *testing.T) {
 	_, res := buildtest.Build(t, buildtest.Config(), kindTemplateTree(t, true))
 
 	for _, k := range kindTemplates {
-		for _, rule := range append(k.rules, "author-placeholder", "section-length") {
+		for _, rule := range append(append(k.rules, "author-placeholder", "section-length"), proseRules...) {
 			buildtest.RequireNoProblemRule(t, res, k.contentPath, rule)
 		}
 	}
