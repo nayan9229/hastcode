@@ -8,10 +8,11 @@ A Repo Profile (`GLOSSARY.md`, ADR-0005) tells the Reader, a mid-to-senior backe
 2. **Copy** [the template](repo-profile-template.md) to `content/explainers/<vertical>/<slug>.md`, on a branch. The slug is the repository name in lower case (`apache-iggy` when the name alone is ambiguous). Keep `draft: true`.
 3. **Fetch.** `make fetch REPO=owner/name MD=content/explainers/<vertical>/<slug>.md` (needs `GITHUB_TOKEN`) writes the Fact Pack beside the Markdown and the README text to `node_modules/.cache/hastcode/readmes/<owner>/<name>/`. A `note: … NOASSERTION` line means GitHub could not classify the license: read the LICENSE file before you go on. Commit the Fact Pack; never edit it by hand.
 4. **Draft** against the Fact Pack, the README and the release pages. AI assistance is fine; it is a draft, not a source.
-5. **Preview.** `make dev`, then push the branch: the Preview workflow posts a preview URL in its run summary. Check the header card, Signals, Changelog and the hero card read right.
-6. **The Author verifies** every claim, number, command and diagram against its source, and rewrites what is wrong. Nothing publishes until the Author has done this.
-7. **Publish.** Remove `draft: true`, merge, then tag (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
-8. **Day 28.** Fill in a [checkpoint note](checkpoint-note-template.md).
+5. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. The checklist's Repo Profile notes cover the FAQ questions, the verbatim quickstart and the numbers Signals already shows.
+6. **Preview.** `make dev`, then push the branch: the Preview workflow posts a preview URL in its run summary. Check the header card, Signals, Changelog and the hero card read right.
+7. **The Author verifies** every claim, number, command and diagram against its source, and rewrites what is wrong. Nothing publishes until the Author has done this.
+8. **Publish.** Remove `draft: true`, merge, then tag (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+9. **Day 28.** Fill in a [checkpoint note](checkpoint-note-template.md).
 
 After that, a weekly `make refresh`, run by the Author locally and committed, keeps the facts current, and the 90-day Review re-reads the prose. Neither rewrites the other.
 

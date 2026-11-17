@@ -8,10 +8,11 @@ A Case Study (`GLOSSARY.md`) reconstructs how one real, named system is built, f
 2. **Source notes.** Read the Lead in full, then the earlier first-party posts it builds on. Note each fact with its link and anchor before writing a sentence.
 3. **Diagram first.** Redraw the system's path in Mermaid from the text. Its boxes, top to bottom, become the H2s that walk it.
 4. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
-5. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: a word the Source spells differently, a number read from a garbled feed, a gloss that goes beyond the Source's words. The Author checks these first.
-6. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
-7. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
-8. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+5. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. `make daily` puts the same boxes, unticked, under each draft in the Author's review queue; they are the Author's to tick.
+6. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: a word the Source spells differently, a number read from a garbled feed, a gloss that goes beyond the Source's words. The Author checks these first.
+7. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
+8. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
+9. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 
 ## Ground every claim
 

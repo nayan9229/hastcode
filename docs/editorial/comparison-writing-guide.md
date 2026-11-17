@@ -9,10 +9,11 @@ A Comparison (`GLOSSARY.md`) sets two or more alternatives side by side to help 
 3. **Source notes.** Each option's own specification or documentation, at the section level. Note what each specification does not say as carefully as what it does: "not described" is a cell too.
 4. **Diagram first.** One Mermaid diagram showing the same request or workload through each option, one subgraph per option.
 5. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
-6. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: a default that depends on how a library is configured, a specification's "peer" glossed as "server", a measurement quoted with its caveat. The Author checks these first.
-7. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram and table render and the generated title card reads right.
-8. **The Author verifies** every claim, number, quote, diagram and table cell against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
-9. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+6. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. The opening's closing question does the nut graf's job. `make daily` puts the same boxes, unticked, under each draft in the Author's review queue; they are the Author's to tick.
+7. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: a default that depends on how a library is configured, a specification's "peer" glossed as "server", a measurement quoted with its caveat. The Author checks these first.
+8. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram and table render and the generated title card reads right.
+9. **The Author verifies** every claim, number, quote, diagram and table cell against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
+10. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 
 ## Ground every claim
 

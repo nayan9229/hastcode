@@ -145,6 +145,18 @@ func TestOpeningSaysSelfEditComesBeforeVerificationAndDoesNotReplaceIt(t *testin
 	}
 }
 
+// make daily's drafter self-edits with the same checklist before the
+// fact-check session runs.
+func TestDrafterInstructionsNameTheChecklist(t *testing.T) {
+	b, err := os.ReadFile("draft.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(b), "docs/editorial/self-edit-checklist.md") {
+		t.Errorf("scripts/daily/draft.md does not name docs/editorial/self-edit-checklist.md")
+	}
+}
+
 // The boxes are the Author's: make daily writes every one unticked.
 func TestNoBoxIsTicked(t *testing.T) {
 	q := writeQueue(t)

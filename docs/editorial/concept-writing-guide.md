@@ -8,10 +8,11 @@ A Concept (`GLOSSARY.md`) defines and teaches one named architectural idea or pa
 2. **Source notes.** Find who named the idea (the paper, the RFC, the original post) and the first-party accounts of it in real systems. A Lead is often the newest post in a long thread: follow it back.
 3. **Diagram first.** Draw the mechanism in Mermaid: the loop, the states, the flow. It is the "how it works" section.
 4. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
-5. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: counts that differ between a paper's abstract and its body, a paraphrase of a formula, a URL that now redirects. The Author checks these first.
-6. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
-7. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
-8. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+5. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. `make daily` puts the same boxes, unticked, under each draft in the Author's review queue; they are the Author's to tick.
+6. **Write the check list.** In the ticket or pull request, list every claim you are unsure of: counts that differ between a paper's abstract and its body, a paraphrase of a formula, a URL that now redirects. The Author checks these first.
+7. **Preview.** `make dev`, then push the branch for a Preview. Check the diagram renders and the generated title card reads right.
+8. **The Author verifies** every claim, number, quote and diagram against its Source, rewrites what is wrong, and sets `verified:`. Nothing publishes until the Author has done this.
+9. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 
 ## Ground every claim
 

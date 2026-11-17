@@ -17,10 +17,11 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 1. **Pick a Lead** from that morning's `make intake` queue (`make daily` picks and drafts, ADR-0009; at most two Pieces are Published a day, enforced by the build, ADR-0010), then, with the Explainer it teaches in hand (step 2), `make lead ID=<id> KIND=brief EXPLAINER=<slug>` (several: `EXPLAINER=a,b`). The skeleton is this template, with the Lead's title in `title`, its link in `source_url`, the named Explainers in `explainers` and linked in "Why it matters", and `published` set to the pick time: provisional, set it when you publish. To start by hand, copy [the template](brief-template.md) to `content/briefs/<slug>.md` on a branch. The slug names the event (`github-dependabot-fan-out`). Keep `draft: true`.
 2. **Find the Explainer** the event teaches. If none exists yet, the Lead is not a Brief today: `make lead` refuses a Brief without `EXPLAINER=`, or naming an Explainer that does not exist.
 3. **Draft** into the skeleton. AI assistance is fine; it is a draft, not a source.
-4. **Write the check list.** In the ticket or pull request, list every quote, time and inference for the Author to check against the Source.
-5. **Preview.** `make dev`, then push the branch for a Preview. Check the generated title card reads right.
-6. **The Author verifies** every claim and quote against the Source, rewrites what is wrong, and sets `verified:`, inside the 3-day window. Nothing publishes until the Author has done this.
-7. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
+4. **Self-edit** with [the self-edit checklist](self-edit-checklist.md), before anyone checks the facts. It checks the writing (the point, the headings read alone, sentence length, words, the ending), not the claims. A Brief skips the hook, nut graf, TL;DR, diagram and worked-example lines; its 250-word cap replaces the per-H2 line. `make daily` puts the same boxes, unticked, under each draft in the Author's review queue; they are the Author's to tick.
+5. **Write the check list.** In the ticket or pull request, list every quote, time and inference for the Author to check against the Source.
+6. **Preview.** `make dev`, then push the branch for a Preview. Check the generated title card reads right.
+7. **The Author verifies** every claim and quote against the Source, rewrites what is wrong, and sets `verified:`, inside the 3-day window. Nothing publishes until the Author has done this.
+8. **Publish.** The Author removes `draft: true`, merges and tags (`scripts/publish.sh vl`, check QA, `scripts/publish.sh cf`).
 
 ## Ground every claim
 
