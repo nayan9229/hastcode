@@ -49,7 +49,7 @@ Frontmatter: `title`, `description`, `kind: concept`, `vertical`, `tags`, `publi
 
 ## Section by section
 
-- **Opening (before TL;DR).** A real, sourced moment the idea happened to a named system, told concretely: the 2015 DynamoDB disruption, minute by minute, ending on "What held DynamoDB down for hours was its own retry traffic." No definition yet. Then the AI-assistance note as a blockquote, exactly as the template has it.
+- **Opening (before TL;DR).** A real, sourced moment the idea happened to a named system, told concretely: the 2015 DynamoDB disruption, minute by minute, ending on "What held DynamoDB down for hours was its own retry traffic." No definition yet. End the hook with one sentence that says what this piece will show the Reader (the "nut graf"): "This is how that loop forms, and the three defences that break it." Then the AI-assistance note as a blockquote, exactly as the template has it.
 - **TL;DR.** Three to five bullets, answer first: the definition, the mechanism, how common it is, what to do and its cost.
 - **What it is.** The definition from the people who named it, quoted short and credited, then in our words. Say what does not count.
 - **How it works.** The diagram, walked in order with one worked example that puts numbers on each box (the HotOS paper's 280 → 560 QPS).
@@ -60,7 +60,7 @@ Frontmatter: `title`, `description`, `kind: concept`, `vertical`, `tags`, `publi
 - **What it makes possible.** What the Reader can now do or measure, and where to try it.
 - **Sources.** Last, the Lead first, with at least one link.
 
-Aim for 2,000 to 2,800 words, each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
+Most land between 2,000 and 2,800 words. This is a ceiling to check, not a target: stop when the point is made. Google has no preferred word count, and padding is the "filler" its raters mark down. Keep each H2 under 250 words (`section-length` warns above that; answer engines quote short sections best).
 
 ## Titles, descriptions and search intent
 
