@@ -10,12 +10,16 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The Repo Profile guide's "In 60 seconds" bullet carries the §5.3 item 5 wording, the line's shape, "never change the commands", and "only the Author writes it; an agent never does"
-- [ ] The Repo Profile template shows the optional line, placed after the quickstart block, in a form that a Profile skipping it builds clean with. Its comment says it is optional and Author-only. A Profile copied from the template and left as is shows nothing of the line on its page or its Markdown twin
-- [ ] The Repo Profile template test still passes: the template is still built against the skeleton rule, and its nine H2s, five FAQ questions and AI-assistance note are unchanged
-- [ ] A test or a preview build shows a filled Profile both with the line and without it: both build clean, and neither raises `repo-profile-sections` or `author-placeholder`
-- [ ] No existing Profile in `content/` gets the line from this ticket. Only the Author adds it, after a real run
-- [ ] The runbook's Repo Profiles paragraph (§6) adds one plain sentence: if you ran the quickstart, add the one line after it, with when, on what and whether it worked
-- [ ] `make test` passes
+- [x] The Repo Profile guide's "In 60 seconds" bullet carries the §5.3 item 5 wording, the line's shape, "never change the commands", and "only the Author writes it; an agent never does"
+- [x] The Repo Profile template shows the optional line, placed after the quickstart block, in a form that a Profile skipping it builds clean with. Its comment says it is optional and Author-only. A Profile copied from the template and left as is shows nothing of the line on its page or its Markdown twin
+- [x] The Repo Profile template test still passes: the template is still built against the skeleton rule, and its nine H2s, five FAQ questions and AI-assistance note are unchanged
+- [x] A test or a preview build shows a filled Profile both with the line and without it: both build clean, and neither raises `repo-profile-sections` or `author-placeholder`
+- [x] No existing Profile in `content/` gets the line from this ticket. Only the Author adds it, after a real run
+- [x] The runbook's Repo Profiles paragraph (§6) adds one plain sentence: if you ran the quickstart, add the one line after it, with when, on what and whether it worked
+- [x] `make test` passes
+
+## Comments
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as abedd7b86f110ed713695b7f04dc8613432fef50; code-review fixes in 131d137. `make test` passes. Nothing left over. Only the Author adds the line, after a real run.

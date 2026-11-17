@@ -14,18 +14,18 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Voice rule 5 in `house-byline-voice.md` carries the numbers and the extended banned list, worded as §5.3 items 2 and 7
+- [x] Voice rule 5 in `house-byline-voice.md` carries the numbers and the extended banned list, worded as §5.3 items 2 and 7
 - [ ] Build-seam tests, one per rule: a 31-word sentence warns `sentence-length` and a 30-word one does not; each banned word or phrase warns `banned-word`; "just as" and "just under" do not, and neither does a banned word inside quotation marks; an H2 ending in "?" warns `question-heading` in a Concept and in a Brief; Repo Profile FAQ `###` questions do not; nothing inside a code fence, a table, a blockquote or a link URL warns. Each case also checks that the build still succeeds (a warning, never an error)
-- [ ] The filled kind templates and the Repo Profile template still build clean: their tests also check that none of the three new rules fires
-- [ ] A preview build over today's `content/` succeeds. Its count per rule is written in this ticket (a Comments note) next to the baseline above, with a line on why they differ
-- [ ] README: the pipeline-step order list names the new validate step(s) beside "section-length warning 40". README has no paragraph on the section-length warning today, so add a short one (beside the Briefs and Repo Profiles rule text) saying what each of the three rules checks and what it skips
-- [ ] The Concept, Case Study, Comparison and Repo Profile guides' "What the build checks" list the three rules under Warnings, next to `section-length`. The Brief guide has no Warnings list (`section-length` does not check Briefs), so it gains one naming the three rules
-- [ ] A build with roughly 900 `sentence-length` warnings still shows its errors clearly. The builder's last line already counts errors and warnings apart ("build failed: N error(s), M warning(s)"). Check that, with one error added to today's `content/`, the Author can find that error without scrolling through every warning. If not, say in the runbook how to list only the errors
-- [ ] The runbook says in plain words what the three warnings mean, that they never block `make release` or a Publish, and what to do (split the sentence, cut the word, restate the heading), next to the "If `make build` fails" table
-- [ ] Each writing guide's "The skeleton" gains one line (§5.3 item 9, confirmed by the Author on 2026-11-17): "Only Repo Profile FAQ headings may be questions; every H2 is a statement."
-- [ ] `make test` passes
+- [x] The filled kind templates and the Repo Profile template still build clean: their tests also check that none of the three new rules fires
+- [x] A preview build over today's `content/` succeeds. Its count per rule is written in this ticket (a Comments note) next to the baseline above, with a line on why they differ
+- [x] README: the pipeline-step order list names the new validate step(s) beside "section-length warning 40". README has no paragraph on the section-length warning today, so add a short one (beside the Briefs and Repo Profiles rule text) saying what each of the three rules checks and what it skips
+- [x] The Concept, Case Study, Comparison and Repo Profile guides' "What the build checks" list the three rules under Warnings, next to `section-length`. The Brief guide has no Warnings list (`section-length` does not check Briefs), so it gains one naming the three rules
+- [x] A build with roughly 900 `sentence-length` warnings still shows its errors clearly. The builder's last line already counts errors and warnings apart ("build failed: N error(s), M warning(s)"). Check that, with one error added to today's `content/`, the Author can find that error without scrolling through every warning. If not, say in the runbook how to list only the errors
+- [x] The runbook says in plain words what the three warnings mean, that they never block `make release` or a Publish, and what to do (split the sentence, cut the word, restate the heading), next to the "If `make build` fails" table
+- [x] Each writing guide's "The skeleton" gains one line (§5.3 item 9, confirmed by the Author on 2026-11-17): "Only Repo Profile FAQ headings may be questions; every H2 is a statement."
+- [x] `make test` passes
 
 ## Comments
 
@@ -46,3 +46,5 @@ Errors among the warnings: with one error added to a copy of `content/` (a bad `
 Brief: a question H2 in a Brief warns `question-heading`, but the Brief skeleton's `brief-sections` already fails any H2 other than its two literal ones, so that build fails on `brief-sections` (never on `question-heading`). The test checks exactly that.
 
 A block that still holds a `TODO(author)` hint is skipped: it is a skeleton's placeholder, which `author-placeholder` reports (the picked-skeleton test in `internal/intake` expects only that warning).
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 43981fba3c82c3cb8f283a520d7da298bf5148e6; code-review fixes in 131d137. `make test` passes. Left over: the build-seam criterion is left unticked because it is only partly met. The Brief case cannot check that the build succeeds: `brief-sections` already fails any H2 other than "What happened" and "Why it matters", so the test checks that `question-heading` is a warning and that the only error is `brief-sections`. Every other case checks that the build succeeds. The Brief guide records this too. Code-review fixes (curly single quotes, "Fig."/"No.", "is just", "magic number") landed in 131d137.

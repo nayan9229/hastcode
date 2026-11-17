@@ -10,20 +10,22 @@
 
 **Blocked by:** 02 (Feed link in page head)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
 - [ ] Hub chosen, with its primary source and date recorded in README "Feeds, sitemaps, robots and IndexNow" (or the ticket set to `needs-info` with the evidence, and nothing built)
-- [ ] Build-seam test: every feed carries `rel="hub"` with the chosen hub and an unchanged `rel="self"`; every feed is still valid RSS 2.0
-- [ ] The build says which feeds changed since the last Production build. The list sits beside the IndexNow artefact and comes from the same manifest the IndexNow diff uses, which also records each feed's bytes. Feeds carry only the newest 50 Pieces each, and a Vertical feed holds only that Vertical's Explainers, never Briefs, so a feed is listed only when its own bytes changed. Tests:
+- [x] Build-seam test: every feed carries `rel="hub"` with the chosen hub and an unchanged `rel="self"`; every feed is still valid RSS 2.0
+- [x] The build says which feeds changed since the last Production build. The list sits beside the IndexNow artefact and comes from the same manifest the IndexNow diff uses, which also records each feed's bytes. Feeds carry only the newest 50 Pieces each, and a Vertical feed holds only that Vertical's Explainers, never Briefs, so a feed is listed only when its own bytes changed. Tests:
   - nothing changed → no feeds listed
   - a new or changed Brief → `/feed.xml` and `/briefs/feed.xml`
   - a new or changed Explainer within its feeds' newest 50 → `/feed.xml` and its Vertical's feed
   - a changed Explainer older than the newest 50 of every feed → no feeds listed
-- [ ] Publish workflow: the hub ping runs in the Production job only, after the deploy and next to "Ping IndexNow", only when the new variable is `true`. It does nothing when no feed changed, and a failure warns without failing the job. The QA job never pings. `make lint-workflows` passes.
-- [ ] The variable is listed in three places: the publish workflow's header comment (next to `INDEXNOW_ENABLED`), README "Deploying" → "Secrets, variables and settings", and the setup wizard, which sets it `false`. README "Feeds, sitemaps, robots and IndexNow" says how to turn it on and how to read the ping's result in a run log.
-- [ ] `docs/author-runbook.md` has no IndexNow check of its own; section 3's "Getting found by search engines" paragraph only says IndexNow pings on every publish. Next to that line, add a copy-paste line to turn the hub ping on (`gh variable set …`) and one to check the latest run's ping result. Leave the rest of the paragraph as it is; tickets 01 and 03 edit it too.
-- [ ] `make test` passes; preview build passes
+- [x] Publish workflow: the hub ping runs in the Production job only, after the deploy and next to "Ping IndexNow", only when the new variable is `true`. It does nothing when no feed changed, and a failure warns without failing the job. The QA job never pings. `make lint-workflows` passes.
+- [x] The variable is listed in three places: the publish workflow's header comment (next to `INDEXNOW_ENABLED`), README "Deploying" → "Secrets, variables and settings", and the setup wizard, which sets it `false`. README "Feeds, sitemaps, robots and IndexNow" says how to turn it on and how to read the ping's result in a run log.
+- [x] `docs/author-runbook.md` has no IndexNow check of its own; section 3's "Getting found by search engines" paragraph only says IndexNow pings on every publish. Next to that line, add a copy-paste line to turn the hub ping on (`gh variable set …`) and one to check the latest run's ping result. Leave the rest of the paragraph as it is; tickets 01 and 03 edit it too.
+- [x] `make test` passes; preview build passes
 
 ## Comments
 
 **Code review follow-up, 2026-11-17.** The ticket's first step asks for "the response to one live publish request for `/feed.xml`" before the hub counts as chosen. That request was never sent: it notifies a third party, which agents do not do, and no other evidence shows the hub is maintained (its page is dated ©2022). The feature was built anyway, behind `WEBSUB_ENABLED`, which the wizard sets `false`. Until the Author sends that one request, the switch stays off. README "WebSub hub ping" now has a "Live check: not done yet" paragraph with the one-line `curl` to send it and what to do with each answer, and `docs/author-runbook.md` §3 runs the same check before the `gh variable set` line. On `204`: record the code and date in README and here, then turn it on. On anything else: leave it off and set this ticket to `needs-info` with the answer.
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 34a3f2cea8c2b8edd1d5deb2e26dec4ff493e20e; code-review fixes in 131d137. `make test` passes. Left over: "Hub chosen" is left unticked. The hub, its page (read 2026-11-17) and section 7.1 of the PubSubHubbub 0.3 spec are recorded in README "WebSub hub ping", but the one live publish request for `/feed.xml` the ticket asks for was not sent: it notifies a third party, which agents do not do. `WEBSUB_ENABLED` stays false. The Author sends the `curl` in README "Live check: not done yet": on `204`, record it here and in README, tick the box and turn the ping on; on anything else, leave it off and set this ticket to `needs-info`.

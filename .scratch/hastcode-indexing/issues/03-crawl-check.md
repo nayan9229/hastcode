@@ -14,22 +14,22 @@ Limits, stated in its output and in the README: it sends crawler user-agent stri
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `make crawl-check` prints one plain line per check (pass or fail and why). It ends with a one-line summary, then exits 0 when everything passes and non-zero on any failure, including a network error or timeout.
-- [ ] It reads the Production host from `site.yaml` `site_url`. It derives the `http://` and `www.` addresses from that host, and each of the three can be overridden. The tests use the overrides to run it against local stand-in servers, so `make test` never touches the network.
-- [ ] Tests cover:
+- [x] `make crawl-check` prints one plain line per check (pass or fail and why). It ends with a one-line summary, then exits 0 when everything passes and non-zero on any failure, including a network error or timeout.
+- [x] It reads the Production host from `site.yaml` `site_url`. It derives the `http://` and `www.` addresses from that host, and each of the three can be overridden. The tests use the overrides to run it against local stand-in servers, so `make test` never touches the network.
+- [x] Tests cover:
   - all checks passing → exit 0
   - one crawler getting 403 → non-zero, and the message names the crawler and runbook step 1
   - http answering 200 → non-zero, and the message names Always Use HTTPS
   - a missing `Sitemap:` line or allow group → non-zero
   - a prepended group that disallows `/` for a checked crawler → non-zero
   - an unreachable host → non-zero with a plain message
-- [ ] It makes only GET or HEAD requests to the site under check, with a short timeout. It never sends a request to IndexNow, a WebSub hub or any search engine API (a test asserts that only the stand-in host was contacted).
-- [ ] No workflow runs it; README says it is local only and why
-- [ ] Run it once against live Production and paste the output here. The only failures should be the parts of ticket 01 not yet done: PerplexityBot and http if it hasn't started, none if it is finished.
-- [ ] `docs/author-runbook.md`: today its "Getting found by search engines" paragraph (section 3) points to the note's hand-typed "Weekly check". It now gives a weekly check of its own: `make crawl-check` to copy and paste, what a failure means and which runbook step in the note fixes it, then the Search Console and Bing reports to look at. README documents the target beside "Feeds, sitemaps, robots and IndexNow", and the Makefile comment explains it like the other targets. Keep the paragraph's other lines (the get-indexed steps, the IndexNow line, any hub-ping lines from ticket 05) as they are; tickets 01 and 05 edit the same paragraph.
-- [ ] `make test` passes; `make lint-workflows` passes
+- [x] It makes only GET or HEAD requests to the site under check, with a short timeout. It never sends a request to IndexNow, a WebSub hub or any search engine API (a test asserts that only the stand-in host was contacted).
+- [x] No workflow runs it; README says it is local only and why
+- [x] Run it once against live Production and paste the output here. The only failures should be the parts of ticket 01 not yet done: PerplexityBot and http if it hasn't started, none if it is finished.
+- [x] `docs/author-runbook.md`: today its "Getting found by search engines" paragraph (section 3) points to the note's hand-typed "Weekly check". It now gives a weekly check of its own: `make crawl-check` to copy and paste, what a failure means and which runbook step in the note fixes it, then the Search Console and Bing reports to look at. README documents the target beside "Feeds, sitemaps, robots and IndexNow", and the Makefile comment explains it like the other targets. Keep the paragraph's other lines (the get-indexed steps, the IndexNow line, any hub-ping lines from ticket 05) as they are; tickets 01 and 05 edit the same paragraph.
+- [x] `make test` passes; `make lint-workflows` passes
 
 ## Comments
 
@@ -71,3 +71,5 @@ make: *** [crawl-check] Error 1
 ```
 
 User-agent strings: Googlebot, OAI-SearchBot, PerplexityBot, Applebot, DuckDuckBot, YandexBot and Amzn-SearchBot were checked against their owners' pages on 2026-11-17. Bing's crawler page is client-rendered and could not be read, so Bingbot's is the desktop string Bing has published; Anthropic publishes only the `Claude-SearchBot` token, not a full string, so that one follows the shape of Anthropic's other crawlers' strings. Both are noted in `internal/crawlcheck/crawlers.go`.
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 0d2bf811e5de9ef7006691493b0437a8aaed687a; code-review fixes in 131d137. `make test` passes. Nothing left over in this ticket. The two live failures (PerplexityBot, http redirect) belong to ticket 01. Code review added a real Chrome version to the Googlebot, Bingbot and Amzn-SearchBot strings (131d137); update `chromeVersion` with the other strings.

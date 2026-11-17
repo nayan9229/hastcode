@@ -8,14 +8,14 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Build-seam test: a built home page, Explainer, Brief, static page and the 404 page each carry exactly one site-feed autodiscovery link with the right type, href and title
-- [ ] Build-seam test: every listing page of a Vertical hub carries the site feed and then that Vertical's feed. The Briefs listing carries the site feed and then the Briefs feed. No other page carries a Vertical or Briefs feed link.
-- [ ] Each advertised href is a feed the same build actually wrote (tested against the build output, so a renamed feed fails the test)
+- [x] Build-seam test: a built home page, Explainer, Brief, static page and the 404 page each carry exactly one site-feed autodiscovery link with the right type, href and title
+- [x] Build-seam test: every listing page of a Vertical hub carries the site feed and then that Vertical's feed. The Briefs listing carries the site feed and then the Briefs feed. No other page carries a Vertical or Briefs feed link.
+- [x] Each advertised href is a feed the same build actually wrote (tested against the build output, so a renamed feed fails the test)
 - [ ] The real `content/` still builds in production mode with the 52 KB HTML size gate (rule `html-size`) unchanged. If a live page would go over, stop and ask the Author; do not raise the gate. Lighthouse CI passes on the Preview.
-- [ ] README "Feeds, sitemaps, robots and IndexNow" says pages advertise the feeds in `<head>` (site feed everywhere, Vertical and Briefs feeds on their listings)
-- [ ] `make test` passes; preview build passes
+- [x] README "Feeds, sitemaps, robots and IndexNow" says pages advertise the feeds in `<head>` (site feed everywhere, Vertical and Briefs feeds on their listings)
+- [x] `make test` passes; preview build passes
 
 ## Comments
 
@@ -28,3 +28,5 @@
 | `/languages-runtimes/structured-concurrency/` | 51,566 |
 
 So no live page goes over, but the largest has only 316 bytes left: a longer Piece of that size, or another head link, will hit `html-size`. Lighthouse CI was **not** run: it runs on a Preview, and agents do not push or deploy. It runs on the next pushed Preview; check its result there.
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 02f163c171da8626ce74f99c886941af9da291ef; code-review fixes in 131d137. `make test` passes. Left over: the size-gate criterion is left unticked only for its Lighthouse part. The production build passes the unchanged 52 KB gate (see the note above; the largest page has 316 bytes left). Lighthouse CI has not run on a Preview, because agents do not push or deploy. As a stand-in, the same budgets (`lighthouserc.json`, @lhci/cli 0.15.1) passed against a localhost preview build on the six URLs `scripts/lighthouse-urls.sh` picks. Tick the box when the next pushed Preview's Lighthouse CI passes.

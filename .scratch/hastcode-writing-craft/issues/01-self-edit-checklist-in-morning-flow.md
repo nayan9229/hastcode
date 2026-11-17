@@ -10,14 +10,18 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `docs/editorial/self-edit-checklist.md` exists, carries every §4 line, marks the lines that don't apply to Briefs (hook, nut graf, TL;DR, diagram, worked example, per-H2 length) and the lines that work differently in Repo Profiles, and links back to the research note
-- [ ] `house-byline-voice.md`'s drafting pipeline has the self-edit step before "verify every claim" and links the checklist. Each of the five writing guides' "The flow" lists a self-edit step after "Draft" and before "The Author verifies", linking the checklist (step numbers move up by one)
-- [ ] `make daily`'s drafting instructions name the checklist
-- [ ] Test: a review queue written from a sample run (one Explainer and one Brief drafted, one Lead not drafted) has unticked self-edit boxes, or a box per group plus the checklist link, under each drafted Piece; the Brief's entry leaves out the lines that don't apply to Briefs; the not-drafted entry has none. `make test` runs this test. Today nothing tests the review queue, and `make test` runs only the Go tests. The review queue's writer is not Go, so the test needs a way in. It also runs in GitHub Actions, which run `make test`, so it uses only fixture files: it must not fetch from GitHub or call Claude
-- [ ] The review queue's opening paragraph says the self-edit comes before verification and does not replace it
-- [ ] Runbook §4 Step 2 ("verify") lists the self-edit boxes as a fourth thing the queue shows each draft (after the file, "Drafter asks you to check" and "Fact-checker could not confirm"). It says in plain words to tick them while reading the draft, before checking claims against the Source. Runbook §6 Option B's "Draft … following …" prompt also names the checklist
-- [ ] README's daily-rhythm paragraph says the Author's check list now carries self-edit boxes for each draft, and links the checklist doc
-- [ ] No agent ticks a self-edit box, removes `draft: true`, sets `verified:` or runs `make release`
-- [ ] `make test` passes
+- [x] `docs/editorial/self-edit-checklist.md` exists, carries every §4 line, marks the lines that don't apply to Briefs (hook, nut graf, TL;DR, diagram, worked example, per-H2 length) and the lines that work differently in Repo Profiles, and links back to the research note
+- [x] `house-byline-voice.md`'s drafting pipeline has the self-edit step before "verify every claim" and links the checklist. Each of the five writing guides' "The flow" lists a self-edit step after "Draft" and before "The Author verifies", linking the checklist (step numbers move up by one)
+- [x] `make daily`'s drafting instructions name the checklist
+- [x] Test: a review queue written from a sample run (one Explainer and one Brief drafted, one Lead not drafted) has unticked self-edit boxes, or a box per group plus the checklist link, under each drafted Piece; the Brief's entry leaves out the lines that don't apply to Briefs; the not-drafted entry has none. `make test` runs this test. Today nothing tests the review queue, and `make test` runs only the Go tests. The review queue's writer is not Go, so the test needs a way in. It also runs in GitHub Actions, which run `make test`, so it uses only fixture files: it must not fetch from GitHub or call Claude
+- [x] The review queue's opening paragraph says the self-edit comes before verification and does not replace it
+- [x] Runbook §4 Step 2 ("verify") lists the self-edit boxes as a fourth thing the queue shows each draft (after the file, "Drafter asks you to check" and "Fact-checker could not confirm"). It says in plain words to tick them while reading the draft, before checking claims against the Source. Runbook §6 Option B's "Draft … following …" prompt also names the checklist
+- [x] README's daily-rhythm paragraph says the Author's check list now carries self-edit boxes for each draft, and links the checklist doc
+- [x] No agent ticks a self-edit box, removes `draft: true`, sets `verified:` or runs `make release`
+- [x] `make test` passes
+
+## Comments
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 7fb0cdde1f4d9a2148068b1ae4aa32fe576eb769; code-review fixes in 131d137. `make test` passes. Nothing left over. The self-edit boxes stay the Author's: no agent ticks them.

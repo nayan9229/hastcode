@@ -9,12 +9,16 @@
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] The Concept, Case Study and Comparison guides carry the ceiling wording; no editorial doc still says "Aim for" a word count
-- [ ] The Concept and Case Study guides' "Opening (before TL;DR)" ends with the nut-graf sentence, with its example
-- [ ] The Concept and Case Study templates' hook placeholder asks for the closing "what this piece will show the Reader" sentence. A `make lead` skeleton of each kind shows it (checked by a test or by running `make lead` on a real Lead and discarding the skeleton)
-- [ ] The kind-template tests still pass: filled templates build clean under every gate, and unfilled hints still fail a production build with `author-placeholder`
-- [ ] `make daily`'s selection step no longer asks for "2,000+ words"; the drafter's page-size advice is unchanged
-- [ ] Runbook and README checked: neither presents 2,000 to 2,800 words as a target (today neither does; leave them alone unless a line does)
-- [ ] `make test` passes
+- [x] The Concept, Case Study and Comparison guides carry the ceiling wording; no editorial doc still says "Aim for" a word count
+- [x] The Concept and Case Study guides' "Opening (before TL;DR)" ends with the nut-graf sentence, with its example
+- [x] The Concept and Case Study templates' hook placeholder asks for the closing "what this piece will show the Reader" sentence. A `make lead` skeleton of each kind shows it (checked by a test or by running `make lead` on a real Lead and discarding the skeleton)
+- [x] The kind-template tests still pass: filled templates build clean under every gate, and unfilled hints still fail a production build with `author-placeholder`
+- [x] `make daily`'s selection step no longer asks for "2,000+ words"; the drafter's page-size advice is unchanged
+- [x] Runbook and README checked: neither presents 2,000 to 2,800 words as a target (today neither does; leave them alone unless a line does)
+- [x] `make test` passes
+
+## Comments
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as 251fb412fc42b2cb30e0286850b3db971181f96e; code-review fixes in 131d137. `make test` passes. Nothing left over.

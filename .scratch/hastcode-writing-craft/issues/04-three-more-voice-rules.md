@@ -10,11 +10,15 @@
 
 **Blocked by:** 02 (Prose warnings in the build), which edits the same voice-rule list
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] `house-byline-voice.md` has the one-name rule and the analogy rule as new numbered rules after rule 8, and rule 7 has the numbers sentence. Wording as §5.3 items 6, 8 and 10, edited only to fit the list
-- [ ] Rule 5 as ticket 02 left it is unchanged, and the list's numbering stays consistent
-- [ ] The analogy rule is labelled a house choice
-- [ ] The Repo Profile guide's "Do not retype what the Fact Pack carries" and the number rule agree (one line in either doc says how)
-- [ ] If the self-edit checklist (ticket 01) exists, its "One name per thing", analogy and "Every number has a unit…" lines say the same as the new rules
-- [ ] No build rule, test or content change. README and the runbook are unchanged, since nothing the Author runs behaves differently
+- [x] `house-byline-voice.md` has the one-name rule and the analogy rule as new numbered rules after rule 8, and rule 7 has the numbers sentence. Wording as §5.3 items 6, 8 and 10, edited only to fit the list
+- [x] Rule 5 as ticket 02 left it is unchanged, and the list's numbering stays consistent
+- [x] The analogy rule is labelled a house choice
+- [x] The Repo Profile guide's "Do not retype what the Fact Pack carries" and the number rule agree (one line in either doc says how)
+- [x] If the self-edit checklist (ticket 01) exists, its "One name per thing", analogy and "Every number has a unit…" lines say the same as the new rules
+- [x] No build rule, test or content change. README and the runbook are unchanged, since nothing the Author runs behaves differently
+
+## Comments
+
+**Resolved, 2026-11-17.** Merged into `integration/indexing-writing-craft` as ed30c045a681f87ea79918f77cc083d0ffbbe401; code-review fixes in 131d137. `make test` passes. Nothing left over.
