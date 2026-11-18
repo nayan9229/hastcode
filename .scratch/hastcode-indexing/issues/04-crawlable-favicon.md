@@ -23,10 +23,28 @@ Decision (Author):
 - [ ] **Decision recorded.** The Author makes the call. An agent may draft the text for the Author to approve. The record is either an amendment to ADR-0006 (the option, its measured cost and the reason) or, for (d), a note here saying why not and what would change the answer.
 
 If the decision is to add a file (an agent may do this part once the ADR-0006 amendment exists):
-- [ ] The build writes the icon file at one stable path (no content hash), square, at least 48 px and ideally a multiple of 48. It is linked from the pages the amendment names with a `rel` value Google supports, and the `data:` icon stays as the browser favicon.
-- [ ] Build-seam tests: the linked file exists in the output with the stated size and type. The link is on exactly the pages the amendment names. The `data:` icon link is still on every page.
-- [ ] The file is not in `/sitemap.xml` and is not blocked by robots.txt. Its name is stable, so it sits outside `/assets/`: that folder's `immutable` rule is only for content-hashed files. On each Target it gets the same cache rule as `/mark.svg` (README "Routes and caching" and "Deploying"). A test or the routes check shows the header on each Target.
+- [x] The build writes the icon file at one stable path (no content hash), square, at least 48 px and ideally a multiple of 48. It is linked from the pages the amendment names with a `rel` value Google supports, and the `data:` icon stays as the browser favicon.
+- [x] Build-seam tests: the linked file exists in the output with the stated size and type. The link is on exactly the pages the amendment names. The `data:` icon link is still on every page.
+- [x] The file is not in `/sitemap.xml` and is not blocked by robots.txt. Its name is stable, so it sits outside `/assets/`: that folder's `immutable` rule is only for content-hashed files. On each Target it gets the same cache rule as `/mark.svg` (README "Routes and caching" and "Deploying"). A test or the routes check shows the header on each Target.
 - [ ] Lighthouse CI passes on the Preview (mobile LCP ≤ 1.5 s median, CLS 0); the 52 KB size gate passes; the real `content/` builds in production mode
-- [ ] README (the files the build writes, and the Production cache rules) mentions the file. ADR-0006's Consequences point to the amendment.
-- [ ] `make test` passes; preview build passes
+- [x] README (the files the build writes, and the Production cache rules) mentions the file. ADR-0006's Consequences point to the amendment.
+- [x] `make test` passes; preview build passes
 - [ ] After the next Production Publish, the Author checks it with the Search Console URL Inspection live test on the home page, then repeats the `site:` check a few weeks later and records what it shows
+
+## Comments
+
+**Built, 2026-11-18** (branch `impl/fav-1118`). The Author chose option (a) on 2026-11-18, without a Preview Lighthouse run. The record is ADR-0013 (`docs/adr/0013-crawlable-apple-touch-icon-on-the-home-page.md`), which amends ADR-0006. ADR-0006's frontmatter and Consequences point to it. An agent drafted the ADR text, so the "Decision recorded" box stays open until the Author approves that text.
+
+What the build does now:
+- It writes `/apple-touch-icon.png`, a 192x192 opaque PNG (1,570 bytes) drawn from the mark's own path data (`internal/views/touch_icon.go`). The bytes are the same on every build, and it is written in `r2` mode too.
+- Only the home page links it: `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`. Every page keeps the one `data:` favicon.
+- Tests in `builder/touch_icon_test.go` cover the size and type, the same bytes on every build, the home-page-only link, and the `data:` icon on every page. They also check that the icon gets the same headers as `/mark.svg` on both Targets (Cloudflare `_headers`; the Vercel routes through the local router), that it is not in `sitemap.xml` or blocked by `robots.txt`, and that it sits outside `/assets/`.
+
+Measured locally (a stand-in for the Preview run, which is still the Author's):
+- A preview build of `content/` was served on localhost by `cmd/subscribe` and run with `lighthouserc.json` (@lhci/cli 0.15.1, Lighthouse 12.6.1, 3 runs each). `lhci assert` passed.
+- Home: median mobile LCP 0.76 s, against 0.77 s for the same build with the link removed. 12 requests in both.
+- G1 Explainer: 1.05 s in both. CLS was 0 everywhere.
+- Lighthouse never requested the icon.
+- A production build of `content/` passed with no errors (930 warnings). The home page grew by 58 bytes, to 16,346 (36,902 under the 53,248-byte gate). No other page changed. The largest page is still the G1 Explainer at 52,917 bytes, 331 under the gate.
+
+Still open, and the Author's: the `site:` evidence, Lighthouse CI on a pushed Preview, and the Search Console live test after the next Production Publish, then the `site:` check a few weeks later.

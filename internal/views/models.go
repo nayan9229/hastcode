@@ -39,6 +39,10 @@ type Page struct {
 	// feed's channel title, URL its site-relative path. Every page has
 	// the site feed; a Vertical hub or Briefs listing adds its own.
 	Feeds []Link
+	// TouchIcon is the site-relative URL of the crawlable PNG icon, linked
+	// as rel="apple-touch-icon"; only the home page sets it (ADR-0013).
+	// Every page keeps the data: URI favicon either way.
+	TouchIcon string
 	// Social is the Open Graph / Twitter card preview.
 	Social Social
 	// Breadcrumbs is the trail from Home to this page (site-relative
