@@ -8,8 +8,8 @@ description: "How the three kube-proxy backends look up Services and apply chang
 kind: comparison
 vertical: infrastructure-cloud
 tags: ["kubernetes", "kube-proxy", "nftables", "iptables", "ipvs"]
-published: "2026-11-18T06:32:28Z"
-reviewed: "2026-11-18T06:32:28Z"
+published: "2026-11-19T06:32:28Z"
+reviewed: "2026-11-19T06:32:28Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
