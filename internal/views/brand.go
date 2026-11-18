@@ -47,22 +47,26 @@ var markDataURI = "data:image/svg+xml," + url.PathEscape(string(markSVG()))
 
 // markSVG is the brand mark: a lowercase "h" stroke on a rounded teal
 // square, inverting to the dark palette when the viewer prefers dark.
-// Drawn as paths, not text, so it never depends on an installed font.
+// Drawn as paths, not text, so it never depends on an installed font. The
+// geometry constants are shared with the PNG icon (drawTouchIcon).
 func markSVG() []byte {
-	return fmt.Appendf(nil, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">`+
-		`<title>%s</title>`+
-		`<style>.b{fill:%s}.h{stroke:%s}@media (prefers-color-scheme:dark){.b{fill:%s}.h{stroke:%s}}</style>`+
-		`<rect class="b" width="32" height="32" rx="7"/>`+
-		`<path class="h" d="M10.5 7v18M10.5 17.5c0-3.3 2.4-5.5 5.5-5.5s5.5 2.2 5.5 5.5V25" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>`+
+	return fmt.Appendf(nil, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %[1]d %[1]d" width="%[1]d" height="%[1]d">`+
+		`<title>%[2]s</title>`+
+		`<style>.b{fill:%[3]s}.h{stroke:%[4]s}@media (prefers-color-scheme:dark){.b{fill:%[5]s}.h{stroke:%[6]s}}</style>`+
+		`<rect class="b" width="%[1]d" height="%[1]d" rx="7"/>`+
+		`<path class="h" d="%[7]s" fill="none" stroke-width="%[8]g" stroke-linecap="round" stroke-linejoin="round"/>`+
 		`</svg>`+"\n",
-		PublicationName, lightPalette.accent, lightPalette.bg, darkPalette.accent, darkPalette.bg)
+		markUnits, PublicationName, lightPalette.accent, lightPalette.bg, darkPalette.accent, darkPalette.bg,
+		markStrokePath, markStrokeWidth)
 }
 
 // StaticAssets are the non-page files every build writes into the static
-// tree, by site path. The OG badge is an image, so it goes through the
-// Image Store instead (OGBadgePNG).
+// tree, by site path: the mark and the crawlable icon drawn from it, both
+// at stable names. The OG badge is content-hashed under /assets/, so it
+// goes through the Image Store instead (OGBadgePNG).
 func StaticAssets() map[string][]byte {
 	return map[string][]byte{
-		MarkPath: markSVG(),
+		MarkPath:      markSVG(),
+		TouchIconPath: TouchIconPNG(),
 	}
 }

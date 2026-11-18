@@ -6,7 +6,8 @@ package views
 // (rel="alternate"; a browser does not fetch them while loading), Open
 // Graph/Twitter card, both theme-colors, the inline theme
 // script (before the stylesheet so a stored override applies before first
-// paint), the inline stylesheet (ADR-0006), the SVG mark as an embedded favicon, the hero preload
+// paint), the inline stylesheet (ADR-0006), the SVG mark as an embedded favicon
+// (plus, on the home page only, the crawlable PNG icon, ADR-0013), the hero preload
 // on article pages, JSON-LD and (when configured) analytics.
 templ Head(p Page) {
 	<meta charset="utf-8"/>
@@ -34,6 +35,9 @@ templ Head(p Page) {
 	@templ.Raw("<script>" + themeScript + "</script>")
 	@templ.Raw(string(inlineStyle))
 	<link rel="icon" type="image/svg+xml" href={ templ.SafeURL(markDataURI) }/>
+	if p.TouchIcon != "" {
+		<link rel="apple-touch-icon" href={ p.TouchIcon }/>
+	}
 	if p.HeroPreload != nil {
 		@HeroPreloadLink(*p.HeroPreload)
 	}
