@@ -10,7 +10,8 @@ kind: case-study
 vertical: distributed-systems
 tags: ["workflows", "aws-step-functions", "idempotency", "batching", "zillow"]
 published: "2026-11-17T06:32:28Z"
-reviewed: "2026-11-17T06:32:28Z"
+verified: 2026-11-18
+reviewed: "2026-11-18T09:57:43Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -18,7 +19,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [durable-execution]
-draft: true
 ---
 
 Every day, Zillow sends home shoppers [more than 100 million personalised email and push notifications](https://aws.amazon.com/blogs/architecture/how-zillow-runs-100-million-daily-notifications-on-aws-step-functions/), and it runs them as short-lived executions on AWS Step Functions Express Workflows. The workflow engine does not decide when a campaign sends, how fast, or whether it pauses: [an in-house router in front of it does](https://aws.amazon.com/blogs/architecture/how-zillow-runs-100-million-daily-notifications-on-aws-step-functions/). This is how Zillow split the work between a router, generated workflows and a shared content service, which engines it turned down, and what the design costs.

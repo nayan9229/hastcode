@@ -6,6 +6,7 @@ title: "Fly.io's connection exhaustion: many pools, no shared limit"
 description: "Fly.io's RDS database ran out of connection slots, so some dashboard and API calls failed. Cap connections in a pooler, not only in each process."
 tags: [connection-pooling, backpressure, incidents, fly-io]
 published: "2026-11-18T06:32:27Z"
+verified: 2026-11-18
 author: mira-vance
 source_url: "https://fly.io/infra-log/database-connection-exhaustion/"
 explainers: [cloudflare-hyperdrive-mysql-caching]
@@ -16,7 +17,6 @@ explainers: [cloudflare-hyperdrive-mysql-caching]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 ## What happened

@@ -9,7 +9,8 @@ kind: case-study
 vertical: apis-networking
 tags: ["ai-agents", "protocols", "state-synchronization", "json-rpc", "github"]
 published: "2026-11-17T06:32:29Z"
-reviewed: "2026-11-17T06:32:29Z"
+verified: 2026-11-18
+reviewed: "2026-11-18T09:57:43Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Two teams wrote an agent host for the same protocol: [about 369,000 lines of TypeScript in VS Code and about 305,000 lines of Rust at GitHub](https://github.blog/engineering/engineering-principles/building-the-agent-host-protocol-for-sessions-that-continue-across-devices/). That protocol, the Agent Host Protocol (AHP), is what lets a Copilot agent session [start in one place and continue in another](https://github.blog/engineering/engineering-principles/building-the-agent-host-protocol-for-sessions-that-continue-across-devices/). This is how AHP keeps one session in step across clients, the alternatives it rules out, and what the post leaves unmeasured.

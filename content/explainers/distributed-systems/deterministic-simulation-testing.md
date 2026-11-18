@@ -9,7 +9,8 @@ kind: concept
 vertical: distributed-systems
 tags: ["deterministic-simulation", "testing", "fault-injection", "linearizability", "determinism"]
 published: "2026-11-18T06:32:28Z"
-reviewed: "2026-11-18T06:32:28Z"
+verified: 2026-11-18
+reviewed: "2026-11-18T09:57:43Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 When the FoundationDB team sat down in 2010 to build a distributed database with ACID transactions, the first thing they wrote was not a database. In Antithesis co-founder Will Wilson's account, ["we first wrote a fully-deterministic event-based network simulation"](https://antithesis.com/blog/is_something_bugging_you/) that the database could plug into. FoundationDB's engineering page says the team built the database [exclusively in simulation for its first 18 months](https://apple.github.io/foundationdb/engineering.html#simulation). A whole cluster ran in [a single-threaded process](https://apple.github.io/foundationdb/testing.html#simulation), with every event [driven by the same random number generator](https://antithesis.com/blog/is_something_bugging_you/). A failing run could be [run again with the same seed](https://antithesis.com/blog/is_something_bugging_you/), and it failed the same way. The project's documentation estimates it has since run ["roughly one trillion CPU-hours of simulation"](https://apple.github.io/foundationdb/testing.html#simulation). Wilson recalls only [one or two bugs reported by a customer](https://antithesis.com/blog/is_something_bugging_you/) in the company's history. This is how a simulator makes a distributed bug repeat from a single number, what your code must give up to allow it, and what it still misses.
