@@ -23,8 +23,10 @@ const TouchIconPath = "/apple-touch-icon.png"
 // and the 192 px Android and iOS home-screen size.
 const touchIconSize = 192
 
-// The mark's geometry, shared by markSVG and drawTouchIcon so the two
-// files never drift: a 32-unit square, the "h" stroke's path data, width.
+// The mark's geometry, shared by markSVG and drawTouchIcon so the "h"
+// never drifts between the two files: a 32-unit square, the stroke's path
+// data and width. The SVG's corner radius (rx="7") is SVG-only on
+// purpose: the PNG stays square because iOS and Google mask its corners.
 const (
 	markUnits       = 32
 	markStrokePath  = "M10.5 7v18M10.5 17.5c0-3.3 2.4-5.5 5.5-5.5s5.5 2.2 5.5 5.5V25"
@@ -96,7 +98,9 @@ func segmentDistance(a, b point, x, y float64) float64 {
 
 // flattenPath turns SVG path data into polylines, one per subpath. It
 // reads only the commands markStrokePath uses (M, V, v, c, s) and panics
-// on any other, so a new command in the mark fails every build loudly.
+// on any other. The input is a constant, so this is a programming error
+// like a bad regexp.MustCompile: TestTouchIcon_* in `make test` panics
+// first, and so would any build, before a page ships.
 func flattenPath(d string) [][]point {
 	var (
 		lines [][]point

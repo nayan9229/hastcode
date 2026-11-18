@@ -52,7 +52,7 @@ Frontmatter: `title`, `description`, `tags`, `published`, `author: mira-vance`, 
 
 ## Section by section
 
-- **Opening.** None: the body starts with `## What happened`. No AI note: nothing on the page says how it was drafted (ADR-0014; the build's `ai-note` rule fails "AI assistance" or "drafted with AI" anywhere a Reader sees it).
+- **Opening.** None: the body starts with `## What happened`. No AI note: nothing on the page says how it was drafted (ADR-0014; the build's `ai-note` rule fails wording anywhere a Reader sees it that says AI made the Piece).
 - **What happened.** The facts in our own words: who, what, when (UTC), linked. Two to four sentences. One short quote at most.
 - **Why it matters.** Our analysis: the architectural cause in plain words, the lesson for the Reader, and the Explainer link that teaches it. Close on what a Reader can do differently.
 
@@ -62,7 +62,7 @@ Title: `{company}'s {event}: {the lesson}`, e.g. "GitHub's Dependabot backlog: a
 
 ## What the build checks
 
-`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `ai-note` (the words "AI assistance" or "drafted with AI" in anything a Reader sees, ADR-0014), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). Warnings: `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?"; with a Brief's two literal headings it cannot fire alone, because `brief-sections` fails any other H2). They never read code, tables, blockquotes (the AI-assistance note) or link URLs. `section-length` does not check Briefs. The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
+`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `ai-note` (wording that says AI made this Piece or our Pieces, such as the old note, "drafted with AI" or "this piece is AI-generated", in anything a Reader sees; AI as a topic passes, ADR-0014), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). Warnings: `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?"; with a Brief's two literal headings it cannot fire alone, because `brief-sections` fails any other H2). They never read code, tables, blockquotes or link URLs. `section-length` does not check Briefs. The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
 
 The Friday roundup is an ordinary Brief; see [the Repo Profile writing guide](repo-profile-writing-guide.md#the-friday-roundup).
 

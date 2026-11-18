@@ -40,7 +40,7 @@ The site ships with zero client-side framework, dark mode, Pagefind search, rese
 14. As a Reader, I want to filter Explainers by kind (Case Study, Concept, Comparison), so that I can find the format I want.
 15. As a Reader, I want site search that works without a backend, so that I can find an Explainer by keyword.
 16. As a Reader, I want an Author page with a real bio, photo and links, so that I know who is accountable for what I read.
-17. As a Reader, I want About, Contact and Editorial Policy pages, so that I understand how the site is made, including AI assistance.
+17. As a Reader, I want About, Contact and Editorial Policy pages, so that I understand how the site is made, including AI assistance. *(The "including AI assistance" part is superseded by ADR-0014, 2026-11-18: no Reader-visible page mentions AI drafting.)*
 18. As a Reader, I want to subscribe to the newsletter from any article without leaving the page flow, so that I can keep up without ads.
 19. As a Reader, I want a clear confirmation or error after subscribing, so that I know whether it worked.
 20. As a Reader, I want a helpful 404 page, so that a mistyped URL still leads somewhere useful.

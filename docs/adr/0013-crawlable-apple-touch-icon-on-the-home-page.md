@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: proposed
 date: 2026-11-18
 amends: ADR-0006
 ---
@@ -47,5 +47,5 @@ Size gate (production build of `content/`, HTML without the inline stylesheet, l
 
 - Every build writes `/apple-touch-icon.png` into the static tree, in `r2` mode too. It is the one image outside the Image Store (ADR-0004), because its URL must stay fixed on the site's own host.
 - On both Targets it gets the same cache headers as `/mark.svg` (the revalidating default, never `immutable`). It is not in `sitemap.xml`, and `robots.txt` does not block it. `builder/touch_icon_test.go` pins all of this.
-- The icon is drawn from `markStrokePath` (`internal/views/touch_icon.go`), which `markSVG` also uses, so changing the mark changes both files. A path command the rasteriser does not know fails every build.
+- The icon is drawn from `markStrokePath` (`internal/views/touch_icon.go`), which `markSVG` also uses, so changing the mark changes both files. A path command the rasteriser does not know panics (a programming error on a constant, like `regexp.MustCompile`), so `make test` and every build crash before anything ships; it is not reported as a `build-step` error.
 - Lighthouse CI on a Preview, the Search Console URL Inspection live test after the next Production Publish, and the later `site:` check remain the Author's checks (ticket 04).

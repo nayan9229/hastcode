@@ -51,7 +51,7 @@ Frontmatter: `title`, `description`, `kind: case-study`, `vertical`, `tags`, `pu
 
 ## Section by section
 
-- **Opening (before TL;DR).** One or two hook sentences: a sourced fact about the system that makes the Reader look twice (Titus: "launches millions of containers a week", then the opposite move). End the hook with one sentence that says what this piece will show the Reader (the "nut graf"): "This is how that loop forms, and the three defences that break it." Then straight to the TL;DR. No AI note: nothing on the page says how it was drafted (ADR-0014; the build's `ai-note` rule fails "AI assistance" or "drafted with AI" anywhere a Reader sees it).
+- **Opening (before TL;DR).** One or two hook sentences: a sourced fact about the system that makes the Reader look twice (Titus: "launches millions of containers a week", then the opposite move). End the hook with one sentence that says what this piece will show the Reader (the "nut graf"): "This is how that loop forms, and the three defences that break it." Then straight to the TL;DR. No AI note: nothing on the page says how it was drafted (ADR-0014; the build's `ai-note` rule fails wording anywhere a Reader sees it that says AI made the Piece).
 - **TL;DR.** Three to five bullets, answer first: what it is, why it was built, how it works, what it costs.
 - **At a glance.** The diagram, a sentence saying it is ours and linking the original, and the order the sections walk it.
 - **The problem.** What the old design did and who paid for it, in the Source's evidence.
@@ -76,7 +76,7 @@ The title stays under about 70 characters. The description is one sentence of 15
 
 ## What the build checks
 
-`tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `ai-note` (the words "AI assistance" or "drafted with AI" in anything a Reader sees, ADR-0014), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it), `review-overdue`. The three prose warnings never read code, tables, blockquotes or link URLs.
+`tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `ai-note` (wording that says AI made this Piece or our Pieces, such as the old note, "drafted with AI" or "this piece is AI-generated", in anything a Reader sees; AI as a topic passes, ADR-0014), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it), `review-overdue`. The three prose warnings never read code, tables, blockquotes or link URLs.
 
 ## What the first one taught us
 

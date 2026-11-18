@@ -281,7 +281,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/analytics.go`, `layout_analytics.templ` | Google Analytics 4 (ADR-0008): the inline snippet (`analyticsSnippet`: regional `analytics_storage` consent defaults, the host guard with Google's `ga-disable-<id>` opt-out, the config) and the deferred gtag.js. Validated by `builder/step_validate_analytics_config.go` (rule `analytics-config`). Tests: `builder/ads_analytics_test.go`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (inlined in every page's `<head>`, ADR-0006) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
-| `builder/step_validate_ai_note.go` | No AI note (ADR-0014): rule `ai-note` fails any Explainer, Brief, static page or Author file whose Reader-visible text says "AI assistance" (or "AI-assistance") or "drafted with AI". |
+| `builder/step_validate_ai_note.go` | No AI note (ADR-0014): rule `ai-note` fails any Explainer, Brief, static page, Author file or site.yaml Vertical whose Reader-visible text says AI made the Piece (the old note, "drafted with AI", "this piece is AI-generated"); AI as a topic passes. |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
 | `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestFirst` (via `newestExplainers`/`newestBriefs`), `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
@@ -386,19 +386,32 @@ slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
 rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
 ad slot follows "What happened".
 
-**No AI note** (ADR-0014). No Reader sees an AI-assistance note or
-AI-assistance wording anywhere on the site: pages, Markdown twins,
-`llms.txt`, feeds, sitemaps and structured data. The error rule `ai-note`
-(`step_validate_ai_note.go`, production and preview) fails every
-Explainer, Brief, static page and Author file whose Reader-visible text
-holds "AI assistance" (or "AI-assistance") or "drafted with AI", any case,
-across line breaks and blockquote markers. It reads the title,
-description, tags, `hero_alt`, `who_for`, Source titles and the whole body
-source (HTML comments and code included, since the twin carries them), and
-an Author's name, photo alt and bio; never frontmatter YAML comments. It
-matches the disclosure's wording, not the word "AI", so Pieces about AI
-("AI-assisted development", "an AI assistant") pass. Tests:
-`builder/ai_note_test.go`.
+**No AI note** (ADR-0014). No Reader sees an AI-assistance note, or
+wording that says AI made a Piece, anywhere on the site: pages, Markdown
+twins, `llms.txt`, feeds, sitemaps and structured data. The error rule
+`ai-note` (`step_validate_ai_note.go`, production and preview) fails
+every Explainer, Brief, static page and Author file, and every site.yaml
+Vertical name and description, whose Reader-visible text holds:
+
+- the note's own wording anywhere: "drafted with/by/using" an AI term
+  (AI, Claude, ChatGPT, GPT, Gemini, Copilot, an LLM, a language model),
+  or an "AI-assistance note";
+- a sentence that opens with how it was made ("Generated with Claude.",
+  "Written using an LLM, ..."), or is only an "AI-generated" label;
+- a sentence about this Piece or the site's own work ("this piece",
+  "our pieces", HastCode, the editorial team, Mira Vance, "Drafts ...")
+  that says AI made it ("written with the help of AI", "AI-generated",
+  "with AI assistance").
+
+Any case, across line breaks, blockquote markers and emphasis, with any
+Unicode space or dash between the words. It reads the title,
+description, tags, `hero_alt`, `who_for` and the whole body source (HTML
+comments and code included, since the twin carries them), and an
+Author's name, photo alt and bio; never frontmatter YAML comments, and
+never Source titles (other publishers' titles). AI as a topic passes:
+"AI-assisted development", "Copilot's AI assistance in code review",
+"Was pgrust written by AI?". The repository itself is not a Reader
+surface (ADR-0014). Tests: `builder/ai_note_test.go`.
 
 **Editorial warnings.** These point at prose and never fail a build;
 production and preview builds both print them, so `make release`, `make

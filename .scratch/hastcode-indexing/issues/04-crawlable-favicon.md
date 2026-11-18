@@ -48,3 +48,5 @@ Measured locally (a stand-in for the Preview run, which is still the Author's):
 - A production build of `content/` passed with no errors (930 warnings). The home page grew by 58 bytes, to 16,346 (36,902 under the 53,248-byte gate). No other page changed. The largest page is still the G1 Explainer at 52,917 bytes, 331 under the gate.
 
 Still open, and the Author's: the `site:` evidence, Lighthouse CI on a pushed Preview, and the Search Console live test after the next Production Publish, then the `site:` check a few weeks later.
+
+**2026-11-18, review follow-up.** ADR-0013's frontmatter is now `status: proposed`: an agent drafted it, so it stays proposed until the Author approves the text, then the Author flips it to `accepted` and ticks "Decision recorded". ADR-0006's Consequences line no longer says Google cannot crawl a `data:` favicon; it says that is unknown (open question 2 above). ADR-0013 now says plainly that an unknown path command in the mark panics (`make test` and every build crash) rather than failing as a `build-step` error.

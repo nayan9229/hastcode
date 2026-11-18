@@ -118,7 +118,7 @@ func templateTree(md []byte) buildtest.Tree {
 func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule(t *testing.T) {
 	out, res := buildtest.Build(t, buildtest.Config(), templateTree(copyTemplate(t, true)))
 
-	rules := append([]string{"frontmatter", "tldr", "sources", "diagram", "fact-pack", "fact-pack-repo", "fact-sections", "hero-missing", "author-placeholder", "section-length"}, repoProfileRules...)
+	rules := append([]string{"frontmatter", "tldr", "sources", "diagram", "fact-pack", "fact-pack-repo", "fact-sections", "hero-missing", "author-placeholder", "section-length", "ai-note"}, repoProfileRules...)
 	rules = append(rules, proseRules...)
 	for _, rule := range rules {
 		buildtest.RequireNoProblemRule(t, res, repoProfileFile, rule)
@@ -134,9 +134,6 @@ func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule
 	})
 	if len(questions) != 5 || questions[0] != "Is Iggy production ready?" {
 		t.Errorf("FAQ questions = %q, want the template's five, starting with the production-ready search", questions)
-	}
-	if got := doc.Find("article").Text(); strings.Contains(got, "AI assistance") {
-		t.Errorf("the page carries AI-assistance wording; no AI note is published (ADR-0014):\n%s", got)
 	}
 	for _, sel := range []string{"section.signals", "section.changelog"} {
 		if doc.Find(sel).Length() != 1 {

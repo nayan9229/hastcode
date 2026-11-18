@@ -37,7 +37,7 @@ The content plan around it: three to five Repo Profiles a week beside five other
 10. As a Reader, I want an FAQ section answering five to eight questions phrased the way I would search ("is X production ready?", "does X support Y?"), so that my question is answered on the page.
 11. As a Reader, I want a one-paragraph Verdict at the end, so that I get the recommendation in one place.
 12. As a Reader, I want a Sources section listing the repository, README and release pages the Profile drew from, so that every claim is checkable, as the Editorial Policy promises.
-13. As a Reader, I want the page to carry the same AI-assistance note, byline, published and last-reviewed dates as other Explainers, so that I know how it was made.
+13. As a Reader, I want the page to carry the same AI-assistance note, byline, published and last-reviewed dates as other Explainers, so that I know how it was made. *(The AI-assistance note is superseded by ADR-0014, 2026-11-18: no AI note is published. Byline and dates stand.)*
 14. As a Reader, I want Repo Profiles to appear in the Vertical hub, the home page, the kind page for Repo Profiles, feeds and search, so that I find them the way I find everything else.
 15. As a Reader on a slow phone, I want the Profile to be as light as any Explainer (no scripts beyond the site's, no layout shift from the header card or ad slots), so that it loads fast.
 16. As a Reader using dark mode, I want the header card and generated hero to respect the theme, so that nothing glares.

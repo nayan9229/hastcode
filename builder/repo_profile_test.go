@@ -23,7 +23,7 @@ func repoProfileTree() buildtest.Tree {
 	return buildtest.NewTree().WithRepoProfile(buildtest.ValidRepoProfile())
 }
 
-func TestRepoProfile_IsPublishedAtTheVerticalURLWithBylineDatesAndNote(t *testing.T) {
+func TestRepoProfile_IsPublishedAtTheVerticalURLWithBylineAndDates(t *testing.T) {
 	out := buildtest.MustBuild(t, buildtest.Config(), repoProfileTree())
 	doc := buildtest.Page(t, out, repoProfilePath)
 
@@ -42,9 +42,6 @@ func TestRepoProfile_IsPublishedAtTheVerticalURLWithBylineDatesAndNote(t *testin
 	}
 	if got := article.Find("time.dt-updated").AttrOr("datetime", ""); got != "2026-10-21T09:00:00Z" {
 		t.Errorf("last reviewed = %q", got)
-	}
-	if got := article.Find(".e-content").Text(); strings.Contains(got, "AI assistance") {
-		t.Errorf("the Profile carries AI-assistance wording; no AI note is published (ADR-0014):\n%s", got)
 	}
 }
 

@@ -101,9 +101,20 @@ func TestImageStore_R2UploadsEveryImageOnceWithImmutableHeadersAndWritesNoneToOu
 
 	// The one exception is the crawlable icon (ADR-0013): a site-origin
 	// file at a stable path, not an Image Store image.
-	imgs := slices.DeleteFunc(buildtest.Images(t, out), func(i buildtest.Image) bool { return i.URL == "/apple-touch-icon.png" })
+	// The QA Publish builds in r2 mode, so the icon must still be written.
+	var icon []buildtest.Image
+	imgs := slices.DeleteFunc(buildtest.Images(t, out), func(i buildtest.Image) bool {
+		if i.URL == "/apple-touch-icon.png" {
+			icon = append(icon, i)
+			return true
+		}
+		return false
+	})
 	if len(imgs) != 0 {
 		t.Errorf("r2 build wrote %d image files to the output, want none but /apple-touch-icon.png: %v", len(imgs), imgs)
+	}
+	if want := (buildtest.Image{URL: "/apple-touch-icon.png", Format: "png", Width: 192, Height: 192}); len(icon) != 1 || icon[0] != want {
+		t.Errorf("r2 build icon = %v, want %v", icon, want)
 	}
 }
 

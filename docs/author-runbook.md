@@ -187,7 +187,7 @@ says `success`, the page is at `https://hastcode.com/briefs/<slug>/` or
 | `broken-link` | A link in the piece is dead | Fix or remove it |
 | `brief-length` | Brief over 250 words | Cut words |
 | `brief-explainer-link` | Brief does not link a live Explainer | Link one in "Why it matters" and in `explainers:` |
-| `ai-note` | A piece or page says "AI assistance" or "drafted with AI" | Delete that line or those words. No AI note is ever published |
+| `ai-note` | A piece or page says AI made it ("drafted with AI", "written with the help of AI", "this piece is AI-generated") | Delete that line or those words. No AI note is ever published. Writing about AI as a topic is fine |
 | `review-overdue` | An Explainer's `reviewed:` date is old | Re-read it, update `reviewed:` |
 
 **Only want the errors?** Every build also prints hundreds of writing

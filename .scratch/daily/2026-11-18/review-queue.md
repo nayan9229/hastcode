@@ -6,7 +6,7 @@ Drafted by `make daily` (ADR-0009). Every Piece is `draft: true` and unverified.
 
 ### Fly.io's connection exhaustion: many pools, no shared limit
 
-`content/briefs/fly-io-database-connection-exhaustion.md` · brief · 245 words · fact-checker: 19 claims checked, 7 fixed, 0 removed
+`content/briefs/fly-io-database-connection-exhaustion.md` · brief · 222 words (recounted by the build's `brief-length` counter after the note was removed, 2026-11-18) · fact-checker: 19 claims checked, 7 fixed, 0 removed
 
 **Publish within 72 hours of the Lead's date**, with or after its Explainer: cloudflare-hyperdrive-mysql-caching
 
@@ -47,12 +47,12 @@ Drafted by `make daily` (ADR-0009). Every Piece is `draft: true` and unverified.
 - [ ] Point: The piece covers one idea; anything else is a Related link.
 - [ ] Top of the page: Title: key term in the first two words, plain words, no pun, under ~65 chars.
 - [ ] Top of the page: Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
-- [ ] Top of the page: Only the AI-assistance note comes before "What happened".
+- [ ] Top of the page: Nothing comes before "What happened".
 - [ ] Structure: Read only the headings: do they tell the story in order?
 - [ ] Structure: No heading says "Background", "Overview", "Introduction" or "Conclusion".
 - [ ] Structure: No question headings outside a Repo Profile FAQ.
 - [ ] Structure: Each paragraph has one topic, stated in its first sentence.
-- [ ] Structure: The whole Brief is 250 words at most, headings and the AI-assistance note included (`brief-length`); cut, don't pad.
+- [ ] Structure: The whole Brief is 250 words at most, headings included (`brief-length`); cut, don't pad.
 - [ ] Sentences: Average about 20 words or fewer; every sentence over ~30 words is split or earns its length.
 - [ ] Sentences: Active voice with a named actor ("the client retried", not "requests were retried").
 - [ ] Sentences: Hardest parts use the shortest sentences.

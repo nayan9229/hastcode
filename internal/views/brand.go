@@ -48,7 +48,8 @@ var markDataURI = "data:image/svg+xml," + url.PathEscape(string(markSVG()))
 // markSVG is the brand mark: a lowercase "h" stroke on a rounded teal
 // square, inverting to the dark palette when the viewer prefers dark.
 // Drawn as paths, not text, so it never depends on an installed font. The
-// geometry constants are shared with the PNG icon (drawTouchIcon).
+// square and the "h" stroke are shared with the PNG icon (drawTouchIcon);
+// the rounded corner (rx) is the SVG's own, as the PNG stays square.
 func markSVG() []byte {
 	return fmt.Appendf(nil, `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %[1]d %[1]d" width="%[1]d" height="%[1]d">`+
 		`<title>%[2]s</title>`+
