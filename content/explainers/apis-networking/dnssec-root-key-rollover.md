@@ -22,8 +22,6 @@ author: mira-vance
 
 On 9 October 2026, two days before the DNS root changed its signing key, APNIC Labs [reached a major Indian ISP](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) whose resolvers did not yet trust the incoming key. The roll began at [14:00 UTC on 11 October](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/). The ISP fixed its resolvers in time, and the share of measured Indian users behind DNSSEC-validating resolvers rose [from 55% to 59%](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) across the roll. APNIC's Geoff Huston writes that they were ["not so fortunate"](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/) contacting ISPs in Brazil, where the rate [fell from 54% to 50%](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/). Brazil lost [7,780,266 validating users](https://blog.apnic.net/2026/10/21/rolling-the-root-key-what-happened/), more than any other economy, while India gained 45,423,360, the most of any. Same key, same minute, opposite results.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - A **root KSK rollover** replaces the key that every DNSSEC-validating resolver holds as its **trust anchor**, the one key it accepts without looking it up. IANA's schedule puts it plainly: [validating resolvers must have updated trust anchors](https://www.iana.org/dnssec/files) to keep validating the root zone.

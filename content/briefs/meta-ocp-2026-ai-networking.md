@@ -19,8 +19,6 @@ explainers: [meta-prometheus-supercluster]
 sources: [{title: "Inside Prometheus: Meta's Journey to a Gigawatt-Scale Supercluster", url: "https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 26 October, Meta [published the slides and videos](https://engineering.fb.com/2026/10/26/open-source/ocp-summit-2026-meta-networking-talks/) of its networking talks at the 2026 OCP Global Summit. For scale-up inside the rack, it showed Tahan, an Ethernet switch for its MTIA 300 system. For scale-out, its Flattened Planar Fabric connects each GPU to eight network planes and flattens a three-tier Clos to two. For scale-across, its BAG super-spine joins buildings, campuses and regions. Its MetaRoCE RDMA transport is going open source.

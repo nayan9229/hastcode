@@ -135,8 +135,8 @@ func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule
 	if len(questions) != 5 || questions[0] != "Is Iggy production ready?" {
 		t.Errorf("FAQ questions = %q, want the template's five, starting with the production-ready search", questions)
 	}
-	if got := doc.Find("article blockquote").Text(); !strings.Contains(got, "Drafted with AI assistance") {
-		t.Errorf("the page does not carry the AI-assistance note; blockquote = %q", got)
+	if got := doc.Find("article").Text(); strings.Contains(got, "AI assistance") {
+		t.Errorf("the page carries AI-assistance wording; no AI note is published (ADR-0013):\n%s", got)
 	}
 	for _, sel := range []string{"section.signals", "section.changelog"} {
 		if doc.Find(sel).Length() != 1 {

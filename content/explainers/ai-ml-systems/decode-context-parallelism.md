@@ -21,8 +21,6 @@ related: [disaggregated-inference, expert-parallelism]
 
 On 29 October 2026, the day Mistral Large 4 came out, the vLLM and Mistral teams published how they serve it. One test in that post ran agentic sessions of about 100,000 tokens through a split prefill and decode setup. With 32 sessions, [a plain four-GPU tensor-parallel decode node ran out of KV cache and its time to first token climbed to 15 seconds](https://vllm.ai/blog/2026-10-29-mistral-large-4#long-context-decode-and-prefill-context-parallelism). A decode node with the same four-GPU count, configured as "TP4 DCP4", held time to first token at 0.7 seconds. What changed, we infer, was how the cache was laid out across the GPUs: the model's attention [keeps one latent KV head, so under tensor parallelism the cache is replicated on every rank](https://vllm.ai/blog/2026-10-29-mistral-large-4#long-context-decode-and-prefill-context-parallelism). Four GPUs were storing the same cache four times.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Decode context parallelism (DCP)** splits a request's KV cache across the GPUs of a tensor-parallel group by token instead of by attention head. vLLM's docs put it plainly: ["The core of decode context parallel is how to shard the KV cache across GPUs."](https://docs.vllm.ai/en/latest/serving/context_parallel_deployment/#decode-context-parallel)

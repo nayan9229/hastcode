@@ -22,8 +22,6 @@ related: [metastable-failures, etcd]
 
 At 14:43 UTC on 2 November 2020, a core network switch at Cloudflare [went into a partially operating state](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/): some protocols kept working, some packets were not forwarded, and six minutes later it recovered on its own. For those minutes an etcd cluster behind it could not accept a write. One node kept starting elections and voting for itself; another kept voting for the existing leader. The votes tied, and the cluster stayed read-only until the switch recovered, because Raft elections end up [blocking all writes until they're resolved](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/). The knock-on effects through Cloudflare's databases hit API and dashboard availability for six hours and 33 minutes, and the dashboard ran [as much as 80 times slower than normal](https://blog.cloudflare.com/a-byzantine-failure-in-the-real-world/). In November 2026, when Cloudflare explained the consensus protocol behind Meerkat, its new control-plane store, it [cited that incident](https://blog.cloudflare.com/choosing-quepaxa/). The protocol it chose has no elections to stall.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **QuePaxa** is a [crash fault tolerant and asynchronous consensus algorithm](https://github.com/dedis/quepaxa) from EPFL's DEDIS lab and colleagues, published at [SOSP 2023](https://bford.info/pub/os/quepaxa/), in which a leader speeds things up but nothing waits for one: in Cloudflare's words, ["The leader is completely optional."](https://blog.cloudflare.com/choosing-quepaxa/)

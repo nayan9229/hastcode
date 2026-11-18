@@ -21,8 +21,6 @@ author: mira-vance
 
 On 14 October 2026, Mats Rydberg [walked through one short statement](https://planetscale.com/blog/neki-volatile-expressions#putting-it-all-together) on the PlanetScale blog: `UPDATE animals SET tag_id = nextval('tag_seq');`. On one Postgres server it is one statement. In [Neki](https://planetscale.com/blog/the-architecture-of-neki), PlanetScale's sharding layer for Postgres, it becomes a `SELECT animals.id FROM animals FOR UPDATE` sent to the shards, a fresh sequence value for every row that comes back, and one `UPDATE animals SET tag_id = $2 WHERE id = $1` per row, sent back to the shard that holds it. Swap `nextval('tag_seq')` for `lower(name)` and, we infer, none of that machinery is needed: the post shows immutable expressions [running on the shards](https://planetscale.com/blog/neki-volatile-expressions#putting-it-all-together). What separates the two plans is one property Postgres attaches to every expression: its volatility.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Expression volatility** is Postgres's promise about calling a function twice: an immutable function returns the same result for the same arguments ["forever"](https://www.postgresql.org/docs/current/xfunc-volatility.html), a stable one for all rows within a single statement, and a volatile one can return a different result on every call.

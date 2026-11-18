@@ -13,8 +13,6 @@ author: mira-vance
 
 etcd 3.7.0 [boots entirely from the v3 store](https://etcd.io/blog/2026/announcing-etcd-3.7/) and [removes the v2 store outright](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/); the only way there is a rolling upgrade from a cluster already on [v3.6.11 or later](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/), because etcd [upgrades one minor version at a time](https://etcd.io/docs/v3.7/upgrades/upgrade_3_7/).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - etcd is a [distributed, reliable key-value store for the most critical data of a distributed system](https://github.com/etcd-io/etcd#readme): a Go server that uses [Raft](https://github.com/etcd-io/etcd#readme) to keep one replicated log across an odd number of members.

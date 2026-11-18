@@ -29,8 +29,6 @@ draft: true
 
 TODO(author): the hook, one sentence: a sourced fact about the repository (a number, a design choice, a release) that makes a backend engineer look twice.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - TODO(author): what {repo} is, in one plain sentence.

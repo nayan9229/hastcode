@@ -21,8 +21,6 @@ related: [apache-iceberg-table-format]
 
 Matt Martin's data career began in 2008 with spreadsheets, when [assembling a single report could take three hours](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#from-copy-paste-to-code). Years later he was running Apache Iceberg and Delta Lake, and hit the trouble that [starts when the metadata grows](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#why-ducklake). Iceberg writes several metadata files per transaction, so over time a query must resolve thousands of them before it can plan, and planning that once took seconds slows down. Then he tried DuckLake. In his experience, catalog operations that take seconds with Iceberg [resolve in under a millisecond with DuckLake](https://duckdb.org/2026/10/29/from-spreadsheets-to-ducklake.html#why-ducklake), "because they are queries against indexed tables." That clause is the whole idea. DuckLake answers "which files make up this table right now?" with one SQL query, not a walk through files on object storage.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **DuckLake** is an open lakehouse format that keeps table data as Parquet files on storage and puts [all metadata in a SQL database](https://ducklake.select/manifesto/#ducklake): file lists, statistics, schemas and snapshots are rows in ordinary tables.

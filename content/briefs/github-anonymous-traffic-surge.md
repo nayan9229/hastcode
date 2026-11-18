@@ -19,8 +19,6 @@ explainers: [metastable-failures]
 sources: [{title: "Increase in timeouts for some unauthenticated users", url: "https://www.githubstatus.com/incidents/pyynvrm1vskw"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 9 November GitHub [investigated degraded performance from 05:59 UTC](https://www.githubstatus.com/incidents/c9px7cw2ghrs) and by 06:30 was [debugging a spike in anonymous traffic](https://www.githubstatus.com/incidents/c9px7cw2ghrs): logged-out users could see errors, and CI jobs and release downloads making anonymous calls could get a 504. It [reported mitigation at 06:51](https://www.githubstatus.com/incidents/c9px7cw2ghrs), then saw [504s climb again at 07:43](https://www.githubstatus.com/incidents/c9px7cw2ghrs). At 08:16 it said ["Logged-in users and authenticated requests are unaffected."](https://www.githubstatus.com/incidents/c9px7cw2ghrs) Errors eased by 08:47, GitHub was [preparing targeted traffic controls](https://www.githubstatus.com/incidents/c9px7cw2ghrs), and the incident closed at 09:09 UTC. The day before, a [separate incident](https://www.githubstatus.com/incidents/pyynvrm1vskw) had degraded API requests, mainly for unauthenticated users, and GitHub said it was working to redeploy a problematic component.

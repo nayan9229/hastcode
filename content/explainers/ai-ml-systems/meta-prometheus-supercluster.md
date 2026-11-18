@@ -22,8 +22,6 @@ author: mira-vance
 
 In mid-2025, Meta's new training cluster in New Albany, Ohio, saw [nearly 1,000 interruptions per 8K GPUs a day](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/). A year later Meta reports a 99% cut, on a site that [two years ago was a conventional data center running web traffic](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/) and now trains its frontier models.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Prometheus is Meta's gigawatt-scale training supercluster: [hundreds of thousands of GPUs across multiple interconnected buildings, functioning as a single machine](https://engineering.fb.com/2026/10/19/data-center-engineering/inside-prometheus-meta-gigawatt-scale-supercluster/), on the way to roughly 1 million.

@@ -21,8 +21,6 @@ author: mira-vance
 
 In a [walkthrough published on 13 October 2026](https://duckdb.org/2026/10/13/inside-iceberg-table.html), the DuckDB team builds a small Apache Iceberg table of train services and changes it three times: an insert of 9,000 rows, an insert of 3,000 more, and a delete of the [1,000 rows from 2 October that ran four minutes late](https://duckdb.org/2026/10/13/inside-iceberg-table.html#a-table-with-history). A query returns 11,000 rows, as you'd expect. The metadata tells a stranger story. After the delete, the table's own summary still counts [12,000 records in four data files](https://duckdb.org/2026/10/13/inside-iceberg-table.html#layer-1-the-metadata-file). The delete did not touch a single data file. It wrote one new file listing 1,000 rows to ignore, and a fourth version of the table's metadata. Nothing was changed in place: in the DuckDB team's words, ["Every change writes new files and a new metadata.json, then commits by moving the catalog pointer to it."](https://duckdb.org/2026/10/13/inside-iceberg-table.html#the-tree)
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - An **open table format** is a published specification for metadata that makes a collection of immutable files behave as one table. Iceberg's spec is designed to manage ["a large, slow-changing collection of files in a distributed file system or key-value store as a table"](https://iceberg.apache.org/spec/#iceberg-table-spec).

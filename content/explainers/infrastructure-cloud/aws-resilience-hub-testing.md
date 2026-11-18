@@ -21,8 +21,6 @@ related: [metastable-failures]
 
 AWS's own documentation for the next generation of Resilience Hub warns that its AI failure-mode assessment is [directional guidance, not proof](https://docs.aws.amazon.com/resilience-hub/latest/userguide/next-gen-how-assessments-work.html): "Do not use it as a guarantee or as evidence. If you need evidence, run a resilience test." In October 2026 AWS shipped those tests: [four pre-configured fault experiments](https://aws.amazon.com/blogs/architecture/recommended-resilience-testing-in-the-next-generation-of-aws-resilience-hub/) built from what Resilience Hub already knows about your service, and graded pass or fail.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Recommended resilience testing is a Resilience Hub feature that [creates AWS Fault Injection Service (FIS) experiments from your service's resources, dependencies and resilience policy](https://aws.amazon.com/blogs/architecture/recommended-resilience-testing-in-the-next-generation-of-aws-resilience-hub/), injects the faults, and judges the result against your success criteria and recovery time objective (RTO).

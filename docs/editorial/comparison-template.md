@@ -24,8 +24,6 @@ draft: true
 
 TODO(author): the hook, a few sentences: one sourced fact (a measurement, a release, a design change) that makes the choice between {option A} and {option B} matter, linked to the Lead. End on the question this piece answers for every option.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - TODO(author): {option A} in one plain sentence: how it does the thing being compared.

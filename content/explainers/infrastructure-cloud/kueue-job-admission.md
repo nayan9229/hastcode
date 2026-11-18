@@ -21,8 +21,6 @@ author: mira-vance
 
 In a [walkthrough on the Kubernetes blog](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/), Utkarsh Raj, René Dudfield and Kevin Hannon submit a Job that runs [three Pods with one CPU each](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#step-3-compare-the-workload-s-request-with-its-assignment): three CPUs and 600 MiB of memory in all. The queue it enters offers [two CPUs and two Pod slots](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#step-5-inspect-clusterqueue-capacity-and-usage). Minutes pass. The Job is still suspended, with no application logs and possibly no Pod to inspect. Nothing has failed. Kueue, the controller in front of the Job, has compared the whole request with the queue's quota, found it does not fit, and [kept the Job suspended](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/#what-we-learned-without-leaving-headlamp) until quota frees up or the queue changes. The first question, the authors write, is not why the Pod is pending but ["Has Kueue admitted the Workload?"](https://kubernetes.io/blog/2026/10/14/tracing-kueue-admission-with-headlamp/)
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Admission** in Kueue is the decision to [let a Workload start, meaning its Pods may be created](https://kueue.sigs.k8s.io/docs/concepts/#admission). Kueue decides [when a job waits, starts or is preempted](https://kueue.sigs.k8s.io/docs/overview/); kube-scheduler still decides which nodes the Pods run on.

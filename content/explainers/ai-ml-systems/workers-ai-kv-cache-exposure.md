@@ -22,8 +22,6 @@ related: [disaggregated-inference]
 
 From 27 August to 9 September 2026, the GLM-5.3 model on Cloudflare Workers AI answered [155 very long prompts](https://blog.cloudflare.com/kv-cache-exposure-remediation/) with responses that could carry data from other customers' requests made shortly before. Each one looked like a success: Cloudflare writes that the client got ["HTTP 200 instead of HTTP 400"](https://blog.cloudflare.com/kv-cache-exposure-remediation/), with a matching prompt token count and a coherent reply.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Workers AI serves GLM-5.3 with [SGLang in a disaggregated setup](https://blog.cloudflare.com/kv-cache-exposure-remediation/): prefill GPUs build a prompt's KV cache, decode GPUs receive it over RDMA and generate the reply. A prompt that should have been rejected instead made decode read cache pages another request had left behind.

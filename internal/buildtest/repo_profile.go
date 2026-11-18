@@ -23,8 +23,8 @@ func (t Tree) WithRepoProfile(e Explainer) Tree {
 
 // ValidRepoProfile returns a Repo Profile of apache/iggy that satisfies the
 // Explainer skeleton (TL;DR, Mermaid fence, Sources), carries the Repo
-// Profile headings in the spec's order with five FAQ questions, the
-// AI-assistance note from the Editorial Policy, a `who_for` line, and a
+// Profile headings in the spec's order with five FAQ questions (no AI
+// note: none is published, ADR-0013), a `who_for` line, and a
 // valid Fact Pack (ValidFactPack) beside it. It names no hero: the build
 // draws its hero card from the Fact Pack. Set Hero, HeroAlt and HeroImage
 // (e.g. HeroPNG(1600, 900)) for a Profile with a sourced hero.
@@ -51,8 +51,6 @@ func ValidRepoProfile() Explainer {
 // opinion sections in the spec's fixed order (Signals and Changelog are
 // never written; they render from the Fact Pack).
 const ValidRepoProfileBody = `Iggy is a message streaming server that keeps Kafka's partitioned-log model and drops the JVM.
-
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team.
 
 ## TL;DR
 

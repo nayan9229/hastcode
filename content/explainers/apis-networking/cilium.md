@@ -13,8 +13,6 @@ author: mira-vance
 
 Cilium picks a Service backend at the moment your application calls `connect()`: the [README](https://github.com/cilium/cilium#load-balancing) says east-west connections are rewritten at the socket level to avoid per-packet NAT, and the [kube-proxy replacement guide](https://docs.cilium.io/en/stable/network/kubernetes/kubeproxy-free/) adds that the kernel socket ends up connected straight to the backend address.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Cilium is a [networking, observability and security layer for Kubernetes with an eBPF dataplane](https://github.com/cilium/cilium#readme): a CNI plugin, a load balancer that can [fully replace kube-proxy](https://github.com/cilium/cilium#load-balancing), network policy from L3 to L7, [transparent encryption and a Gateway API data plane](https://github.com/cilium/cilium#service-mesh), and Hubble for flow visibility.

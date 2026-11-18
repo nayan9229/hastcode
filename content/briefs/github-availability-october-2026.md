@@ -19,8 +19,6 @@ explainers: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 GitHub's [October 2026 availability report](https://github.blog/news-insights/company-news/github-availability-report-october-2026/), posted 12 November, describes eight incidents, three involving load that did not back off. On 6 October (19:57 UTC) an Enterprise Importer burst of very large queries used all of a shared database's connections; the importer did not reduce its load. On 19 October (15:49 UTC) an Actions service lost connections to some cache servers and all its servers retried at once, saturating a shared network link. On 21 October (14:52 UTC) requests failed to event-streaming servers near their memory limits and new connections opened immediately; overloaded servers' traffic moved to others, which overloaded too.

@@ -208,13 +208,13 @@ func TestPick_ConceptSkeletonFollowsTheConceptTemplate(t *testing.T) {
 	}
 }
 
-// hook is the skeleton's opening: the body text before the AI-assistance
-// note, which the writing guides call "Opening (before TL;DR)".
+// hook is the skeleton's opening: the body text before ## TL;DR, which
+// the writing guides call "Opening (before TL;DR)".
 func (s skeleton) hook(t *testing.T) string {
 	t.Helper()
-	text, _, ok := strings.Cut(s.Body, "\n> Drafted with AI assistance")
+	text, _, ok := strings.Cut(s.Body, "\n## TL;DR")
 	if !ok {
-		t.Fatalf("%s has no AI-assistance note", s.Path)
+		t.Fatalf("%s has no ## TL;DR", s.Path)
 	}
 	return strings.TrimSpace(text)
 }

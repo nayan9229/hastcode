@@ -13,8 +13,6 @@ author: mira-vance
 
 FrankenPHP runs every request on a thread of one process: the PHP interpreter is [compiled into the Caddy binary through cgo](https://github.com/php/frankenphp/blob/main/docs/internals.md), so a single request that allocates past PHP's hard `memory_limit` [exits the process and takes every in-flight request with it](https://frankenphp.dev/docs/known-issues/), which is why the docs tell you to run it under a supervisor.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - FrankenPHP is an [application server for PHP built on the Caddy web server](https://github.com/php/frankenphp#readme): one binary serves HTTP/1.1, HTTP/2 and HTTP/3 with automatic HTTPS and [replaces Nginx or Apache plus PHP-FPM](https://frankenphp.dev/docs/migrate/).

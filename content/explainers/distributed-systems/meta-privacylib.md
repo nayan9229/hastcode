@@ -22,8 +22,6 @@ author: mira-vance
 
 Meta's PrivacyLib performs [billions of privacy checks every second](https://engineering.fb.com/2026/10/27/security/privacylib/), inside the clients of hundreds of data and processing systems, while consuming ["only a small fraction of Meta's total compute capacity"](https://engineering.fb.com/2026/10/27/security/privacylib/). It manages that by not being a service at all: the check runs in the caller's own process, and the common path [avoids a network call](https://engineering.fb.com/2026/10/27/security/privacylib/).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - PrivacyLib is [a common library that runs inside the clients](https://engineering.fb.com/2026/10/27/security/privacylib/) of Meta's data and processing systems and checks privacy requirements at the moment data is read, written or sent on.

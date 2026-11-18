@@ -5,8 +5,8 @@ A Brief (`GLOSSARY.md`) is a short, dated commentary on something that just happ
 ## The rules a Brief adds
 
 - **A fresh Lead.** The Lead is at most 3 days (72 hours) old when the Brief is published, counted from the Lead's date in the queue. For a page updated in place (an incident report, a status page), count from its first post, not its last update. `make lead KIND=brief` refuses an older Lead; a Lead that has aged out can still become an Explainer.
-- **At most 250 words**, the body's headings and the AI-assistance note included (`brief-length`).
-- **Exactly two sections**, `## What happened` then `## Why it matters` (`brief-sections`). The only text before them is the AI-assistance note.
+- **At most 250 words**, the body's headings included (`brief-length`).
+- **Exactly two sections**, `## What happened` then `## Why it matters` (`brief-sections`). Nothing comes before `## What happened`.
 - **"Why it matters" is HastCode's own analysis**, never the Source restated or reworded: the architectural cause, the lesson for the Reader's own systems, and the link into an Explainer. It is at least as long as "What happened".
 - **`explainers` lists exactly the slugs the body links**, at least one, no more (`brief-explainer-link`). Link an Explainer by its bare slug (`[metastable failures](metastable-failures)`) or its path (`/distributed-systems/metastable-failures/`). Every Brief needs an Explainer to point at, so Brief volume follows Explainer volume (ADR-0007).
 - **`source_url` is the Lead's link**: the first-party page the Brief is about (`brief-source`). A Brief has no Sources section; every other page it cites is linked inline, and may also go in the optional `sources` frontmatter.
@@ -52,7 +52,7 @@ Frontmatter: `title`, `description`, `tags`, `published`, `author: mira-vance`, 
 
 ## Section by section
 
-- **Opening.** The AI-assistance note as a blockquote, exactly as the template has it, and nothing else.
+- **Opening.** None: the body starts with `## What happened`. No AI note: nothing on the page says how it was drafted (ADR-0013; the build's `ai-note` rule fails "AI assistance" or "drafted with AI" anywhere a Reader sees it).
 - **What happened.** The facts in our own words: who, what, when (UTC), linked. Two to four sentences. One short quote at most.
 - **Why it matters.** Our analysis: the architectural cause in plain words, the lesson for the Reader, and the Explainer link that teaches it. Close on what a Reader can do differently.
 
@@ -62,7 +62,7 @@ Title: `{company}'s {event}: {the lesson}`, e.g. "GitHub's Dependabot backlog: a
 
 ## What the build checks
 
-`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). Warnings: `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?"; with a Brief's two literal headings it cannot fire alone, because `brief-sections` fails any other H2). They never read code, tables, blockquotes (the AI-assistance note) or link URLs. `section-length` does not check Briefs. The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
+`brief-length` (over 250 words), `brief-sections` (sections other than exactly What happened, Why it matters), `brief-source` (missing or relative `source_url`), `brief-explainer-link` (no Explainer link, or `explainers` not exactly the linked slugs), `broken-link` (a link to an Explainer that does not exist), `ai-note` (the words "AI assistance" or "drafted with AI" in anything a Reader sees, ADR-0013), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys such as `kind`, bad dates). Warnings: `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?"; with a Brief's two literal headings it cannot fire alone, because `brief-sections` fails any other H2). They never read code, tables, blockquotes (the AI-assistance note) or link URLs. `section-length` does not check Briefs. The 3-day rule is enforced when the Lead is picked, not by the build: check the date before publishing.
 
 The Friday roundup is an ordinary Brief; see [the Repo Profile writing guide](repo-profile-writing-guide.md#the-friday-roundup).
 
@@ -71,4 +71,4 @@ The Friday roundup is an ordinary Brief; see [the Repo Profile writing guide](re
 From the Dependabot draft and its check list (ticket 07):
 
 - **Worked:** a Lead from an incident feed, just under 3 days old at drafting; "What happened" in UTC times with the Source's own words only where they carried the point; a "why it matters" that named the general lesson (one producer's burst delays everyone on a shared queue; the fix was a separate, rate-limited lane) and linked the Concept that teaches it; one labelled inference; the link to the Concept framed as a lesson by analogy, because the report never uses the word.
-- **Did not:** the 3-day window was ambiguous for an incident report updated in place (first post 14:58 UTC, resolution 18:51 UTC, Brief published at 18:00 UTC three days later): count from the first post from now on. It used two quotes in "What happened"; one is the limit. It left out the AI-assistance note, which the Editorial Policy requires on every piece drafted with AI assistance; the template now carries it, inside the 250 words. Its description ran past 150 characters.
+- **Did not:** the 3-day window was ambiguous for an incident report updated in place (first post 14:58 UTC, resolution 18:51 UTC, Brief published at 18:00 UTC three days later): count from the first post from now on. It used two quotes in "What happened"; one is the limit. It left out the AI note the Editorial Policy then required, and the template carried the note from then on, inside the 250 words; since 2026-11-18 no AI note is published (ADR-0013). Its description ran past 150 characters.

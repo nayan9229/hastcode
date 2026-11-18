@@ -20,8 +20,6 @@ explainers: [agentic-development]
 sources: [{title: "Reflex: an architecture for building mobile apps with agents", url: "https://shopify.engineering/reflex"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 10 November, Shopify's Remi Vanhee wrote that [about 30 engineers rebuilt the 300-plus-screen Shopify app](https://shopify.engineering/shopify-app-rebuild) from React Native to Swift and Kotlin in 12 weeks, agents writing most of the code. Before any screen moved, a small group built [one architecture for both platforms](https://shopify.engineering/shopify-app-rebuild), where a screen's ViewModel [reads almost the same in Swift and Kotlin](https://shopify.engineering/reflex), [CI that fails when iOS and Android diverge](https://shopify.engineering/shopify-app-rebuild) in ways the architecture forbids, and [a CLI that loads any screen in milliseconds](https://shopify.engineering/shopify-app-rebuild). Every pull request got [an adversarial agent review before a human read it](https://shopify.engineering/shopify-app-rebuild).

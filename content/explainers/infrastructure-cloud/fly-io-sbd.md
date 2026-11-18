@@ -22,8 +22,6 @@ author: mira-vance
 
 Fly.io built a test harness that drove [400 of its Sprites through about 5,000 cycles of write, checkpoint, sleep, wake and restore](https://fly.io/blog/sprites-block-device/#my-agent-ate-my-dogfood), checking every byte that came back, and a nonzero number of them permanently lost the ability to checkpoint. Its fix was to throw out its clever custom filesystem and give each Sprite something deliberately plain: a disk.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - The Sprites Block Device (SBD) is Fly.io's new storage layer for Sprites, its Linux VMs: it [presents an object storage bucket to the Linux kernel as a block device, over NBD](https://fly.io/blog/sprites-block-device/#just-a-disk), and the Sprite runs ordinary ext4 on top.

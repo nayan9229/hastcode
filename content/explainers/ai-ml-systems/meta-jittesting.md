@@ -22,8 +22,6 @@ related: [meta-thin-orchestrator]
 
 In the first half of 2026, tests written by large language models at Meta [played a key role in catching 74 serious privacy bugs](https://engineering.fb.com/2026/10/29/security/catching-bugs-before-they-land-jittestings-human-on-the-loop-approach-at-full-scale/) before the code landed. Every one of those tests was built to fail: a test that passes on a change has caught nothing.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Catching JiTTests (Just-in-Time Tests) are [LLM-generated tests designed to fail](https://engineering.fb.com/2026/10/29/security/catching-bugs-before-they-land-jittestings-human-on-the-loop-approach-at-full-scale/) on a code change, so a bug shows up as executable proof of a behaviour change before the change lands. They are now part of Meta's infrastructure, not a research prototype.

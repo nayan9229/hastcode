@@ -21,8 +21,6 @@ author: mira-vance
 
 Put a 13-billion-parameter model on one 80 GB NVIDIA A100, ask that 90% of requests meet both a first-token deadline and a per-token deadline, and the GPU manages [about 1.6 requests per second](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf). The DistServe team at Peking University, UC San Diego and StepFun measured that, then split the work. A GPU doing only the first phase of each request reached [5.6 requests per second, and one doing only the second reached 10](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf). Two GPUs on the first phase and one on the second would, ideally, serve 10 requests per second: [3.3 per GPU, 2.1 times](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf) what the shared GPU managed. The model was the same and so was the hardware. The two halves of every request had been getting in each other's way.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Disaggregated inference** runs the two phases of an LLM request, prefill and decode, on [separate GPUs](https://www.usenix.org/system/files/osdi24-zhong-yinmin.pdf), and copies the request's KV cache from the first to the second.

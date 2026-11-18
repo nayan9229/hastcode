@@ -1,6 +1,6 @@
 ---
 title: "About HastCode"
-description: "HastCode explains how real systems are built: architecture Explainers and short Briefs for backend engineers, written and checked by the HastCode editorial team."
+description: "HastCode explains how real systems are built: architecture Explainers and short Briefs for backend engineers, checked by the HastCode editorial team."
 ---
 
 HastCode explains how real systems are built. It is written for mid-to-senior
@@ -26,8 +26,8 @@ Languages & Runtimes.
 
 ## Who is behind it
 
-HastCode is written and edited by the HastCode editorial team, which is
-accountable for every piece published here. Every piece carries our house
+HastCode is edited by the HastCode editorial team, which is accountable for
+every piece published here. Every piece carries our house
 byline, [Mira Vance](/authors/mira-vance/): one consistent editorial voice,
 openly disclosed as a house name rather than a real individual.
 
@@ -37,9 +37,9 @@ companies it writes about.
 
 ## How we work
 
-Every claim links a first-party public source, drafts may be written with AI
-assistance but are always researched, verified and edited by the Author, and
-every Explainer is reviewed at least every 90 days. The details are in our
+Every claim links a first-party public source, every piece is researched,
+verified and edited by the Author before it is published, and every
+Explainer is reviewed at least every 90 days. The details are in our
 [Editorial Policy](/editorial-policy/).
 
 ## How HastCode is funded

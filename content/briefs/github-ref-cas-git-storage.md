@@ -19,8 +19,6 @@ explainers: [github-agent-scale-git]
 sources: [{title: "Pro Git: Git Objects", url: "https://git-scm.com/book/en/v2/Git-Internals-Git-Objects"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 5 November, GitHub [described Project Rubicon](https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/), its next Git storage architecture, now in limited private preview. A virtual replica [indexes each push's pack and uploads it to Azure Blob Storage](https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/), then commits one transaction to Ref-CAS, a replicated log holding references and the pack manifest, never object data. Each update is [a compare-and-swap, visible once a majority of log replicas record it](https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/); the latest log sequence number is the repository's version. Compaction and garbage collection [run on dedicated background nodes, never on a virtual replica](https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/). In internal tests one repository [took 7,200 pushes a second from 5,000 concurrent agents](https://github.blog/engineering/architecture-optimization/inside-githubs-new-git-storage-architecture/).

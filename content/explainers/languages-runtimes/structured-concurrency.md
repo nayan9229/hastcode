@@ -21,8 +21,6 @@ author: mira-vance
 
 In JDK 19, OpenJDK shipped a class called `StructuredTaskScope` as an [incubating API](https://openjdk.org/jeps/428). It was [re-incubated in JDK 20](https://openjdk.org/jeps/437), became a [preview API in JDK 21](https://openjdk.org/jeps/453), and was [previewed again in every release through JDK 27](https://openjdk.org/jeps/543#History). Along the way `fork` [stopped returning a `Future`](https://openjdk.org/jeps/453), the public constructors gave way to [static factory methods](https://openjdk.org/jeps/505), and `join()` gained a [type parameter for the exception it throws](https://openjdk.org/jeps/533). On 21 October 2026, Inside Java announced that [JEP 543 is targeted to JDK 28](https://inside.java/2026/10/21/jep543-target-jdk28/), and the JEP proposes to [finalize the API "without further change"](https://openjdk.org/jeps/543#History). Nine releases reshaped the API's surface. What every one of those JEPs kept, almost word for word, was its opening promise: treat related tasks running in different threads as [a single unit of work](https://openjdk.org/jeps/543#Summary).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Structured concurrency** confines concurrent subtasks to the block of code that started them, so they [all return to the same place](https://openjdk.org/jeps/543#Structured-concurrency) and none outlives its parent. Martin Sústrik [coined the term](https://openjdk.org/jeps/543#Structured-concurrency); Nathaniel J. Smith [popularised it](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) with Trio's nurseries.

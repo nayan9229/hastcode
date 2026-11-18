@@ -21,8 +21,6 @@ related: [cilium, fly-io-sbd]
 
 Until this year, every host in Fly.io's fleet kept a phonebook: a kernel map of every Machine that had ever moved and where it lives now, with [hundreds of thousands of entries on every host, kept up to date in real time](https://fly.io/blog/throwing-out-the-phonebook/). Its replacement holds [between 100 and 200 routes on most hosts](https://fly.io/blog/throwing-out-the-phonebook/#what-changed), and learns each one only when a packet asks for it.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - 6PN is Fly.io's [private IPv6 network between the apps in one organization](https://docs.fly.io/networking/private-networking). Its new routing [installs one route per peer, on demand](https://fly.io/blog/throwing-out-the-phonebook/#ask-write-it-down-move-on), in a dedicated routing table, `0xfdaa`, instead of keeping the whole fleet's map on every host.

@@ -22,8 +22,6 @@ related: [expert-parallelism]
 
 Meta's ads retrieval system now [scores every eligible ad and surfaces the top candidates at over one billion ads per second](https://engineering.fb.com/2026/10/28/ml-applications/meta-andromeda-next-gen-ads-retrieval-gpu-co-design/), about 100 times its 2024 throughput. It got there partly by doing less arithmetic, not more: the new model needs about 300 times fewer inference-time FLOPs than the one it replaced, and the pipeline moves far less data through memory and across the network.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Meta Andromeda is [Meta's machine learning system for personalized ads retrieval](https://engineering.fb.com/2026/10/28/ml-applications/meta-andromeda-next-gen-ads-retrieval-gpu-co-design/), the first stage of its ads pipeline: it narrows a vast pool of eligible ads to a few strong candidates, in milliseconds, for a costlier ranking stage.

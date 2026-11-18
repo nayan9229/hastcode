@@ -43,8 +43,8 @@ func TestRepoProfile_IsPublishedAtTheVerticalURLWithBylineDatesAndNote(t *testin
 	if got := article.Find("time.dt-updated").AttrOr("datetime", ""); got != "2026-10-21T09:00:00Z" {
 		t.Errorf("last reviewed = %q", got)
 	}
-	if got := article.Find(".e-content blockquote").Text(); !strings.Contains(got, "Drafted with AI assistance") {
-		t.Errorf("AI-assistance note = %q, want the Editorial Policy's note", got)
+	if got := article.Find(".e-content").Text(); strings.Contains(got, "AI assistance") {
+		t.Errorf("the Profile carries AI-assistance wording; no AI note is published (ADR-0013):\n%s", got)
 	}
 }
 

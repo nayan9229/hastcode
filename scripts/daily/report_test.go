@@ -98,7 +98,7 @@ const (
 	link       = "](../../../docs/editorial/self-edit-checklist.md)"
 	// Brief-only lines (the Brief writing guide's rules).
 	briefCapBox  = "- [ ] Structure: The whole Brief is 250 words at most"
-	briefOpenBox = `- [ ] Top of the page: Only the AI-assistance note comes before "What happened".`
+	briefOpenBox = `- [ ] Top of the page: Nothing comes before "What happened".`
 )
 
 func TestBriefEntryLeavesOutLinesThatDoNotApplyToBriefs(t *testing.T) {

@@ -22,8 +22,6 @@ related: [metastable-failures, etcd]
 
 Over the past year, while its Git traffic grew exponentially, GitHub put a copy of [99.99999% of its Git repositories](https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/) in Azure as well as in its own data centers. The ones left behind are among the busiest on the platform, and what holds them back is [a round trip of about 25 milliseconds](https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/#h-no-repository-left-behind).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Spokes is GitHub's Git storage system. It [keeps a full copy of each repository on the local disks of several fileservers, five by default](https://github.blog/engineering/architecture-optimization/building-git-infrastructure-for-agent-scale-development/#h-where-today-s-architecture-meets-new-demands), and commits every push through a quorum of those copies.

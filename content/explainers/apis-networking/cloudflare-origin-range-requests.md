@@ -22,8 +22,6 @@ author: mira-vance
 
 Under Cloudflare's old range caching, R2's slice size was 64 MiB, so [a small read that crossed a slice boundary could move 128 MiB between data centers](https://blog.cloudflare.com/origin-range-requests/). In October 2026 Cloudflare described the replacement: no slice size at all, and R2's [p99 time to first byte dropped by roughly half](https://blog.cloudflare.com/origin-range-requests/) on both cache hits and misses.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Origin Range Requests is a Cache Rule setting that lets Cloudflare [fetch large files from the origin in cache-aligned byte ranges](https://developers.cloudflare.com/cache/how-to/cache-rules/settings/#origin-range-requests) instead of whole files or customer-sized slices. It is [self-service on all plans](https://blog.cloudflare.com/origin-range-requests/).

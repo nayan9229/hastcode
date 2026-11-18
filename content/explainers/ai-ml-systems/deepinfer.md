@@ -13,8 +13,6 @@ author: mira-vance
 
 DeepSeek says a single cluster running DeepInfer serves [155 trillion tokens a day](https://github.com/deepseek-ai/DeepInfer/blob/main/doc/inference_deployment_qa.md), and the same document says the KV cache store and the load balancers that make that possible are [not yet open-sourced](https://github.com/deepseek-ai/DeepInfer/blob/main/doc/inference_deployment_qa.md).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - DeepInfer is [the inference framework that powers DeepSeek's production services](https://github.com/deepseek-ai/DeepInfer#deepinfer), released as an offline inference engine under Apache 2.0.

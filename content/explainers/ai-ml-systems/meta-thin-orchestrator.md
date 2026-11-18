@@ -22,8 +22,6 @@ author: mira-vance
 
 The orchestrator in charge of Meta's data-pipeline agents is [1,300 lines long, routes more than 20 workflows to 14 specialised AI agents, and "performs zero domain work itself"](https://engineering.fb.com/2026/10/19/ml-applications/thin-orchestrator-ai-agent-architecture/). Meta got there by taking knowledge away: its first design was one agent that knew everything, and in production it started to hallucinate.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - The thin orchestrator is Meta's [two-layer agent system](https://engineering.fb.com/2026/10/19/ml-applications/thin-orchestrator-ai-agent-architecture/) for onboarding data columns across its recommendation systems: a deterministic router on top, 14 specialist subagents below.

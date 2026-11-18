@@ -22,8 +22,6 @@ related: [metastable-failures, agentic-development]
 
 In a [10 November 2026 article](https://martinfowler.com/articles/durable-execution-agents.html) on Martin Fowler's site, Kiran Prakash of Thoughtworks builds an agent called Stock Replenisher. When a part drops below safety stock, it [gets quotes, picks a supplier, asks the procurement manager to approve the price, places the order and follows it to delivery](https://martinfowler.com/articles/durable-execution-agents.html#running-example). In one run the agent asked the manager for approval, and [while it waited, the process crashed](https://martinfowler.com/articles/durable-execution-agents.html#making-the-loop-durable). It stayed down for a day. When it came back, nothing before the outage ran again: ["no new quotes, no second purchase order, no second request to the manager."](https://martinfowler.com/articles/durable-execution-agents.html#making-the-loop-durable) When the approval arrived, the agent placed the order. The crash had wiped everything the process held in memory. What carried the agent across that day was a log of every step it had already taken.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Durable execution** is a programming model in which the runtime [records the result of each step that interacts with the outside world](https://martinfowler.com/articles/durable-execution-agents.html#durable-execution), so that after a failure the program runs again and rebuilds its state from that record.

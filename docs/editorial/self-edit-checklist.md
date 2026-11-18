@@ -2,7 +2,7 @@
 
 Use this after the draft is done and **before** the claim-by-claim check against Sources. It checks the writing, not the facts. The Author's verification is unchanged: every claim, number, quote and diagram is still checked against its Source, and only the Author sets `verified:` (ADR-0007, ADR-0009). Ticking a line here is not verification and never stands in for it.
 
-The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word, except the "One name per thing" and "Every number" lines, which follow voice rules 9 and 7; that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
+The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word, except the "One name per thing" and "Every number" lines, which follow voice rules 9 and 7, and the two Brief lines that named the old AI note, which follow ADR-0013 (no AI note is published); that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
 
 ## Where it is used
 
@@ -19,7 +19,7 @@ Each line applies to every kind unless it carries a note:
 - *(Brief only)*: the line replaces one of those for a Brief, and only a Brief's entry shows it.
 - *(Brief: …)*, *(Comparison: …)*, *(Repo Profile: …)*: the line works differently in that kind; the note says how.
 
-**Brief.** A Brief has no hook, nut graf, TL;DR, diagram or worked example: only the AI-assistance note comes before "What happened" (`brief-sections`). Its 250-word cap (`brief-length`) replaces the per-H2 line, and "Why it matters" is its contribution: our own analysis, never the Source restated ([the Brief writing guide](brief-writing-guide.md)).
+**Brief.** A Brief has no hook, nut graf, TL;DR, diagram or worked example: nothing comes before "What happened" (`brief-sections`). Its 250-word cap (`brief-length`) replaces the per-H2 line, and "Why it matters" is its contribution: our own analysis, never the Source restated ([the Brief writing guide](brief-writing-guide.md)).
 
 **Concept and Case Study.** Every line applies. The nut-graf line is the sentence that ends the hook and says what this piece will give the Reader.
 
@@ -43,7 +43,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 - [ ] Hook: one real, linked moment (system, number, failure), not a definition or history. *(not in a Brief)* *(Repo Profile: one sentence, a sourced fact about the repository; a number the Fact Pack carries is pointed at in Signals, not retyped.)*
 - [ ] Nut graf: the hook's last sentence says what this piece gives the Reader. *(not in a Brief)* *(Comparison: the opening's closing question, the one the piece answers, does this job.)* *(Repo Profile: the hook is one sentence; the TL;DR that follows says what the Reader gets.)*
 - [ ] TL;DR: the answer in plain words; a reader who stops here is not misled. *(not in a Brief)* *(Repo Profile: three to five bullets, the template's three first: what it is, the design choice that sets it apart, who should adopt it today.)*
-- [ ] Only the AI-assistance note comes before "What happened". *(Brief only)*
+- [ ] Nothing comes before "What happened". *(Brief only)*
 
 ### Structure
 
@@ -52,7 +52,7 @@ Copy it into the ticket or pull request when you draft by hand: `SELF-EDIT: {slu
 - [ ] No question headings outside a Repo Profile FAQ. *(Repo Profile: its FAQ `###` questions, phrased the way the Reader types them, are the one place question headings are allowed.)*
 - [ ] Each paragraph has one topic, stated in its first sentence.
 - [ ] Each H2 is under 250 words; cut, don't pad. *(not in a Brief)*
-- [ ] The whole Brief is 250 words at most, headings and the AI-assistance note included (`brief-length`); cut, don't pad. *(Brief only)*
+- [ ] The whole Brief is 250 words at most, headings included (`brief-length`); cut, don't pad. *(Brief only)*
 
 ### Sentences
 

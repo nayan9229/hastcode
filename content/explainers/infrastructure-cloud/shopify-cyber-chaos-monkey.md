@@ -21,8 +21,6 @@ related: [openshell, meta-thin-orchestrator, shopify-overexposed]
 
 Shopify gives an AI agent [ephemeral live credentials](https://shopify.engineering/cyber-chaos-monkey) and a system with access to its source code, threat intelligence, past reports and infrastructure records, then points it at production and asks it to break in. The agent never runs alone: a second agent on a different model reads its every step and can kill it with a tool call.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - The Cyber Chaos Monkey (CCM) is Shopify's [agentic vulnerability hunter that runs live against production infrastructure](https://shopify.engineering/cyber-chaos-monkey), using live test shops and organizations.

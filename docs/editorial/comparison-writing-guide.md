@@ -50,7 +50,7 @@ Frontmatter: `title`, `description`, `kind: comparison`, `vertical`, `tags`, `pu
 
 ## Section by section
 
-- **Opening (before TL;DR).** A sourced fact that makes the choice matter (the Go team's 710 ms vs 150 ms, with its "one machine" caveat), ending on the question the piece answers for every option. Then the AI-assistance note as a blockquote, exactly as the template has it.
+- **Opening (before TL;DR).** A sourced fact that makes the choice matter (the Go team's 710 ms vs 150 ms, with its "one machine" caveat), ending on the question the piece answers for every option. Then straight to the TL;DR. No AI note: nothing on the page says how it was drafted (ADR-0013; the build's `ai-note` rule fails "AI assistance" or "drafted with AI" anywhere a Reader sees it).
 - **TL;DR.** Three to five bullets: one per option, then which to pick when, labelled "we infer" unless a Source says it.
 - **Side by side.** What the options share, and the diagram: the same workload through each.
 - **One H2 per option**: how it works, from its own specification or documentation.
@@ -73,7 +73,7 @@ The title stays under about 70 characters; the first Comparison's 85 is too long
 
 ## What the build checks
 
-`trade-offs-table` (a Markdown table under a `## Trade-offs` heading), `tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it), `review-overdue`. The three prose warnings never read code, tables (the Trade-offs table included), blockquotes or link URLs.
+`trade-offs-table` (a Markdown table under a `## Trade-offs` heading), `tldr` (TL;DR first after the intro, 3–5 bullets and nothing else), `diagram` (at least one Mermaid fence), `diagram-render` (a fence that does not render), `sources` (Sources last, with a link), `ai-note` (the words "AI assistance" or "drafted with AI" in anything a Reader sees, ADR-0013), `author-placeholder` (a `TODO(author)` left in a production build), `unverified` (no valid `verified:` on a non-draft Piece published after 2026-10-26; a warning in preview), `frontmatter` (unknown keys, bad dates, `repo`/`who_for` on a non-Profile). Warnings: `section-length` (an H2 over 250 words), `sentence-length` (a sentence over 30 words: split it), `banned-word` (a word on voice rule 5's banned list, outside quotation marks: cut it), `question-heading` (an H2 ending in "?": restate it), `review-overdue`. The three prose warnings never read code, tables (the Trade-offs table included), blockquotes or link URLs.
 
 ## What the first one taught us
 

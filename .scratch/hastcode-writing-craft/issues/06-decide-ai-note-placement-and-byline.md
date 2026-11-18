@@ -24,3 +24,9 @@
 - [ ] Each follow-up change (templates, guides, tests, Editorial Policy, Author page, existing Pieces) is a new ticket, not part of this one
 - [ ] If nothing changes, a short note under a `## Comments` heading at the bottom of this ticket says so, with the date and one line per question (a and b)
 - [ ] No agent makes either decision or edits the Editorial Policy, Author page, templates or Pieces for this ticket
+
+## Comments
+
+**2026-11-18, (a) decided by the Author:** "AI should not the part of content and not able to see by any end user. any ai note should not publish". So the note does not move: it goes, everywhere a Reader could see it. Recorded as ADR-0013 (`docs/adr/0013-no-ai-note-is-published.md`). The Author asked for the follow-up edits in the same request, so they were made on branch `impl/noai-1118` rather than as separate tickets: the note removed from the 74 tracked Pieces (body line only, no frontmatter touched), the five kind templates, `make daily`'s drafter prompt and the test fixtures; the Editorial Policy, About, Contact and Author page rewritten without AI wording (sentences removed, never replaced with a claim that the Pieces are written without tools); a new build error rule `ai-note`; the voice guide, writing guides, self-edit checklist, runbook and README updated.
+
+**2026-11-18, (b) not decided.** Whether the Editorial Policy and the Author page say plainly who verifies behind the house byline is still open with the Author. Nothing about it changed: the pages keep their "Author" and "HastCode editorial team" wording, and GLOSSARY "Author" and "House Byline" are unchanged.

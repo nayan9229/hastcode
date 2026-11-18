@@ -22,8 +22,6 @@ author: mira-vance
 
 Netflix's TimeSeries Abstraction now keeps [over 15 PB of compressed data in Cassandra cold storage](https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60), and a chart of the rollout shows disk usage falling [from 80% to 7%](https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60). The cold tier is not a new copy of the data. Cassandra reads it straight out of the disaster-recovery backups Netflix was already writing to S3.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - TimeSeries is Netflix's [platform for storing and querying temporal event data](https://netflixtechblog.com/timeseries-tiered-storage-journey-kafka-flink-streams-to-native-cassandra-cold-reads-e59d597c9d60) on Cassandra; its cold tier moves older, rarely read data to S3 behind the same query API.
