@@ -24,7 +24,7 @@ func (t Tree) WithRepoProfile(e Explainer) Tree {
 // ValidRepoProfile returns a Repo Profile of apache/iggy that satisfies the
 // Explainer skeleton (TL;DR, Mermaid fence, Sources), carries the Repo
 // Profile headings in the spec's order with five FAQ questions (no AI
-// note: none is published, ADR-0013), a `who_for` line, and a
+// note: none is published, ADR-0014), a `who_for` line, and a
 // valid Fact Pack (ValidFactPack) beside it. It names no hero: the build
 // draws its hero card from the Fact Pack. Set Hero, HeroAlt and HeroImage
 // (e.g. HeroPNG(1600, 900)) for a Profile with a sourced hero.

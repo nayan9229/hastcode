@@ -23,8 +23,6 @@ draft: true
 
 Every day, Zillow sends home shoppers [more than 100 million personalised email and push notifications](https://aws.amazon.com/blogs/architecture/how-zillow-runs-100-million-daily-notifications-on-aws-step-functions/), and it runs them as short-lived executions on AWS Step Functions Express Workflows. The workflow engine does not decide when a campaign sends, how fast, or whether it pauses: [an in-house router in front of it does](https://aws.amazon.com/blogs/architecture/how-zillow-runs-100-million-daily-notifications-on-aws-step-functions/). This is how Zillow split the work between a router, generated workflows and a shared content service, which engines it turned down, and what the design costs.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Campaign Orchestrator is Zillow's [configuration-driven layer](https://aws.amazon.com/blogs/architecture/how-zillow-runs-100-million-daily-notifications-on-aws-step-functions/) that runs notification campaigns as Step Functions Express Workflows. Its steps call the Universal Content Generator (UCG), a shared library of content modules.

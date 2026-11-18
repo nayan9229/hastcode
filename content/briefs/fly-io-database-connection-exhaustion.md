@@ -19,8 +19,6 @@ explainers: [cloudflare-hyperdrive-mysql-caching]
 draft: true
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 Fly.io's [infra log entry of 16 November 2026](https://fly.io/infra-log/feed.xml), headed [27 October, 13:12 UTC](https://fly.io/infra-log/database-connection-exhaustion/), says the RDS database behind its main web app ran out of connection slots. Some dashboard and API requests returned 500 and 503 errors; existing Machines and apps were unaffected. Many Rails processes each kept their own connection pool, and background worker machines held [around 2,000 connections](https://fly.io/infra-log/database-connection-exhaustion/), most of the total. Moving container registry authentication to a read replica freed [a little over 10%](https://fly.io/infra-log/database-connection-exhaustion/) of the primary's connections.

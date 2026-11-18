@@ -281,7 +281,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/views/analytics.go`, `layout_analytics.templ` | Google Analytics 4 (ADR-0008): the inline snippet (`analyticsSnippet`: regional `analytics_storage` consent defaults, the host guard with Google's `ga-disable-<id>` opt-out, the config) and the deferred gtag.js. Validated by `builder/step_validate_analytics_config.go` (rule `analytics-config`). Tests: `builder/ads_analytics_test.go`. |
 | `internal/views/site.css`, `stylesheet.go`, `theme.js` | The one stylesheet (inlined in every page's `<head>`, ADR-0006) and the inline theme-toggle script. |
 | `builder/step_render_authors.go`, `step_{validate,transform,render}_author_photos.go` | Author pages (`/authors/<slug>/`: h-card, photo, profiles, latest pieces via `s.authorPieces`, top-level `Person` or `Organization` by the Author's `kind`) and the square photo (validate, encode, write). |
-| `builder/step_validate_ai_note.go` | No AI note (ADR-0013): rule `ai-note` fails any Explainer, Brief, static page or Author file whose Reader-visible text says "AI assistance" (or "AI-assistance") or "drafted with AI". |
+| `builder/step_validate_ai_note.go` | No AI note (ADR-0014): rule `ai-note` fails any Explainer, Brief, static page or Author file whose Reader-visible text says "AI assistance" (or "AI-assistance") or "drafted with AI". |
 | `builder/step_{load_static_pages,validate_static_page_paths,render_static_pages}.go`, `step_render_not_found.go` | Static pages from `content/pages/` (slug may not take a Vertical or reserved path, rule `page-path`) and the noindex `/404.html`. |
 | `builder/step_render_home.go`, `step_render_verticals.go`, `step_render_kinds.go` | Listings: home `/` (6 latest Explainers, 5 latest Briefs, every Vertical with its `description`, kind links), Vertical hubs `/{vertical}/` and kind pages `/explainers/{kind}/` (both paginated, `s.listingPage`). |
 | `builder/listing.go`, `builder/related.go` | Shared listing helpers: `newestFirst` (via `newestExplainers`/`newestBriefs`), `s.explainerItems`/`s.briefItems` (-> `views.ListingItem` with the 480 px hero thumbnail), `explainerKinds` (badge and kind-page names); `s.readingLists(e)` ("More in {Vertical}" and "Related" at the end of an Explainer). |
@@ -386,7 +386,7 @@ slug (`[text](raft-leader-election)`) or `/{vertical}/{slug}` (slash and
 rewritten to the canonical trailing-slash URL (`brief_links.go`). The first
 ad slot follows "What happened".
 
-**No AI note** (ADR-0013). No Reader sees an AI-assistance note or
+**No AI note** (ADR-0014). No Reader sees an AI-assistance note or
 AI-assistance wording anywhere on the site: pages, Markdown twins,
 `llms.txt`, feeds, sitemaps and structured data. The error rule `ai-note`
 (`step_validate_ai_note.go`, production and preview) fails every
@@ -732,7 +732,7 @@ client did. The golden Fact Pack is `testdata/apache-iggy.json`. The Refresh tes
 ## Repo Profiles: writing one
 
 Start from `docs/editorial/repo-profile-template.md` (frontmatter, the
-nine headings in order, five FAQ questions; no AI note, ADR-0013) and
+nine headings in order, five FAQ questions; no AI note, ADR-0014) and
 follow `docs/editorial/repo-profile-writing-guide.md`: copy, fetch the
 Fact Pack, draft against the Fact Pack, README and release pages, check
 the Preview, have the Author verify every claim, then `make release`,

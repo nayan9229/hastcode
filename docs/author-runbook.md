@@ -287,7 +287,7 @@ not run them).
 - Every claim links its Source. Quotes short and credited. Diagrams
   redrawn in Mermaid, never copied.
 - No AI note. Nothing a reader sees says a piece was drafted with AI
-  (ADR-0013). The build stops on it (`ai-note`). Writing about AI as a
+  (ADR-0014). The build stops on it (`ai-note`). Writing about AI as a
   topic is fine.
 - Nothing from GitHub Actions ever fetches or drafts. It only tests,
   builds previews and deploys a tag.

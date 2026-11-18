@@ -44,7 +44,7 @@ func TestRepoProfile_IsPublishedAtTheVerticalURLWithBylineDatesAndNote(t *testin
 		t.Errorf("last reviewed = %q", got)
 	}
 	if got := article.Find(".e-content").Text(); strings.Contains(got, "AI assistance") {
-		t.Errorf("the Profile carries AI-assistance wording; no AI note is published (ADR-0013):\n%s", got)
+		t.Errorf("the Profile carries AI-assistance wording; no AI note is published (ADR-0014):\n%s", got)
 	}
 }
 

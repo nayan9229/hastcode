@@ -2,7 +2,7 @@
 
 Use this after the draft is done and **before** the claim-by-claim check against Sources. It checks the writing, not the facts. The Author's verification is unchanged: every claim, number, quote and diagram is still checked against its Source, and only the Author sets `verified:` (ADR-0007, ADR-0009). Ticking a line here is not verification and never stands in for it.
 
-The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word, except the "One name per thing" and "Every number" lines, which follow voice rules 9 and 7, and the two Brief lines that named the old AI note, which follow ADR-0013 (no AI note is published); that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
+The lines come from the one-page checklist in [`docs/research/article-writing-craft.md` §4](../research/article-writing-craft.md#4-one-page-self-edit-checklist), word for word, except the "One name per thing" and "Every number" lines, which follow voice rules 9 and 7, and the two Brief lines that named the old AI note, which follow ADR-0014 (no AI note is published); that section says where each line comes from. Write in [the house byline voice](house-byline-voice.md) and follow your kind's writing guide; this list does not replace either.
 
 ## Where it is used
 

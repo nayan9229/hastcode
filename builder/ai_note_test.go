@@ -7,7 +7,7 @@ import (
 	"hastcode.com/site/internal/buildtest"
 )
 
-// The Author decided (ADR-0013) that no Reader sees an AI-assistance note
+// The Author decided (ADR-0014) that no Reader sees an AI-assistance note
 // or AI-assistance wording anywhere on the site. The build enforces it
 // with the ai-note error rule.
 
@@ -34,7 +34,7 @@ func TestAINote_BriefOpeningWithTheOldNoteFails(t *testing.T) {
 
 	out, res := buildtest.Build(t, buildtest.Config(), buildtest.ValidTree().WithBrief(b))
 
-	buildtest.RequireErrorRule(t, res, briefFile, "ai-note", "ADR-0013")
+	buildtest.RequireErrorRule(t, res, briefFile, "ai-note", "ADR-0014")
 	if buildtest.Exists(out, briefURL) {
 		t.Errorf("the Brief carrying the AI note was published")
 	}
@@ -46,7 +46,7 @@ func TestAINote_StaticPageQuotingTheOldNoteFails(t *testing.T) {
 
 	_, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithPage(policy))
 
-	buildtest.RequireErrorRule(t, res, "pages/editorial-policy.md", "ai-note", "ADR-0013")
+	buildtest.RequireErrorRule(t, res, "pages/editorial-policy.md", "ai-note", "ADR-0014")
 }
 
 // The rewritten Editorial Policy keeps the true process statements:
@@ -78,7 +78,7 @@ func TestAINote_AuthorBioFails(t *testing.T) {
 
 	_, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithAuthor(a))
 
-	buildtest.RequireErrorRule(t, res, "authors/ada.md", "ai-note", "ADR-0013")
+	buildtest.RequireErrorRule(t, res, "authors/ada.md", "ai-note", "ADR-0014")
 }
 
 func TestAINote_PieceAboutAIAsATopicBuildsClean(t *testing.T) {
@@ -121,7 +121,7 @@ func TestAINote_EveryWordingAndFieldFails(t *testing.T) {
 
 			out, res := buildtest.Build(t, buildtest.Config(), buildtest.NewTree().WithExplainer(e))
 
-			buildtest.RequireErrorRule(t, res, raftFile, "ai-note", "ADR-0013")
+			buildtest.RequireErrorRule(t, res, raftFile, "ai-note", "ADR-0014")
 			requireNoPage(t, out, raftURL)
 		})
 	}

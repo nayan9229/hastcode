@@ -13,7 +13,7 @@ func init() {
 	registerStep(phaseValidate, 13, "validate no AI note", validateNoAINote)
 }
 
-// ruleAINote: the Author decided (ADR-0013) that no Reader sees an
+// ruleAINote: the Author decided (ADR-0014) that no Reader sees an
 // AI-assistance note or AI-assistance wording anywhere on the site.
 const ruleAINote = "ai-note"
 
@@ -65,7 +65,7 @@ func pieceTexts(title, description string, tags []string, heroAlt string, source
 func checkNoAINote(s *site, file string, texts []readerText) {
 	for _, t := range texts {
 		if m := aiNoteWording.FindString(t.text); m != "" {
-			s.fail(file, ruleAINote, "%s carries AI-assistance wording (%q): no AI note is published (ADR-0013); remove it", t.where, strings.Join(strings.Fields(strings.ReplaceAll(m, ">", " ")), " "))
+			s.fail(file, ruleAINote, "%s carries AI-assistance wording (%q): no AI note is published (ADR-0014); remove it", t.where, strings.Join(strings.Fields(strings.ReplaceAll(m, ">", " ")), " "))
 		}
 	}
 }

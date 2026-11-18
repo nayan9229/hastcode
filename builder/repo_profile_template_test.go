@@ -136,7 +136,7 @@ func TestRepoProfileTemplate_FilledWithProseBuildsCleanUnderEveryRepoProfileRule
 		t.Errorf("FAQ questions = %q, want the template's five, starting with the production-ready search", questions)
 	}
 	if got := doc.Find("article").Text(); strings.Contains(got, "AI assistance") {
-		t.Errorf("the page carries AI-assistance wording; no AI note is published (ADR-0013):\n%s", got)
+		t.Errorf("the page carries AI-assistance wording; no AI note is published (ADR-0014):\n%s", got)
 	}
 	for _, sel := range []string{"section.signals", "section.changelog"} {
 		if doc.Find(sel).Length() != 1 {

@@ -59,4 +59,4 @@ publish under `author: mira-vance`.
 The self-edit checks the writing, not the facts. It comes before the
 Author's verification against Sources and never replaces it.
 
-No Piece carries an AI note, and nothing a Reader sees says how a Piece was drafted (ADR-0013). The build's `ai-note` rule fails the words "AI assistance" or "drafted with AI" on any Piece, static page or Author page. Writing about AI as a topic is fine. Never claim or imply a Piece was written without tools either.
+No Piece carries an AI note, and nothing a Reader sees says how a Piece was drafted (ADR-0014). The build's `ai-note` rule fails the words "AI assistance" or "drafted with AI" on any Piece, static page or Author page. Writing about AI as a topic is fine. Never claim or imply a Piece was written without tools either.
