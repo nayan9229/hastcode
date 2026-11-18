@@ -20,8 +20,6 @@ explainers: [disaggregated-inference]
 sources: [{title: "Disaggregated Encoder", url: "https://docs.vllm.ai/en/latest/features/disagg_encoder/"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 11 November, Inferact, InferMatrix and IBM [described](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd) encoder/prefill/decode (EPD) disaggregation, now in [vLLM v0.32.0](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd): the multimodal encoder gets its own instances, which [run no language model](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd). Embeddings reach prefill over an [EC connector](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd), NIXL or Mooncake; a metadata-only request carries the [layout the encoder computed](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd), so placeholders are rebuilt downstream. On GB200 with DeepSeek V4.1 Flash, four encoder GPUs beside a four-plus-four PD baseline gave [6.6–9.5% more throughput per GPU at concurrency 64–128](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd), all 12 counted, and 44–47% lower P90 time to first token; at [16 it lost per GPU, at 32 roughly tied](https://vllm.ai/blog/2026-11-11-encoder-disaggregation-epd).

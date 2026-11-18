@@ -13,8 +13,6 @@ author: mira-vance
 
 pgrust's [launch post](https://malisper.me/pgrust-rebuilding-postgres-in-rust-with-ai/) says its author stopped reading most of the code the coding agents wrote; six months on, its [README](https://github.com/malisper/pgrust#testing) says 1,397 of Postgres's 3,400 user-facing functions have been proven to behave identically with Kani.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - pgrust is a [re-implementation of Postgres in Rust](https://github.com/malisper/pgrust#readme), wire-compatible and SQL-dialect-compatible, that reports itself as PostgreSQL 18.6.

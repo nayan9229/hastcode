@@ -21,8 +21,6 @@ related: [expert-parallelism, meta-prometheus-supercluster]
 
 [PyTorch 2.15 shipped on 28 October 2026](https://github.com/pytorch/pytorch/releases/tag/v2.15.0) with a one-line note under backwards-incompatible changes: ["FSDP2 separates sharded and unsharded gradient dtypes."](https://pytorch.org/blog/pytorch-2-15-release-blog/) The pull request behind it spells out what that means for the most common setup, fp32 weights trained in bf16. Before, gradients were reduced in bf16. After, they are reduced in fp32, which the author marks as ["2x reduce-scatter bytes"](https://github.com/pytorch/pytorch/pull/194434). The same release lets precision-sensitive weights such as [MoE router gates and norm weights stay in fp32](https://pytorch.org/blog/pytorch-2-15-release-blog/) while the rest of the model runs in bf16, "still with one all-gather per `fully_shard`". Why would the data type of a gradient double the traffic of a training job? Because under FSDP no GPU keeps the whole model. Every step, every layer's weights are gathered from all the GPUs and every gradient is scattered back, so the bytes per number decide how much crosses the network.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Fully sharded data parallelism** (FSDP) is data-parallel training in which each GPU keeps only a shard of the model: PyTorch's `fully_shard` ["shards module parameters, gradients, and optimizer states across data parallel workers to save memory at the cost of communication"](https://docs.pytorch.org/docs/2.15/distributed.fsdp.fully_shard.html#torch.distributed.fsdp.fully_shard).

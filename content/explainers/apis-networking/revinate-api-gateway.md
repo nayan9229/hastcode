@@ -21,8 +21,6 @@ related: [agentgateway]
 
 Revinate's Customer Data Platform serves [over 12,500 hotels and powers more than 1.25 billion guest profiles](https://aws.amazon.com/blogs/architecture/how-revinate-accelerated-api-adoption-with-amazon-api-gateway/). When the team opened that data to hotels and partners as an API, the design question it wrote up in most detail was not authentication or pricing but one network hop: [how a request gets from Amazon API Gateway into a Kubernetes pod](https://aws.amazon.com/blogs/architecture/how-revinate-accelerated-api-adoption-with-amazon-api-gateway/#connecting-api-gateway-to-eks).
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Revinate's public API lets hotel properties and partners [read guest profiles, reservation data and other hospitality data programmatically](https://aws.amazon.com/blogs/architecture/how-revinate-accelerated-api-adoption-with-amazon-api-gateway/), through a managed Amazon API Gateway in front of services on Amazon EKS (Elastic Kubernetes Service).

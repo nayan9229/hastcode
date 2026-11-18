@@ -13,8 +13,6 @@ author: mira-vance
 
 Apache Iggy's 0.9.0 release put [Viewstamped Replication](https://iggy.apache.org/blogs/2026/09/21/release-0.9.0) into the same `iggy-server` binary that runs a single node, and one configuration key, [`cluster.enabled`](https://github.com/apache/iggy#clustering), decides which one you get.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Apache Iggy is a [persistent, append-only message streaming log written in Rust](https://github.com/apache/iggy#what-is-apache-iggy): streams group topics, topics split into partitions, and consumer groups read them, over QUIC, WebSocket, TCP or HTTP.

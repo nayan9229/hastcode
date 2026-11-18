@@ -187,6 +187,7 @@ says `success`, the page is at `https://hastcode.com/briefs/<slug>/` or
 | `broken-link` | A link in the piece is dead | Fix or remove it |
 | `brief-length` | Brief over 250 words | Cut words |
 | `brief-explainer-link` | Brief does not link a live Explainer | Link one in "Why it matters" and in `explainers:` |
+| `ai-note` | A piece or page says "AI assistance" or "drafted with AI" | Delete that line or those words. No AI note is ever published |
 | `review-overdue` | An Explainer's `reviewed:` date is old | Re-read it, update `reviewed:` |
 
 **Only want the errors?** Every build also prints hundreds of writing
@@ -285,6 +286,9 @@ not run them).
   into an Explainer later.
 - Every claim links its Source. Quotes short and credited. Diagrams
   redrawn in Mermaid, never copied.
+- No AI note. Nothing a reader sees says a piece was drafted with AI
+  (ADR-0014). The build stops on it (`ai-note`). Writing about AI as a
+  topic is fine.
 - Nothing from GitHub Actions ever fetches or drafts. It only tests,
   builds previews and deploys a tag.
 

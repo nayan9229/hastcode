@@ -18,8 +18,6 @@ explainers: [meta-thin-orchestrator]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 29 October, AWS's Architecture Blog [described boAt's AI Coach](https://aws.amazon.com/blogs/architecture/how-boat-delivers-personalized-fitness-coaching-with-amazon-bedrock/), which writes fitness plans, and nudges sent through the day, from boAt smartwatch data. It runs Meta's Llama 3.3 70B Instruct on [Amazon Bedrock](https://aws.amazon.com/blogs/architecture/how-boat-delivers-personalized-fitness-coaching-with-amazon-bedrock/), called from AWS Lambda. Lambda renames terse database keys for the model (`weight` becomes `weight_in_kg`) and parses each reply for the app. The team says the feature has [served millions of users for over six months](https://aws.amazon.com/blogs/architecture/how-boat-delivers-personalized-fitness-coaching-with-amazon-bedrock/).

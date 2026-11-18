@@ -22,8 +22,6 @@ author: mira-vance
 
 Shopify's first scanner for apps that answer strangers without a login read the Kubernetes files in its infrastructure repository, and it [flagged protected apps, missed real ones and never saw some at all](https://shopify.engineering/overexposed). Its replacement, Overexposed, stops trusting the repository, asks Google Cloud what is actually deployed, and then knocks on each door as an anonymous outsider.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Overexposed is a scheduled scanner that finds [internet-facing GKE Ingresses and Cloud Run services and checks whether each allows access without a login](https://shopify.engineering/overexposed), giving every endpoint a verdict and a reason.

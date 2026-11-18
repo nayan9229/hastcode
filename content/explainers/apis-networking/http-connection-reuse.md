@@ -12,8 +12,6 @@ author: mira-vance
 
 A four-line Go function that fetches a URL and returns only its status code, called 100 times over HTTP/1, took about 710 milliseconds on Go 1.26 and about 150 milliseconds on Go 1.27, on one machine, in [the Go team's own test against index.golang.org](https://go.dev/blog/http-connection-reuse). The function did not change. Go 1.27's `net/http` now [drains an unread HTTP/1 response body in the background, for up to 50 ms or 256 KB](https://go.dev/blog/http-connection-reuse#the-current-state-and-conclusion), so the connection can be reused instead of thrown away. That fix opens a bigger question for anyone whose backend calls other services: how do HTTP/1.1, HTTP/2 and HTTP/3 each reuse a connection, how does each one fail, and which should you use? We answer the same questions for all three, from the specifications.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **HTTP/1.1** reuses a connection for one exchange at a time. Connections persist by default, but the client must read each response body to the end before the next request, so concurrency means a pool of connections.

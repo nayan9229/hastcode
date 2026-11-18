@@ -12,8 +12,6 @@ author: mira-vance
 
 At 2:19am PDT on 20 September 2015, a [brief network disruption](https://aws.amazon.com/message/5467D2/) hit some of DynamoDB's storage servers in US-East. Networks blip all the time, and this one should have passed unnoticed. Instead, by 2:37am the error rate on customer requests was ["finally stabilizing at approximately 55%"](https://aws.amazon.com/message/5467D2/), and it stayed there. Engineers [could not even add capacity](https://aws.amazon.com/message/5467D2/) to the overloaded metadata service, because it was too busy to accept their administrative requests. Recovery began only at 5:06am, when they [paused requests to the metadata service](https://aws.amazon.com/message/5467D2/), and DynamoDB was back to normal error rates at 7:10am. The disruption had been brief. What held DynamoDB down for hours was its own retry traffic.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - A **metastable failure** is a bad state that [outlives the trigger that caused it](https://sigops.org/s/conferences/hotos/2021/papers/hotos21-s11-bronson.pdf): a brief spike or blip overloads the system, and a **sustaining effect**, most often retries, keeps it overloaded after the trigger is gone.

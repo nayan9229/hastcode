@@ -22,8 +22,6 @@ author: mira-vance
 
 On TypeScript 7, the compiler the TypeScript team ported to Go, one company's 37,000-file backend took [19 GiB of memory and 80 seconds](https://building.owner.com/tsrs) to type-check on one thread. In October 2026 Cloudflare and VoidZero announced [tsrs, a Rust port of that Go compiler](https://blog.cloudflare.com/typescript-rust-port/), which in early benchmarks is up to 8x faster and uses about 70% less memory, and its rule is to change nothing the checker decides.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - tsrs is [a drop-in replacement for the TypeScript 7 compiler and language server, written in Rust](https://github.com/oxc-project/tsrs/blob/4a406ed4ceb724fb43cb362d9149fbc430165973/README.md), ported from Go at Owner.com by Max Schwenk and now [incubated in the Oxc toolchain](https://blog.cloudflare.com/typescript-rust-port/) with Cloudflare and VoidZero.

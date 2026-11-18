@@ -21,8 +21,6 @@ related: [cloudflare-d1, http-connection-reuse]
 
 During the beta of Hyperdrive's MySQL support, Cloudflare's highest-volume MySQL customer saw queries that should always return rows come back empty, [about 0.001% of the time](https://blog.cloudflare.com/hyperdrive-mysql/). No network issue explained it: two halves of Hyperdrive were reading each other's cache entries, written in two different dialects of the MySQL protocol.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Hyperdrive is Cloudflare's [distributed database connection pooler for Workers](https://blog.cloudflare.com/hyperdrive-mysql/): it keeps warm SQL connections open across Cloudflare's network and can cache common queries in its global CDN cache. MySQL support is now generally available.

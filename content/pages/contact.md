@@ -3,9 +3,8 @@ title: "Contact"
 description: "How to reach HastCode with corrections, tips, questions and sponsorship enquiries."
 ---
 
-HastCode is written and edited by the HastCode editorial team under the
-house byline [Mira Vance](/authors/mira-vance/). Every message is read by
-the team.
+HastCode is edited by the HastCode editorial team under the house byline
+[Mira Vance](/authors/mira-vance/). Every message is read by the team.
 
 ## Email
 

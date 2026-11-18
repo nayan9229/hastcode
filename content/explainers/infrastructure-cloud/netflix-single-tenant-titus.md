@@ -12,8 +12,6 @@ author: mira-vance
 
 Netflix's container platform, Titus, [launches millions of containers a week across tens of thousands of EC2 instances](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163), and its default is to pack many teams' containers onto each host. In October 2026 Netflix described the opposite move: for an allowlisted set of jobs, Titus now [gives a single task its own virtual machine](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163), and the team that owns the job changes a label, not its deployment.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Single-tenant Titus runs one task per EC2 instance, sized to fit that task. Netflix's Compute/Platform team still owns, patches and scales the host, and the application team keeps [the same Titus API and deployment path](https://netflixtechblog.com/single-tenant-titus-vm-level-isolation-on-a-multi-tenant-container-platform-6d8b1909d163).

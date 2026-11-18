@@ -22,8 +22,6 @@ author: mira-vance
 
 In a scenario PlanetScale's Tom Pang walks through ("Then one day, you get paged"), a schema change that adds one nullable column leaves nearly all writes to most tables timing out, because the `ALTER TABLE` is [stuck behind a very large `ON DELETE CASCADE`](https://planetscale.com/blog/i-dont-like-delete-cascade#cascade-plus-migration-equals-outage) and new queries pile up behind the `ALTER TABLE`. In larger environments, the same post says, PlanetScale has seen "hundreds of gigabytes of WAL written by a single transaction." The delete was one line of SQL. The question is who removes the rows that point at it: the database through a cascade, your application through explicit deletes, or nobody yet, through a soft delete. We answer the same four questions for all three, from the PostgreSQL and MySQL documentation and PlanetScale's own posts.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **`ON DELETE CASCADE`** lets the database delete every referencing row, recursively, inside the transaction of the one `DELETE` you issue, so the work and the locks grow with the size of the tree.

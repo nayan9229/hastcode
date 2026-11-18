@@ -22,8 +22,6 @@ author: mira-vance
 
 In August 2025, two authors on the AWS Big Data Blog benchmarked Apache HBase on Amazon EMR with YCSB and watched the unusually long GC pauses a RegionServer reports through its `JvmPauseMonitor`. With G1 as the collector, they saw ["75 such pauses over a 7-hour period"](https://aws.amazon.com/blogs/big-data/improve-amazon-emr-hbase-availability-and-tail-latency-using-generational-zgc), in lines like "pause of approximately 3021ms". For HBase that is more than slow: ["If GC pauses exceed the configured ZooKeeper session timeout, they might lead to RegionServer failures."](https://aws.amazon.com/blogs/big-data/improve-amazon-emr-hbase-availability-and-tail-latency-using-generational-zgc) G1's default pause goal is [200 milliseconds](https://docs.oracle.com/en/java/javase/27/gctuning/garbage-first-g1-garbage-collector.html#GUID-082C967F-2DAC-4B59-8A81-0CEC6EEB9016). The post does not say whether that goal was changed, and either way the lesson holds: in G1 the pause time is a target the collector plans its work around, not a limit it enforces. How it plans, one region at a time, is what this piece explains.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **G1** (Garbage-First) is the HotSpot JVM collector that splits the heap into equal-sized regions and, in dev.java's words, ["will reclaim the regions with the most garbage first"](https://dev.java/learn/jvm/tool/garbage-collection/g1gc-overview/#g1-design-and-collection-cycle).

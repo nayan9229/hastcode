@@ -19,8 +19,6 @@ explainers: [cloudflare-d1]
 sources: [{title: "Appropriate Uses For SQLite", url: "https://www.sqlite.org/whentouse.html"}, {title: "Write-Ahead Logging", url: "https://www.sqlite.org/wal.html"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 Fly.io's [infra log entry of 4 November 2026](https://fly.io/infra-log/feed.xml), headed [15 October, 09:16 UTC](https://fly.io/infra-log/petsem-was-flaky/), says its secrets store, Petsem, runs on a SQLite primary in IAD, its [Ashburn, Virginia region](https://docs.fly.io/reference/regions). A deployed change, groundwork for a possible move off SQLite, [added record tracking](https://fly.io/infra-log/petsem-was-flaky/). The extra writes, [Fly.io says](https://fly.io/infra-log/petsem-was-flaky/), "tipped the database into sustained lock contention": a little over half of write requests failed, while replicas and reads from the primary stayed healthy. A [new build without the tracking code](https://fly.io/infra-log/petsem-was-flaky/) stopped the errors.

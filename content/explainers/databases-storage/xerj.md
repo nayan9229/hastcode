@@ -13,8 +13,6 @@ author: mira-vance
 
 XERJ ships an embedded Raft ring in the same binary as its search engine, and its own [clustering docs](https://xerj.org/docs/clustering/) answer "when not to cluster" with "today, almost always": leader election is real, replication of your data is not.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - XERJ is a [local-first search engine in one Rust binary](https://github.com/xerj-org/xerj#readme): BM25 full-text, dense-vector kNN and hybrid search behind an Elasticsearch-compatible REST API on port 9200, with a CLI and an MCP server for coding agents on the side.

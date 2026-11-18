@@ -22,8 +22,6 @@ author: mira-vance
 
 "Every web request starts with a DNS lookup," Matt Rinehart writes in [Fastly's 20 October 2026 post on its secondary DNS](https://www.fastly.com/blog/building-resilience-why-we-started-with-secondary-dns/), and when the authoritative servers for your zone stop answering, your application is unreachable even if your origin and CDN are healthy. Fastly started with secondary DNS rather than the bigger primary DNS build, arguing that a second authoritative provider "addresses the failure that actually happens, depending on one authoritative provider." That leaves a choice for anyone who owns a zone. You can stay on one provider. You can add a second provider as a secondary that copies the zone by zone transfer. Or you can run two primaries and push every change to both. We answer the same questions for all three, from the RFCs and the providers' own documentation.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Single provider**: every nameserver in your NS set belongs to one provider, and you edit the zone in one place. It is the simplest setup, and that provider is the one failure you cannot route around.

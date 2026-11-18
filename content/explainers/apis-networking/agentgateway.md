@@ -13,8 +13,6 @@ author: mira-vance
 
 Agentgateway's control plane talks to its proxies over Envoy's xDS transport protocol but sends none of Envoy's types: [one `HTTPRoute` rule becomes one `Route`, and one Pod becomes one `Workload`](https://github.com/agentgateway/agentgateway/blob/main/architecture/configuration.md), so a one-field change ships as one small message instead of a multi-megabyte route list.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Agentgateway is an [open source proxy built on MCP and A2A](https://github.com/agentgateway/agentgateway#readme) that is also a [general-purpose HTTP and gRPC data plane with load balancing, timeouts, retries, TLS and rate limits](https://agentgateway.dev/docs/standalone/latest/documentation/about/introduction/), written in [Rust on Tokio and Hyper](https://agentgateway.dev/blog/2026-06-04-designing-agentgateway-unified-gateway/).

@@ -22,8 +22,6 @@ related: [deepinfer]
 
 On 23 October 2026, Inferact and the vLLM team reported that vLLM's decode throughput on DeepSeek-V4.1-Flash is [within 6% of DeepInfer's published results across batch sizes 8 to 256](https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep#compared-to-deepinfer), at 131K context with nextn=3 (in DeepInfer's settings, a [maximum draft length](https://github.com/deepseek-ai/DeepInfer#deepinfer) of three tokens), on NVIDIA GB200. DeepInfer is DeepSeek's own engine for that model, the framework DeepSeek says [powers its large-scale production services](https://github.com/deepseek-ai/DeepInfer#deepinfer). That number is vLLM's measurement, set against values the vLLM team [read from the charts in DeepInfer's README](https://vllm.ai/blog/2026-10-23-deepseek-v41-flash-pd-wide-ep#compared-to-deepinfer); DeepInfer's own documents publish its curves and make no comparison. If a general-purpose engine lands that close to the model-specific one, what is left to choose? We answer the same six questions for both: who measured what, which models and hardware each runs, what ships for online serving, how each parallelises the model, how each balances load, and whether outputs are reproducible.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **vLLM** is a general-purpose engine and server for [200+ model architectures](https://github.com/vllm-project/vllm#about); for DeepSeek-V4.1-Flash it adds DeepSeek's open kernels and model-specific work, and its team measured decode within 6% of DeepInfer.

@@ -22,8 +22,6 @@ draft: true
 
 Two teams wrote an agent host for the same protocol: [about 369,000 lines of TypeScript in VS Code and about 305,000 lines of Rust at GitHub](https://github.blog/engineering/engineering-principles/building-the-agent-host-protocol-for-sessions-that-continue-across-devices/). That protocol, the Agent Host Protocol (AHP), is what lets a Copilot agent session [start in one place and continue in another](https://github.blog/engineering/engineering-principles/building-the-agent-host-protocol-for-sessions-that-continue-across-devices/). This is how AHP keeps one session in step across clients, the alternatives it rules out, and what the post leaves unmeasured.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - AHP is an open standard in which an agent host holds the state of each agent session, so [every client sees the same agents, history and state](https://github.blog/engineering/engineering-principles/building-the-agent-host-protocol-for-sessions-that-continue-across-devices/).

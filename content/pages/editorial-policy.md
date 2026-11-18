@@ -1,6 +1,6 @@
 ---
 title: "Editorial Policy"
-description: "How HastCode sources, writes, discloses AI assistance, reviews and corrects its Explainers and Briefs."
+description: "How HastCode sources, verifies, reviews and corrects its Explainers and Briefs."
 ---
 
 This policy describes how every Explainer and Brief on HastCode is made. It
@@ -11,11 +11,10 @@ accountable for it meeting this policy.
 
 Every piece is published under our house byline,
 [Mira Vance](/authors/mira-vance/): one consistent editorial voice the
-HastCode editorial team writes in. Mira Vance is a disclosed house name, not
+HastCode editorial team publishes under. Mira Vance is a disclosed house name, not
 a real individual, and its Author page says so. The HastCode editorial team
 is accountable for every piece. We never present an invented person as real,
-never give the byline invented credentials or photos, and an AI tool is never
-credited as an author.
+and never give the byline invented credentials or photos.
 
 ## Sources
 
@@ -32,16 +31,12 @@ credited as an author.
   makers' public material. Where that material leaves a gap and we infer how
   something works, we say so in the text rather than present it as fact.
 
-## AI assistance
+## Verification
 
-Drafts may be written with the help of AI tools. A draft is only the start:
-the Author researches every claim against its first-party source, checks
-every number, diagram and code sample, rewrites what is wrong or unclear, and
-decides whether the piece is published. Pieces drafted with AI assistance
-carry this note:
-
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as
-many pieces as the Author can verify this way.
+A draft is only the start: the Author researches every claim against its
+first-party source, checks every number, diagram and code sample, rewrites
+what is wrong or unclear, and decides whether the piece is published. We
+publish only as many pieces as the Author can verify this way.
 
 ## Dates and Review
 

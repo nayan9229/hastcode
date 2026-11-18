@@ -21,8 +21,6 @@ related: [metastable-failures]
 
 Cloudflare's serverless SQLite database, D1, has [15 times as many live databases as a year ago and 65 times as many as two years ago](https://blog.cloudflare.com/d1-control-plane/), and its control plane was rebuilt for platforms with millions of databases. Every one is recorded in a central Postgres cluster, yet a query to any of them is built to stay away from it.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - D1 is Cloudflare's [managed, serverless database based on SQLite](https://blog.cloudflare.com/d1-control-plane/); each database is [one SQLite-backed Durable Object](https://blog.cloudflare.com/d1-read-replication-beta/#under-the-hood-how-d1-read-replication-is-implemented), so creating millions is cheap.

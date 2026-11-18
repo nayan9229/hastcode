@@ -22,8 +22,6 @@ related: [meta-thin-orchestrator]
 
 At Smarsh, [every agentic solution must pass a Well-Architected review before it reaches a customer](https://aws.amazon.com/blogs/architecture/automating-agentic-ai-well-architected-reviews-with-the-aws-agentic-ai-lens/#the-challenge-a-lens-you-can-read-but-not-run), and the AWS lens written for agents was 150 best practices with no console to run them in. So Smarsh turned the lens into a JSON file, taught Claude to grade a repository against it, and put a script in front of the output that rejects any best-practice ID the model makes up.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Smarsh's reviewer is [a custom Claude skill](https://aws.amazon.com/blogs/architecture/automating-agentic-ai-well-architected-reviews-with-the-aws-agentic-ai-lens/#solution-architecture-the-lens-as-data-the-reviewer-as-a-skill) that reads a workload's GitHub repository and grades it against all 150 best practices of the AWS Agentic AI Lens, producing a review workbook in hours rather than days.

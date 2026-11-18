@@ -20,8 +20,6 @@ explainers: [jvm-warmup-and-aot-compilation]
 sources: [{title: "JEP 544: Ahead-of-Time Code Compilation", url: "https://openjdk.org/jeps/544"}, {title: "JDK 28", url: "https://openjdk.org/projects/jdk/28/"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 25 October 2026, Inside Java announced that [JEP 544, Ahead-of-Time Code Compilation, is targeted to JDK 28](https://inside.java/2026/10/25/jep544-target-jdk28/), due for General Availability on [9 March 2027, as proposed](https://openjdk.org/projects/jdk/28/). The AOT cache that a training run writes will now hold [native code from the C1 and C2 compilers](https://openjdk.org/jeps/544#Description) beside the classes and profiles it already stored, with no new options. On a two-core machine, the cache cut five framework benchmarks' startup by [around 65% to 80% with that code, and 50% to 70% without](https://openjdk.org/jeps/544#Performance).

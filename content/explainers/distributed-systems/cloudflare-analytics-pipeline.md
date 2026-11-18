@@ -22,8 +22,6 @@ author: mira-vance
 
 In May 2026 Cloudflare's data pipeline was delivering [roughly two billion events per second](https://blog.cloudflare.com/rewinding-the-exponential/), and the traffic behind it grows exponentially while the hardware grows linearly. Cloudflare's Data team says five years of changes have been [equivalent to deferring two and a half years of hardware expansion](https://blog.cloudflare.com/rewinding-the-exponential/), and in 2026 alone it removed about 70 GB/s of compressed traffic by sending less, not by compressing harder.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - Cloudflare's analytics pipeline carries events [from Logfwdr to centralized receivers, into the Buftee buffering system and on to consumers such as ClickHouse](https://blog.cloudflare.com/rewinding-the-exponential/), feeding Cloudflare Logs, the SQL API, observability and internal analytics.

@@ -21,8 +21,6 @@ related: [structured-concurrency]
 
 In one instrumented run of a test suite, more than 99.99% of the confined arenas that allocated native memory [used less than 64 bytes](https://inside.java/2026/10/23/confined-pools/). Confined arenas are often [scratch space around a native call](https://inside.java/2026/10/23/confined-pools/): room for the function to write an `int` or a pointer into, read once and thrown away. On an Apple M4, allocating 5 bytes that way [took 15.862 ns](https://inside.java/2026/10/23/confined-pools/). Per-Ake Minborg explains why: before JDK 28, even a tiny allocation "could involve the regular native allocator and the registration of an associated cleanup action", and that bookkeeping ["can cost more than actually accessing the allocated memory itself."](https://inside.java/2026/10/23/confined-pools/) JDK 28 serves those allocations from small per-thread pools, and the same benchmark [falls to 1.052 ns](https://inside.java/2026/10/23/confined-pools/), with no source change. The memory was never the expensive part. Giving it a safe lifetime was.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - **Off-heap memory** is memory outside the Java heap, ["not managed by the JVM"](https://openjdk.org/jeps/454#Summary): the garbage collector does not reclaim it, so the program [allocates and deallocates it itself](https://openjdk.org/jeps/454#Foreign-memory). Since JDK 22 the standard way to do that is the [Foreign Function & Memory (FFM) API](https://openjdk.org/jeps/454).

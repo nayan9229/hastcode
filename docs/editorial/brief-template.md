@@ -23,8 +23,6 @@ explainers: ["TODO(author): the slug of every Explainer the body links, and no o
 draft: true
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 TODO(author): the facts in our own words, each linked to the Source: who, what, when (with time zone). One short credited quote at most, only where the exact words matter.

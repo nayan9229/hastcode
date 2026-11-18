@@ -19,8 +19,6 @@ explainers: [dnssec-root-key-rollover]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 19 October 2026, Cloudflare [learned](https://blog.cloudflare.com/emudhra-patching/) that eMudhra's intermediate certificates had eight weak keys; one was the number 4. Anyone could [recover](https://blog.cloudflare.com/emudhra-patching/) those private keys from the public certificates and forge certificates that unpatched clients accept. Cloudflare [patched its Pingora origin-facing proxies within hours](https://blog.cloudflare.com/emudhra-patching/). Paired probes from some of its challenge pages, [50 million over a week](https://blog.cloudflare.com/emudhra-patching/), found more than half on large networks, and 30–40% of embedded browsers such as Android WebView, still accepting the broken chain.

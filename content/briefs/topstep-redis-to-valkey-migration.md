@@ -22,8 +22,6 @@ sources:
   - {title: "Amazon Route 53 Developer Guide: Values specific for simple records, TTL (seconds)", url: "https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/resource-record-sets-values-basic.html#rrsets-values-basic-ttl"}
 ---
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## What happened
 
 On 9 November, AWS's Database Blog [described how Topstep](https://aws.amazon.com/blogs/database/topsteps-migration-journey-self-managed-redis-oss-to-amazon-elasticache-for-valkey/) moved about 53 million keys from one self-managed Redis OSS 7.4 node with no replica to Multi-AZ ElastiCache for Valkey 7.2.6. The post says Topstep's source ["falls outside the Redis OSS ≤ 7.2 range that the managed migration supports"](https://aws.amazon.com/blogs/database/topsteps-migration-journey-self-managed-redis-oss-to-amazon-elasticache-for-valkey/), so [RedisShake](https://tair-opensource.github.io/RedisShake/en/reader/sync_reader.html), in PSYNC mode, replicated it [until lag was near zero](https://aws.amazon.com/blogs/database/topsteps-migration-journey-self-managed-redis-oss-to-amazon-elasticache-for-valkey/). Then [one Route 53 change](https://aws.amazon.com/blogs/database/topsteps-migration-journey-self-managed-redis-oss-to-amazon-elasticache-for-valkey/) turned an A record into a CNAME with a 30-second TTL; services followed within seconds, and the old node stayed up as a warm standby.

@@ -16,9 +16,8 @@ system, draws the diagram that makes it click, and is honest about the
 trade-offs before showing what could go right.
 
 **About this byline.** Mira Vance is HastCode's house byline, not a single
-real person. Pieces published under this name are drafted with AI
-assistance, then researched, verified and edited by the HastCode editorial
-team, who are accountable for them. Read how in the
-[Editorial Policy](/editorial-policy/).
+real person. Pieces published under this name are researched, verified and
+edited by the HastCode editorial team, who are accountable for them. Read
+how in the [Editorial Policy](/editorial-policy/).
 
 To reach the team, see the [Contact](/contact/) page.

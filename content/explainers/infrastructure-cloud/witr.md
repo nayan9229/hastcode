@@ -13,8 +13,6 @@ author: mira-vance
 
 A repository [created in December 2025](https://github.com/pranshuparmar/witr) is already in the official Debian and Ubuntu repositories: on Ubuntu 26.04 and Debian sid, [`sudo apt install witr`](https://github.com/pranshuparmar/witr#22-package-managers) works, beside Homebrew, winget, conda-forge, the AUR and FreeBSD ports.
 
-> Drafted with AI assistance, researched, verified and edited by the HastCode editorial team. We publish only as many pieces as the Author can verify this way.
-
 ## TL;DR
 
 - witr is a [single static binary for Linux, macOS, FreeBSD and Windows](https://github.com/pranshuparmar/witr#2-installation) that answers one question, ["why is this running?"](https://github.com/pranshuparmar/witr#1-purpose), for a process, port, container or file.
