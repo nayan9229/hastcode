@@ -275,7 +275,7 @@ preload with the same `imagesrcset`/`imagesizes`.
 | `internal/imagestore/` | The R2 client (aws-sdk-go-v2): env var names, `FromEnv`, `New(creds, bucket)`, `Upload` (HEAD then PUT on a bounded pool), `List(prefix)` (ListObjectsV2 pages), `Delete(keys)` (DeleteObjects, 1,000 keys per request). Shared with the prune command. |
 | `builder/prune.go`, `cmd/prune/` | The prune command: `Prune(ctx, cfg, contentDir, PruneOptions{Delete, Log}) (PruneReport, error)` builds the tree locally (Production + Preview) for `ImageKeys`, lists the bucket, reports and optionally deletes the rest; `make prune-images` runs it as a dry run. Tests: `builder/prune_test.go`. See "Image Store". |
 | `internal/buildtest/image_store.go` | `NewImageStore(t)`: the fake Image Store (httptest S3: HEAD, PUT, ListObjectsV2, DeleteObjects). |
-| `internal/views/brand.go`, `og_badge.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), `StaticAssets()`. |
+| `internal/views/brand.go`, `og_badge.go`, `touch_icon.go` | Brand constants (`PublicationName`, `Tagline`, `MarkPath`), the light/dark palettes, the generated SVG mark, the generated 1200x630 PNG OG badge (`OGBadge()`, Go fonts, `/assets/og-badge.<hash>.png`), the crawlable 192x192 PNG icon drawn from the mark's own path data (`TouchIconPath` = `/apple-touch-icon.png`, `TouchIconPNG()`, ADR-0013), `StaticAssets()` (the mark and the icon). Tests: `builder/touch_icon_test.go`. |
 | `internal/images/source.go` | Source rules, pure Go: `Inspect(path) Info` sniffs PNG/JPEG from the bytes (`ErrWebP` for WebP), reads the EXIF orientation (upright `Width`/`Height`) and the ICC profile description (`Profile`, `SRGB`); the encoder applies the orientation right after decoding. |
 | `internal/buildtest/hero_sources.go` | Hand-built hero source fixtures: `HeroWebP`, `HeroJPEG`, `WithEXIFOrientation`, `ICCProfile` + `WithJPEGICCProfile`/`WithPNGICCProfile`, `Quadrants`, and `DecodePixels` for pixel checks. |
 | `internal/views/analytics.go`, `layout_analytics.templ` | Google Analytics 4 (ADR-0008): the inline snippet (`analyticsSnippet`: regional `analytics_storage` consent defaults, the host guard with Google's `ga-disable-<id>` opt-out, the config) and the deferred gtag.js. Validated by `builder/step_validate_analytics_config.go` (rule `analytics-config`). Tests: `builder/ads_analytics_test.go`. |
@@ -336,7 +336,7 @@ skeleton 32, Brief skeleton 35, section-length warning 40, prose warnings 41
 rewrite Brief Explainer links 20, merge Explainer frontmatter sources 30
 (and a Repo Profile's Fact Pack sources), insert Repo Profile fact sections 35,
 encode heroes 50, encode author photos 55;
-render reset 0, write site assets 10 (and the OG badge), write hero assets 15,
+render reset 0, write site assets 10 (`/mark.svg`, `/apple-touch-icon.png`, and the OG badge), write hero assets 15,
 write author photos 16, upload images 17 (r2 mode), render explainers 20, render briefs 30, render author pages 40,
 render briefs index 40, render static pages 45, render vertical hubs 50,
 render kind pages 52, render home 54, render subscribed page 60,
@@ -519,7 +519,12 @@ to `page.StructuredData`.
 robots `max-image-preview:large` (or `noindex` when `Page.NoIndex`; only
 `/subscribed/`, `/404.html` and `/search/` are noindex in production; the 404 has no
 canonical), an absolute trailing-slash
-canonical, Open Graph + Twitter card and both theme-colors. Every page has
+canonical, Open Graph + Twitter card and both theme-colors. Every page's
+favicon is the SVG mark embedded as a `data:` URI (ADR-0006); the home page
+alone also links the crawlable icon, `<link rel="apple-touch-icon"
+href="/apple-touch-icon.png">` (ADR-0013: Google reads the favicon from the
+home page's head and needs a file it can crawl; desktop browsers do not
+fetch that rel, so it costs no request before first paint). Every page has
 an `og:image` ≥ 1200 px (repeated as `twitter:image`) and `twitter:card`
 `summary_large_image`: an article its 1200x630 hero crop, every other page
 the 1200x630 OG badge (`s.page` sets
@@ -1168,7 +1173,11 @@ for the missing-key instance) move the ports.
 ## Image Store
 
 Every encoded image (hero variants and crops, Author photos, the OG badge)
-goes through one seam (`builder/image_store.go`, ADR-0004). `site.yaml`:
+goes through one seam (`builder/image_store.go`, ADR-0004). The one
+exception is `/apple-touch-icon.png` (ADR-0013): its URL must stay the same
+on the site's own host (iPhones request that path; Google needs a stable
+URL), so every build writes it into the static tree, `r2` mode included,
+and it never gets a content hash or the immutable header. `site.yaml`:
 
 ```yaml
 images:
@@ -1514,8 +1523,9 @@ In order:
    for Vercel's CDN (stripped before the browser; the CDN cache is scoped to
    the deployment, so a new deploy is never served stale). `/assets/*` is
    `public, max-age=31536000, immutable`: put only content-hashed files
-   there. Everything else (feeds, `/mark.svg`, `/pagefind/*`, whose names are
-   stable) keeps Vercel's default `public, max-age=0, must-revalidate`.
+   there. Everything else (feeds, `/mark.svg`, `/apple-touch-icon.png`,
+   `/pagefind/*`, whose names are stable) keeps Vercel's default
+   `public, max-age=0, must-revalidate`.
 2. `/video/*`, `/community/*`, `/group/*` -> 410 with the 404 page as body
    (ADR-0001); `/home` -> 301 `/`.
 3. `/api/*` and `/.well-known/*` pass through untouched.
@@ -1680,7 +1690,9 @@ is a wizard step); and `assets`:
 `_headers`: `/assets/*` `public, max-age=31536000, immutable`; `/`, `/*/`
 and `/*.html` `public, max-age=0, must-revalidate` (Workers joins a header
 two rules set, so the patterns never overlap); every other file keeps
-Workers' default (the same revalidate value); `*.workers.dev` hostnames
+Workers' default (the same revalidate value), feeds, `/mark.svg` and
+`/apple-touch-icon.png` included (`builder/touch_icon_test.go` checks the
+icon gets the mark's headers on both Targets); `*.workers.dev` hostnames
 (the `workers_dev` URL and Previews) get `X-Robots-Tag: noindex`. Headers
 and redirects never apply to the Worker's own responses.
 
@@ -1823,7 +1835,8 @@ public storage: previews hold drafts). Preview builds carry no analytics
 Found on the first Preview (ADR-0006): Lighthouse's simulation makes LCP
 wait for every request that starts before it, including a deferred
 analytics script and the favicon, so neither may be requested during first
-paint.
+paint. The home page's `rel="apple-touch-icon"` link (ADR-0013) is not
+fetched by Chrome while loading, so it adds no such request.
 
 `.github/workflows/tests.yml` (push to `main`): `make test` and `make
 lint-workflows` (pinned actionlint, plus shellcheck on `run:` scripts),

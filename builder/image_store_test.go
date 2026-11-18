@@ -99,8 +99,11 @@ func TestImageStore_R2UploadsEveryImageOnceWithImmutableHeadersAndWritesNoneToOu
 		t.Errorf("stored fallback image: format %q, %v, err %v; want a 1200x675 JPEG", format, img.Bounds(), err)
 	}
 
-	if imgs := buildtest.Images(t, out); len(imgs) != 0 {
-		t.Errorf("r2 build wrote %d image files to the output, want none: %v", len(imgs), imgs)
+	// The one exception is the crawlable icon (ADR-0013): a site-origin
+	// file at a stable path, not an Image Store image.
+	imgs := slices.DeleteFunc(buildtest.Images(t, out), func(i buildtest.Image) bool { return i.URL == "/apple-touch-icon.png" })
+	if len(imgs) != 0 {
+		t.Errorf("r2 build wrote %d image files to the output, want none but /apple-touch-icon.png: %v", len(imgs), imgs)
 	}
 }
 

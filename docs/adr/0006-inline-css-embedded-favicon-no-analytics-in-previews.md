@@ -2,7 +2,7 @@
 status: accepted
 date: 2026-10-25
 supersedes: ADR-0003
-amended-by: ADR-0008 (Google Analytics 4 replaces Plausible; the rules for Previews stand)
+amended-by: ADR-0008 (Google Analytics 4 replaces Plausible; the rules for Previews stand); ADR-0013 (2026-11-18: a crawlable /apple-touch-icon.png linked from the home page only; the data: favicon stays)
 ---
 
 # Inline the stylesheet, embed the favicon, keep analytics out of Previews
@@ -36,3 +36,4 @@ We decided three things:
 - No `/assets/site.*.css` is written; `/assets/` still holds images and the OG badge, so its immutable rule stands.
 - A Lighthouse run against Production (PageSpeed Insights) will report a slower lab LCP than CI because of the analytics tag; real-user LCP is the number that matters there.
 - Any new request a page makes before first paint (a font, a tracking pixel, a preconnect-driven fetch) will show up as LCP in CI: that is now the known failure mode.
+- Google cannot crawl a `data:` favicon file, so ADR-0013 adds `/apple-touch-icon.png`, linked from the home page only. Desktop browsers and Lighthouse do not fetch it while loading, and the `data:` icon stays every page's favicon. See ADR-0013 for the option, the reason and the measured cost.

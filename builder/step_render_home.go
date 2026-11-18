@@ -20,6 +20,9 @@ func renderHome(s *site) error {
 	briefs := newestBriefs(s.publishedBriefs())
 	page := s.page(homeURL, views.PublicationName+": "+views.Tagline, homeDescription)
 	page.StructuredData = append(page.StructuredData, s.webSite(), s.homeOrganization())
+	// Google reads the favicon from the home page's head; only here, so
+	// no other page pays the bytes (ADR-0013).
+	page.TouchIcon = views.TouchIconPath
 	home := views.HomePage{
 		Page:       page,
 		Explainers: s.explainerItems(explainers[:min(len(explainers), homeExplainers)]),
