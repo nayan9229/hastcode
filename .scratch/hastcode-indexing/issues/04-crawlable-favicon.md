@@ -15,7 +15,7 @@ The existing `/mark.svg` (the Organization logo) may be enough as the file.
 
 **Blocked by:** None (can start immediately)
 
-**Status:** ready-for-human
+**Status:** resolved
 
 Decision (Author):
 - [ ] **Evidence for open question 2** ("Does Google use a `data:` URI favicon at all?"). Once the home page is indexed (ticket 01), search `site:hastcode.com` on a phone and record whether results show our mark or a generic globe, with the date.
@@ -50,3 +50,8 @@ Measured locally (a stand-in for the Preview run, which is still the Author's):
 Still open, and the Author's: the `site:` evidence, Lighthouse CI on a pushed Preview, and the Search Console live test after the next Production Publish, then the `site:` check a few weeks later.
 
 **2026-11-18, review follow-up.** ADR-0013's frontmatter is now `status: proposed`: an agent drafted it, so it stays proposed until the Author approves the text, then the Author flips it to `accepted` and ticks "Decision recorded". ADR-0006's Consequences line no longer says Google cannot crawl a `data:` favicon; it says that is unknown (open question 2 above). ADR-0013 now says plainly that an unknown path command in the mark panics (`make test` and every build crash) rather than failing as a `build-step` error.
+
+**2026-11-18, closed for the agent side: Status resolved, only Author follow-ups remain.** Merge commit `c55a554` ("Merge indexing 04: crawlable favicon (option a)") on `integration/indexing-writing-craft`, with review fixes in `a9c751e`. Every build box an agent can meet is ticked and was checked against the code: `internal/views/touch_icon.go` writes `/apple-touch-icon.png`, `builder/touch_icon_test.go` covers it, the README describes the file and its cache rule, and ADR-0006's frontmatter and Consequences point to ADR-0013. `make test` passes. The Author chose option (a) on 2026-11-18. The decision boxes stay unticked, and so do these, because each one is the Author's:
+- **Decision recorded:** ADR-0013 exists and amends ADR-0006, but it is `status: proposed` because an agent drafted it. The Author approves the text, flips it to `accepted` and ticks the box.
+- **Cost measured before deciding** and **Lighthouse CI passes on the Preview:** both need a pushed Preview. The local stand-in run passed (see "Built" above), and so did the 52 KB gate and the production build of `content/`.
+- **Evidence for open question 2** (the `site:` search on a phone), and the **Search Console live test** after the next Production Publish followed by the `site:` check a few weeks later.

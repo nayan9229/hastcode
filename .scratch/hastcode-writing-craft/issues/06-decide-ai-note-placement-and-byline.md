@@ -18,7 +18,7 @@
 
 **Status:** ready-for-human
 
-- [ ] The Author decides (a): the note stays where it is, or it moves, and if so where, per kind (Explainers, Briefs)
+- [x] The Author decides (a): the note stays where it is, or it moves, and if so where, per kind (Explainers, Briefs). Decided 2026-11-18: no AI note on any public surface (ADR-0014)
 - [ ] The Author decides (b): the Policy and Author page stay as they are, or they say who verifies (and in what words: a role, a team, or a named person)
 - [ ] Any change is recorded as an ADR, made with `/grill-with-docs` or the domain-modeling skill, including GLOSSARY if "Author" or "House Byline" changes meaning
 - [ ] Each follow-up change (templates, guides, tests, Editorial Policy, Author page, existing Pieces) is a new ticket, not part of this one
@@ -39,3 +39,7 @@
 - the source repository: `nayan9229/hastcode` is public, and its docs (ADR-0009, `scripts/daily/`, `.scratch/` review queues, ADR-0014) and every Piece's git history show the AI drafting and the old note. Whether to make it private is the Author's call; ADR-0014 treats the repository as out of scope until then.
 
 The `ai-note` rule was widened the same day: it now fails any wording that says AI made this Piece or our Pieces ("written with the help of AI", "this piece is AI-generated", "Generated with Claude.", Unicode dashes and spaces included), lets "AI assistance" as a topic through, no longer reads Source titles, and also reads site.yaml's Vertical names and descriptions.
+
+**2026-11-18, decision (a) recorded.** Decided by the Author on 2026-11-18: no AI note is published on any public surface, in any kind of Piece or on any site page. The record is ADR-0014 (`docs/adr/0014-no-ai-note-is-published.md`). The work merged into `integration/indexing-writing-craft` as `df23e96` ("Merge writing 06: no AI note on any public surface"), with review fixes in `a9c751e`. The (a) box is ticked because the decision is the Author's own words. The ADR box stays unticked: ADR-0014 is `status: proposed` until the Author approves its text and the rewritten wording listed above.
+
+**Only (b) remains.** Whether the Editorial Policy and the Author page say plainly who verifies the work behind the house byline is still undecided, so Status stays `ready-for-human`.
