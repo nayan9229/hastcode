@@ -399,3 +399,367 @@ Drafted by `make daily` (ADR-0009). Every Piece is `draft: true` and unverified.
 
 </details>
 
+## Run 20261123-184850
+
+### Flamingo DNS probes: how Cloudflare tests DNS as customers see it
+
+`content/explainers/apis-networking/cloudflare-flamingo-dns-probing.md` · case-study · 2583 words · fact-checker: 62 claims checked, 12 fixed, 1 removed
+
+**Drafter asks you to check:**
+- [ ] The Lead was read through a WebFetch agent limited to quotes of 125 characters or less, so check every quoted fragment against the live page. The riskiest is the hook's 'The service stayed up and was healthy,' with the clauses around it paraphrased.
+- [ ] The post has no author byline in the fetched content (none in the JSON-LD either), so Sources lists 'Cloudflare blog, 23 November 2026' with no author. Check the live page and add one if it exists.
+- [ ] Problem section: the post's exact wording around "constantly, from every data center, and against production." The lead-in 'the way customers experience it:' was reported once, not confirmed on the second read.
+- [ ] Step 1: 'a percentage of machines' paraphrases the post's 'percentages of metals' (probably Cloudflare slang for bare-metal servers, or a typo). Confirm it reads right.
+- [ ] Step 1: 'It must run on bare-metal servers in resource-constrained environments, with predictable performance' paraphrases the post. Check the causation is not overstated.
+- [ ] Step 1 and Step 4: the 2025 post (20-percent-internet-upgrade#step-2-testing-and-automated-rollouts) names Flamingo in only one sentence ('thousands of full end-to-end test requests concurrently'). Its staged rollout and pause/rollback paragraph does not name Flamingo. The draft says only that it 'describes such a rollout for Cloudflare's proxy software'; check that this framing holds. The 2025 post has no byline either.
+- [ ] Step 2: the description of the Rust code (Action enum with Query{method,url,parameters} and DnsQuery{query_name,query_type,parameters}; ActionOutput Http/Dns; a handler lookup table of dynamically dispatched async functions; the runner looks up, calls and awaits). No code is reproduced, because the post gives no licence.
+- [ ] Step 3: the DSL example details: test named for 108.162.193.62, port 53, TXT query, assertions RCODE NOERROR, AA flag, and first answer GT timestamp minus 90. The comment labelling the IP amir.ns.cloudflare.com was cut to save words.
+- [ ] Step 3: the RFC 1035 links #section-4.1.1 (AA bit, RCODE 0 'No error condition') and #section-3.3.14 (TXT 'descriptive text') rest on a truncated fetch plus my knowledge of the RFC. Only #section-3.2.1 (TTL) was read verbatim. Confirm the wording and anchors.
+- [ ] Step 4: the SLI wording ('counts DNS probes that complete below the required threshold') is taken from the Figure 1 caption. The post does not say whether it is a count or a ratio.
+- [ ] Inferences to review, all labelled 'we infer': the probe's write takes the customer publishing path; the 600 s resolver window covers 1.1.1.1's cache TTL; the writer must update more often than every 90 s; reuse spared Cloudflare a second test system; the typed ActionOutput lets one reporting path serve both protocols; the DSL ceiling is deliberate.
+- [ ] Our numbers: the 12:05:00 / 12:03:30 / 12:00:00 freshness example, the 80-second example, and the burn-rate arithmetic (10% per 3 days lasts 30 days, 10% per hour lasts 10 hours, 72 times faster).
+- [ ] Road ahead: the post says 'we can automatically halt the rollout' for a canary data center, in present tense ('can'), and the draft says the post does not state whether the halt is live. Confirm that reading.
+- [ ] Related link: /apis-networking/dns-provider-redundancy/ is linked at the TTL/resolver-cache step. The frontmatter 'related' comment was left as the template gave it.
+
+**Fact-checker could not confirm:**
+- [ ] RFC 1035 #section-3.3.14 'TXT RRs are used to hold descriptive text' and #section-4.1.1 AA wording and RCODE 0 'No error condition': rfc-editor HTML/.txt and datatracker copies all truncated at about 40,000 characters before these sections; two independent model summaries agree with the draft's wording, but the verbatim text was not seen. Only #section-3.2.1 (TTL) was read verbatim and matches
+- [ ] 2025 post anchor #step-2-testing-and-automated-rollouts: heading 'Step 2 - Testing and automated rollouts' exists, but the HTML id was not visible in the fetched markdown
+- [ ] Contents of the SLI chart image in the Flamingo post (caption verified; image not viewable)
+
+**Self-edit before you verify** ([checklist](../../../docs/editorial/self-edit-checklist.md)), ticked by you while you read the draft:
+- [ ] Point: I can say the point in one sentence: ______________________________
+- [ ] Point: The piece covers one idea; anything else is a Related link.
+- [ ] Top of the page: Title: key term in the first two words, plain words, no pun, under ~65 chars.
+- [ ] Top of the page: Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
+- [ ] Top of the page: Hook: one real, linked moment (system, number, failure), not a definition or history.
+- [ ] Top of the page: Nut graf: the hook's last sentence says what this piece gives the Reader.
+- [ ] Top of the page: TL;DR: the answer in plain words; a reader who stops here is not misled.
+- [ ] Structure: Read only the headings: do they tell the story in order?
+- [ ] Structure: No heading says "Background", "Overview", "Introduction" or "Conclusion".
+- [ ] Structure: No question headings outside a Repo Profile FAQ.
+- [ ] Structure: Each paragraph has one topic, stated in its first sentence.
+- [ ] Structure: Each H2 is under 250 words; cut, don't pad.
+- [ ] Sentences: Average about 20 words or fewer; every sentence over ~30 words is split or earns its length.
+- [ ] Sentences: Active voice with a named actor ("the client retried", not "requests were retried").
+- [ ] Sentences: Hardest parts use the shortest sentences.
+- [ ] Words: Every technical term is defined at first use, and kept where it is the right term.
+- [ ] Words: One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
+- [ ] Words: No hype or filler word from voice rule 5's banned list (`house-byline-voice.md`), and no "there is/are" openings.
+- [ ] Words: At most one analogy, and it says where it stops being true.
+- [ ] Words: No idioms or pop-culture references a non-native reader would miss.
+- [ ] Teaching: A concrete example comes before the abstract statement.
+- [ ] Teaching: At least one worked example with real numbers (Concept, Case Study, Comparison).
+- [ ] Teaching: Every "what" has a "why" or a cost.
+- [ ] Teaching: The common confusion is named and corrected ("what it is not").
+- [ ] Teaching: The text walks the diagram box by box; the diagram is never left to speak alone.
+- [ ] Teaching: Code: introduced by a sentence, realistic, under its licence; README commands verbatim.
+- [ ] Evidence: Every claim has its link where the claim is made.
+- [ ] Evidence: Every number has a unit, a date or version, what it is compared with, and its caveat.
+- [ ] Evidence: Quotes are exact, short, credited, and followed by our own analysis.
+- [ ] Evidence: Each inference says "we infer" in its own sentence.
+- [ ] Our contribution: Name what this Piece adds that no Source says: ____________________
+- [ ] Our contribution: Delete every paragraph that only restates a Source.
+- [ ] Ending: The last section tells the Reader what they can now do, measure or decide.
+- [ ] Ending: No new idea in the last paragraph; no recap of what they just read.
+- [ ] Last pass: Read it aloud once. Fix every place you stumbled or got bored.
+- [ ] Last pass: Cut big (sections, paragraphs), then small (words). Then cut 10% more.
+
+<details><summary>What the fact-checker changed</summary>
+
+- Fixed: Step 'options' para: 'The DNS team wrote one module' -> 'Cloudflare added code that extended Flamingo, and the DNS team inherited...' (post: 'Our team was able to add code that extended Flamingo'; never says DNS team wrote it)
+- Fixed: Step 1: 'a percentage of machines' -> quotes post's "percentages of metals," with 'which we infer means a share of bare-metal servers'
+- Fixed: Step 1: 'It must run on bare-metal servers...' -> 'It needed predictable performance and had to run well on bare-metal servers in resource-constrained environments' (post: 'needed to be a tool with predictable performance and run well on bare-metal servers')
+- Fixed: Step 2: 'leaves test scheduling and resource management to the framework' -> 'higher-level operations a module's author need not worry about' (post wording)
+- Fixed: Step 4: 10%-over-three-days case 'needs fixing but is not urgent' -> 'might be a long-running issue that is not urgent but affects customers and needs dealing with' (post wording)
+- Fixed: Step 4: 'the SLI counts' -> 'tracks' (caption does not say count vs ratio); sentence now linked
+- Fixed: Evidence: 'without the numbers behind it' -> 'but its text quotes no numbers from it' (chart image not verifiable); chart now linked
+- Fixed: Road ahead: 'The next step it names is a canary halt' -> 'Under "The road ahead," it names a canary halt' (post frames it as a capability with 'can', not a planned step)
+- Fixed: TL;DR: burn rate 'tells' releasing systems -> 'lets Cloudflare tell its releasing systems' (post: 'we can tell our releasing systems')
+- Fixed: Problem section: TTL definition now linked to the post's TTL sentence (was unlinked)
+- Fixed: Road ahead list: removed quotation marks from our own example promise ('a change that is answerable within 90 seconds') so it does not read as a Cloudflare quote
+- Fixed: Step 3: HastCode link text 'walks how resolver caches behave' -> 'covers resolver caches and TTLs' (matches the linked Piece's content)
+- Removed: Step 4: 'for Cloudflare's proxy software' framing of the 2025 rollout paragraph (that paragraph speaks of 'a change' generically and names neither FL2 nor Flamingo)
+
+</details>
+
+### KV cache offloading: why the prefix cache can live on NVMe
+
+`content/explainers/ai-ml-systems/kv-cache-offloading.md` · concept · 2540 words · fact-checker: 96 claims checked, 12 fixed, 3 removed
+
+**Drafter asks you to check:**
+- [ ] The Source's later sections were read in two parts: the first fetch stopped at about 40,000 of 50,246 characters, and the appendix and Sources came back paraphrased. Check the later figures against the full page: the cost section ($42/GB, $666/TB, $0.36 per TB written, 1,825 writes, 83 TB/day, about 11 drive writes a day, five and a half months, $59,000 / $76,000 / $3.5 million, DRAM cheaper below about 24 minutes), the lessons (4 GiB to 256 MiB segment files, 12.8% behind, hit rate 94.45 to 95.65%, +15.6%, touch adding 2.1% and 3.9%, checkpoint writes cut 53% for 1.0% of throughput) and the limits (at most 16% of prompt tokens, about 14 KB per token).
+- [ ] The 743 s median TTFT is attributed to the 1.0 TB DRAM pool at 70 sessions on the kvlab corpus, from context in 'What NVMe buys: retention'. Confirm which pool it belongs to.
+- [ ] The quoted name 'unified memory and bandwidth pool' for UMBP comes from the fetch tool's reading of #how-a-kv-pool-works-on-vllm. Confirm the exact wording.
+- [ ] Figure 2's alt text says the write buffer is '64 GB, or 4 MiB'; the body uses 4 MiB only for the runs without a write buffer. The draft uses 64 GB.
+- [ ] LRU retention model: the body text gives 0.3% at three hours; Figure 6's alt text gives 0.27% at 3.2 hours. The draft cites the text.
+- [ ] The hook's '$76,000' for a 1.8 TB DRAM pool is 'listed at' in the intro and a five-year cost in the cost section. Both come to about $75,600 at $42/GB; confirm the wording fits.
+- [ ] DeepInfer Q&A: the Source summarises it as three days of agent-traffic retention on about 14.4 TB of SSD per GPU. The Q&A puts 14.4 TB per GPU (logical size) under 'Cluster & storage' and the 3-day agent TTL with roughly 100 PiB of SSD under 'Block KV cache', while its storage-server sizing targets 24 hours of data. The draft cites the main branch; the Source pins commit 553741557a57. The anchors #cluster--storage and #block-kv-cache are GitHub slugs.
+- [ ] The vLLM 'KV Offloading Usage Guide' quote ('extends the prefix cache by offloading completed KV blocks to slower but larger tiers') and 'completed GPU blocks into pinned host memory' come from the word-for-word part of a page that was only partly read. The prefix-caching anchor #automatic-prefix-caching is confirmed; the hash paraphrase comes from that page.
+- [ ] Reused from Author-verified Explainers: 56.3% of 608B input tokens and the Mooncake 'disaggregated cache of KV cache' claim (from disaggregated-inference), and the HiSparse pinned-host-memory link (from decode-context-parallelism).
+- [ ] The MoRI #967 link URL comes from the Source's reference list and was not opened.
+- [ ] TL;DR: 'one more percent of prompt tokens served from cache was worth about 10% more throughput' comes from the Source's intro (the 95% to 96% example). 'At the heaviest load tested' refers to 96 sessions on AgentX.
+- [ ] Touch's 2.1% and 3.9% were measured on the Source's 'DRAM + NVMe pools'; the draft says 'pools with DRAM in front of NVMe'.
+- [ ] Inferences marked 'we infer': misses feeding a loop through the queue; DeepSeek's cost reasoning matching the AMD post; bandwidth mattering again for dense models without compressed KV; the HiSparse boundary; keeping blocks in DRAM trading wear for capacity.
+- [ ] The byline is given as 'AMD and Embedded LLM'; the text that was read names no individual authors.
+
+**Fact-checker could not confirm:**
+- [ ] DeepInfer quotes 'SSDs also cost much less than DRAM.' and 'could reduce SSD wear and extend drive lifespan' are on main (which the draft links) but not in commit 553741557a57, the version the AMD post cites; 100 PiB, 3-day/7-day TTL and 14.4 TB per GPU are in both
+- [ ] The fetched copy of the 'each miss causes more misses' passage was cut after 'the queue grows'; the post may also describe the eviction step the draft marks 'we infer'
+
+**Self-edit before you verify** ([checklist](../../../docs/editorial/self-edit-checklist.md)), ticked by you while you read the draft:
+- [ ] Point: I can say the point in one sentence: ______________________________
+- [ ] Point: The piece covers one idea; anything else is a Related link.
+- [ ] Top of the page: Title: key term in the first two words, plain words, no pun, under ~65 chars.
+- [ ] Top of the page: Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
+- [ ] Top of the page: Hook: one real, linked moment (system, number, failure), not a definition or history.
+- [ ] Top of the page: Nut graf: the hook's last sentence says what this piece gives the Reader.
+- [ ] Top of the page: TL;DR: the answer in plain words; a reader who stops here is not misled.
+- [ ] Structure: Read only the headings: do they tell the story in order?
+- [ ] Structure: No heading says "Background", "Overview", "Introduction" or "Conclusion".
+- [ ] Structure: No question headings outside a Repo Profile FAQ.
+- [ ] Structure: Each paragraph has one topic, stated in its first sentence.
+- [ ] Structure: Each H2 is under 250 words; cut, don't pad.
+- [ ] Sentences: Average about 20 words or fewer; every sentence over ~30 words is split or earns its length.
+- [ ] Sentences: Active voice with a named actor ("the client retried", not "requests were retried").
+- [ ] Sentences: Hardest parts use the shortest sentences.
+- [ ] Words: Every technical term is defined at first use, and kept where it is the right term.
+- [ ] Words: One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
+- [ ] Words: No hype or filler word from voice rule 5's banned list (`house-byline-voice.md`), and no "there is/are" openings.
+- [ ] Words: At most one analogy, and it says where it stops being true.
+- [ ] Words: No idioms or pop-culture references a non-native reader would miss.
+- [ ] Teaching: A concrete example comes before the abstract statement.
+- [ ] Teaching: At least one worked example with real numbers (Concept, Case Study, Comparison).
+- [ ] Teaching: Every "what" has a "why" or a cost.
+- [ ] Teaching: The common confusion is named and corrected ("what it is not").
+- [ ] Teaching: The text walks the diagram box by box; the diagram is never left to speak alone.
+- [ ] Teaching: Code: introduced by a sentence, realistic, under its licence; README commands verbatim.
+- [ ] Evidence: Every claim has its link where the claim is made.
+- [ ] Evidence: Every number has a unit, a date or version, what it is compared with, and its caveat.
+- [ ] Evidence: Quotes are exact, short, credited, and followed by our own analysis.
+- [ ] Evidence: Each inference says "we infer" in its own sentence.
+- [ ] Our contribution: Name what this Piece adds that no Source says: ____________________
+- [ ] Our contribution: Delete every paragraph that only restates a Source.
+- [ ] Ending: The last section tells the Reader what they can now do, measure or decide.
+- [ ] Ending: No new idea in the last paragraph; no recap of what they just read.
+- [ ] Last pass: Read it aloud once. Fix every place you stumbled or got bored.
+- [ ] Last pass: Cut big (sections, paragraphs), then small (words). Then cut 10% more.
+
+<details><summary>What the fact-checker changed</summary>
+
+- Fixed: 743 s median TTFT: removed unsupported '1.0 TB' pool size; Source says 'the DRAM pool' in the kvlab sweep at 70 sessions; added link
+- Fixed: Miss loop: Source states 'a recompute holds up the prefill node, the queue grows', so it is now credited to the post; only the eviction step stays 'we infer'
+- Fixed: Intro 'within 1%' link re-anchored to #at-the-same-size-nvme-matched-dram; 80 GB DRAM use now linked to #tldr
+- Fixed: TL;DR 'at the heaviest load tested' changed to 'at 96 sessions on AgentX, the test drives' (Source wording)
+- Fixed: DeepSeek-V4.1-Flash renamed to 'DeepSeek V4.1 Flash' as the DeepInfer Q&A writes it
+- Fixed: 14.4 TB per GPU reworded from 'That is' to 'The storage cluster works out to' (storage-to-GPU ratio, not the 100 PiB total)
+- Fixed: OffloadingConnector copies into pinned host memory 'by default' (CPUOffloadingSpec is the default)
+- Fixed: Limits: 'without that compression' changed to 'without MLA', matching the Source; Kimi-K3 compresses KV through MLA
+- Fixed: Touch: 'helps any medium' changed to 'raises the hit rate whatever the medium' (Source wording)
+- Fixed: HiSparse: 'a running request's' changed to 'a request's'
+- Fixed: MoRI #967: rewritten to say a tier policy applies UMBP_SSD_* settings only from #967 and older builds keep 4 GiB segment files
+- Fixed: Cost claims linked: 3.5 TB an hour and $59,000 now link to the cost section
+- Removed: '1.0 TB' attribution on the 743 s TTFT
+- Removed: 'heaviest load tested' (replaced by 96 sessions)
+- Removed: 'running' qualifier on HiSparse's request
+
+</details>
+
+### Application-level sharding vs a sharding layer: what you build
+
+`content/explainers/databases-storage/application-level-vs-proxy-sharding.md` · comparison · 2500 words · fact-checker: 98 claims checked, 18 fixed, 5 removed
+
+**Fills Gap Day 2026-11-21** (ADR-0012): `published` is that day; `make release` keeps it.
+
+**Drafter asks you to check:**
+- [ ] Five Neki docs section links follow the docs' usual heading pattern but could not be confirmed on the page: transactions#multi-shard-writes-are-not-atomic, transactions#enforce-a-one-shard-transaction, overview#how-failure-looks-to-a-client, data-migration#moving-traffic and overview#routers. The Routers link also carries 'no router is the primary', whose section on the overview page is not known.
+- [ ] Vitess 'multi is the default' rests on a configuration code comment ('# Default mode (multi-shard, best-effort)') in the configuration section (#vtgate) of the Distributed Transactions page. The 'costs commit latency' link goes to that page with no section, because the wording sits in a callout near the top.
+- [ ] Vitess failover: 'VTOrc detects a dead primary and fails over to an eligible replica' cites the basic Reparenting user guide, which has no section links.
+- [ ] Vitess Reshard: reverse replication is documented as starting by default for primary tablet types (#--enable-reverse-replication). The 'few seconds of read-only downtime' wording comes from the Sharding page's Resharding section.
+- [ ] Notion: 'about 100 PgBouncer instances, each able to open up to 6 connections to each space shard' keeps Notion's term 'space shard', because whether it means a physical or a logical shard is not confirmed. 'In 2023' rests on the post's date (17 July 2023). No section links were visible on Notion's page.
+- [ ] Instagram's 41/13/10-bit ID layout and 'a few thousand logical shards' come from the PlanetScale post's description, not Instagram's own SFPUG PDF.
+- [ ] The Etsy 'full site outage' quote is left out because Etsy's page returned HTTP 403. The lookup-table outage point is cited to the PlanetScale post's own words instead.
+- [ ] The post's claims about Neki (the router buffers during the switch, hands out unique IDs, and keeps the global index in sync on every write) are PlanetScale's own. Neki's docs back up only the buffering at the write switch (data-migration, Moving traffic).
+- [ ] Diagram: 'Shard 5: both writes land' is our reading of the post's statement that the cancel/shipment problem 'can't happen'.
+- [ ] Slack: 'began in 2017' and 'exactly three years into this migration... 99% of all Slack MySQL traffic' come from Slack's December 2020 post, under Disadvantages.
+
+**Fact-checker could not confirm:**
+- [ ] The Instagram ID layout (41/13/10 bits) and 'a few thousand logical shards' are confirmed only as the PlanetScale post tells them. Instagram's own SFPUG PDF was not fetched. The text keeps 'as the same section describes it'.
+- [ ] 'On day 1': the post never labels the three-databases point 'day 1'. Its section ends 'Day 1 is over and you have four functioning shards', so the label comes from that position.
+- [ ] That Neki's router hands out unique IDs and keeps the global index in sync on every write are PlanetScale's own claims, attributed to the post. Neki's docs do not back them up.
+- [ ] The diagram's 'Shard 5: both writes land' is our reading of the post's 'can't happen'. The body text now marks it 'we infer'.
+- [ ] Etsy's 'full site outage' was left out, as the drafter's note says. The PlanetScale post does quote Etsy's index-database outage, but Etsy's own page was not checked.
+
+**Self-edit before you verify** ([checklist](../../../docs/editorial/self-edit-checklist.md)), ticked by you while you read the draft:
+- [ ] Point: I can say the point in one sentence: ______________________________
+- [ ] Point: The piece covers one idea; anything else is a Related link.
+- [ ] Top of the page: Title: key term in the first two words, plain words, no pun, under ~65 chars.
+- [ ] Top of the page: Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
+- [ ] Top of the page: Hook: one real, linked moment (system, number, failure), not a definition or history.
+- [ ] Top of the page: Nut graf: the hook's last sentence says what this piece gives the Reader. (the opening's closing question, the one the piece answers, does this job.)
+- [ ] Top of the page: TL;DR: the answer in plain words; a reader who stops here is not misled.
+- [ ] Structure: Read only the headings: do they tell the story in order?
+- [ ] Structure: No heading says "Background", "Overview", "Introduction" or "Conclusion".
+- [ ] Structure: No question headings outside a Repo Profile FAQ.
+- [ ] Structure: Each paragraph has one topic, stated in its first sentence.
+- [ ] Structure: Each H2 is under 250 words; cut, don't pad.
+- [ ] Sentences: Average about 20 words or fewer; every sentence over ~30 words is split or earns its length.
+- [ ] Sentences: Active voice with a named actor ("the client retried", not "requests were retried").
+- [ ] Sentences: Hardest parts use the shortest sentences.
+- [ ] Words: Every technical term is defined at first use, and kept where it is the right term.
+- [ ] Words: One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
+- [ ] Words: No hype or filler word from voice rule 5's banned list (`house-byline-voice.md`), and no "there is/are" openings.
+- [ ] Words: At most one analogy, and it says where it stops being true.
+- [ ] Words: No idioms or pop-culture references a non-native reader would miss.
+- [ ] Teaching: A concrete example comes before the abstract statement.
+- [ ] Teaching: At least one worked example with real numbers (Concept, Case Study, Comparison).
+- [ ] Teaching: Every "what" has a "why" or a cost.
+- [ ] Teaching: The common confusion is named and corrected ("what it is not").
+- [ ] Teaching: The text walks the diagram box by box; the diagram is never left to speak alone.
+- [ ] Teaching: Code: introduced by a sentence, realistic, under its licence; README commands verbatim.
+- [ ] Evidence: Every claim has its link where the claim is made.
+- [ ] Evidence: Every number has a unit, a date or version, what it is compared with, and its caveat.
+- [ ] Evidence: Quotes are exact, short, credited, and followed by our own analysis.
+- [ ] Evidence: Each inference says "we infer" in its own sentence.
+- [ ] Our contribution: Name what this Piece adds that no Source says: ____________________
+- [ ] Our contribution: Delete every paragraph that only restates a Source.
+- [ ] Ending: The last section tells the Reader what they can now do, measure or decide.
+- [ ] Ending: No new idea in the last paragraph; no recap of what they just read.
+- [ ] Last pass: Read it aloud once. Fix every place you stumbled or got bored.
+- [ ] Last pass: Cut big (sections, paragraphs), then small (words). Then cut 10% more.
+
+<details><summary>What the fact-checker changed</summary>
+
+- Fixed: Querying without the shard key: the post's three ways are ask every shard, put the shard in the ID, and keep a lookup table. Passing user_id along is a separate approach, which fails for this ticket.
+- Fixed: Saga: the post describes two separate saves plus an undo if a retry cannot fix the credit. It never says 'local steps, each with an undo'.
+- Fixed: Neki schema changes: the DDL that runs immediately with no progress tracking is 'native DDL', not 'direct DDL'. Direct DDL does get tracking.
+- Fixed: Neki write switch: it blocks source writes to the moved tables, not to the whole source. The no-rollback sentence is now linked to data-migration#moving-traffic.
+- Fixed: Neki cross-shard writes: changed 'never atomic' to 'not yet atomic' in the heading and the verdict. The docs say 'not yet supported' and the post says 'doesn't do today'.
+- Fixed: VTGate: changed 'routes each query to the right shards' to 'routes traffic to the right tablets', as the docs put it. Merged with the linked quote.
+- Fixed: Vitess Reshard: 'It runs online' replaces 'The copy runs online'. The docs say this of the whole operation.
+- Fixed: Vitess secondary Vindex: replaced 'a stored or computed column-to-shard mapping', which the page does not say, with 'a second column-to-keyspace-ID map'. Changed the lookup cost to 'an extra lookup on reads', the docs' wording.
+- Fixed: Vitess sequences: a chunk 'could be lost' if the tablet crashes. The docs do not say it 'is lost'.
+- Fixed: Vitess schema changes: 'for direct schema changes' replaces 'for direct DDL', the docs' wording.
+- Fixed: Vitess 'costs commit latency' link now points to #overview, where the Performance Note callout sits.
+- Fixed: Instagram: replaced 'a reshard would break those IDs' with the post's point that old IDs would point to the wrong shard.
+- Fixed: Neki failover: the Admin 'coordinates an emergency failover', as the architecture post says. It does not 'run' one.
+- Fixed: Opening scenario: the lost shipment is now attributed to the post ('can't happen'), and 'both writes land on shard 5' is marked as our inference.
+- Fixed: Diagram: the layer label now says routers pick each write's shard, because Neki runs many routers with no primary. The buffer node now says '(Vitess: if enabled)'.
+- Fixed: Six steps: 'Before the first deploy' contradicted step 4, the deploy. It is now 'Each user moves to their shard in six steps'.
+- Fixed: 'Three more databases' is now linked to #sharding-in-the-application.
+- Fixed: Sources: the Neki post title is 'The architecture of Neki' (lowercase a). The Notion line now cites 'Solution: Add more databases!' for 32 to 96 machines. The Slack line now cites the introduction for '2017'.
+- Removed: 'It holds the one shard map' in the opening: neither source describes a shard map.
+- Removed: 'each with an undo' for saga steps: not in the source.
+- Removed: 'a stored or computed column-to-shard mapping': not in the Vitess docs.
+- Removed: Two duplicate links: the Instagram link (its paragraph already links #put-the-shard-in-the-id) and 'Apps connect to VTGate' in the failover section (linked earlier). Removed to get under the size limit.
+- Removed: Last sentence of the verdict, 'A key that keeps most writes on one shard...': it repeats advice already linked in the cross-shard section. Removed to get under the size limit.
+
+</details>
+
+### Parallel compiler frontend: how rustc checks code on many threads
+
+`content/explainers/languages-runtimes/parallel-compiler-frontend.md` · concept · 2400 words · fact-checker: 76 claims checked, 13 fixed, 0 removed
+
+**Fills Gap Day 2026-11-21** (ADR-0012): `published` is that day; `make release` keeps it.
+
+**Drafter asks you to check:**
+- [ ] Sources were read through a fetch tool that gave only short quotes and summaries, not full text: check every quote's exact wording on its page.
+- [ ] Lead #benefits: 'almost three times faster' (cargo check of nalgebra/cargo/diesel at 8 threads) is a different measure from the table's -44.23% suite mean (~1.8x); confirm the wording and context.
+- [ ] Lead #tuning-the-thread-count: the fetch reported only rustflags = ["-Zunstable-options", "--jobs-frontend=8"]; confirm the [build] header in the TOML snippet.
+- [ ] 2023 post: 16.4 s -> 11.2 s (about 32%) is our sum of frontend + backend times; the post gives no total and the phases may overlap.
+- [ ] 2023 post: 'generate LLVM IR for eight codegen units at once' paraphrases the post's sentence; the draft does not claim it caused the backend's 6.2 s -> 5.3 s drop. Confirm that reading.
+- [ ] rustc-dev-guide parallel chapter says it has outdated information as of November 2024; check that the query mechanism (cache table locked, key marked in progress, block until computed, deadlock handler) still holds. par_body_owners table is dated August 2022; the 'beyond 4 threads' contention warning is from the older #data-structures section.
+- [ ] Jobserver limiting rustc's threads is sourced only to the 2023 post (#putting-it-all-together); the 2026 Lead does not mention the jobserver.
+- [ ] Paraphrases: 'missed that goal' (Lead #context, 2024 stabilisation goal not met); 'In 2025, Vadim Petrochenkov...' converts the Lead's 'last year' in a 16 Nov 2026 post; @Zoxc started the project and @SparrowLii revived it in 2023 (2023 #acknowledgments).
+- [ ] 2023 post heading anchors came from the heading links, not raw HTML ids; #acknowledgments may be h1-level. Check that every anchor resolves.
+- [ ] '60 rustc and build-script processes': the post says 60 distinct processes; 'build-script' comes from the figure description. 'One process compiles one crate' is not stated in a fetched Source sentence.
+- [ ] tsrs facts (per-file parse/bind in parallel, four checkers by default, shared frozen data vs checker-owned types) come from PORTING.md#threading at commit 4a406ed4.
+- [ ] Cargo --timings page (linked from the 2023 post) is cited without its title, which was not checked.
+- [ ] Inferences marked 'we infer': cargo check stopping before codegen explains bigger check gains; the rustc-vs-tsrs trade-off; idle cores at the end of a crate graph; the shared cache as the place threads contend; text-diff tests failing on diagnostic order; the profile that gains most.
+
+**Fact-checker could not confirm:**
+- [ ] 16.4 s -> 11.2 s (about 32%) is still our own sum of frontend and backend times; the 2023 post gives no total and the phases may overlap (the draft already says 'We add the two phases ourselves')
+- [ ] 'HIR' first appears in link text in the queries section and is spelled out only later, in the 'not parallel codegen' section
+- [ ] Unlinked general explanations: what a query key is, what LLVM IR is, and 'Memoized, immutable results were built for that design'
+
+**Self-edit before you verify** ([checklist](../../../docs/editorial/self-edit-checklist.md)), ticked by you while you read the draft:
+- [ ] Point: I can say the point in one sentence: ______________________________
+- [ ] Point: The piece covers one idea; anything else is a Related link.
+- [ ] Top of the page: Title: key term in the first two words, plain words, no pun, under ~65 chars.
+- [ ] Top of the page: Description: adds the "so what", has a verb, doesn't repeat the title, <=150 chars.
+- [ ] Top of the page: Hook: one real, linked moment (system, number, failure), not a definition or history.
+- [ ] Top of the page: Nut graf: the hook's last sentence says what this piece gives the Reader.
+- [ ] Top of the page: TL;DR: the answer in plain words; a reader who stops here is not misled.
+- [ ] Structure: Read only the headings: do they tell the story in order?
+- [ ] Structure: No heading says "Background", "Overview", "Introduction" or "Conclusion".
+- [ ] Structure: No question headings outside a Repo Profile FAQ.
+- [ ] Structure: Each paragraph has one topic, stated in its first sentence.
+- [ ] Structure: Each H2 is under 250 words; cut, don't pad.
+- [ ] Sentences: Average about 20 words or fewer; every sentence over ~30 words is split or earns its length.
+- [ ] Sentences: Active voice with a named actor ("the client retried", not "requests were retried").
+- [ ] Sentences: Hardest parts use the shortest sentences.
+- [ ] Words: Every technical term is defined at first use, and kept where it is the right term.
+- [ ] Words: One name per thing: the Source's term every time; a synonym appears once, in brackets, only if Readers search for it.
+- [ ] Words: No hype or filler word from voice rule 5's banned list (`house-byline-voice.md`), and no "there is/are" openings.
+- [ ] Words: At most one analogy, and it says where it stops being true.
+- [ ] Words: No idioms or pop-culture references a non-native reader would miss.
+- [ ] Teaching: A concrete example comes before the abstract statement.
+- [ ] Teaching: At least one worked example with real numbers (Concept, Case Study, Comparison).
+- [ ] Teaching: Every "what" has a "why" or a cost.
+- [ ] Teaching: The common confusion is named and corrected ("what it is not").
+- [ ] Teaching: The text walks the diagram box by box; the diagram is never left to speak alone.
+- [ ] Teaching: Code: introduced by a sentence, realistic, under its licence; README commands verbatim.
+- [ ] Evidence: Every claim has its link where the claim is made.
+- [ ] Evidence: Every number has a unit, a date or version, what it is compared with, and its caveat.
+- [ ] Evidence: Quotes are exact, short, credited, and followed by our own analysis.
+- [ ] Evidence: Each inference says "we infer" in its own sentence.
+- [ ] Our contribution: Name what this Piece adds that no Source says: ____________________
+- [ ] Our contribution: Delete every paragraph that only restates a Source.
+- [ ] Ending: The last section tells the Reader what they can now do, measure or decide.
+- [ ] Ending: No new idea in the last paragraph; no recap of what they just read.
+- [ ] Last pass: Read it aloud once. Fix every place you stumbled or got bored.
+- [ ] Last pass: Cut big (sections, paragraphs), then small (words). Then cut 10% more.
+
+<details><summary>What the fact-checker changed</summary>
+
+- Fixed: Codegen units: 'separate LLVM threads compile at the same time' -> 'LLVM processes in parallel' (2023 post: never all 16 at the same time)
+- Fixed: -C codegen-units=n: 'sets how many run concurrently' -> 'controls the number of concurrent tasks' (dev guide wording)
+- Fixed: ripgrep timeline: '60 rustc and build-script processes' -> '60 processes, most of them rustc and a few build scripts'
+- Fixed: Unsourced 'One process compiles one crate' replaced with sourced 'Those processes compile several crates in parallel'
+- Fixed: par_body_owners: dev guide says it runs a callback on 'all HIR owners in the crate'; now linked, with per-body coverage marked 'we infer'; TL;DR, Mermaid node and jobserver paragraph no longer claim 'one task per function body'
+- Fixed: Jobserver thread limit credited to the 2023 post ('The 2023 post says'); the 2026 post never mentions it
+- Fixed: tsrs inference: 'shares only frozen data, so checkers never wait' -> 'mostly frozen data ... wait on each other far less' (PORTING.md also lists OnceLock/RwLock shared caches); 'shared and frozen' now linked
+- Fixed: 'Beyond 4 threads': now the dev guide's wording, lock contention named, section described as one the guide marks quite outdated, not 'older'
+- Fixed: Opt-out: 'restores the sequential frontend' -> 'disables the parallel frontend on nightly' (the post's wording)
+- Fixed: 'many rustc processes, one crate each' -> 'that compile several crates in parallel'
+- Fixed: TL;DR cost bullet: 'when Cargo already keeps every core busy' -> 'when LLVM or other crates already keep every core busy'
+- Fixed: Opening: 'two threads' default now linked to #tuning-the-thread-count
+- Fixed: Sources: Cargo --timings entry now titled 'Reporting build timings'
+
+</details>
+
+### Not drafted
+
+- none
+
+<details><summary>Leads the editor rejected</summary>
+
+- `njpbtd3i`: Fetched: Jira status page says the oauth-server cause was 'identified' but never states it, and the incident was still at the monitoring stage, not resolved. A status page with no cause is not a Brief.
+- `qqh4pqip`: Fetched: a preview of v1.38 removals (kubectl WebSocket variables, kuberc name field, the CRI cgroup-driver change, webhook virtual resources). It changes nothing about kube-proxy modes, and no live Explainer teaches these changes.
+- `7dxjfjvi`: Fetched: a product announcement and opinion piece (agent sign-up, MPP payments, MCP server) with workflows but no system mechanism.
+- `wgppn7d3`: Lead is about 70 h old and will pass the 72 h window before it can be published. It is a WAF rule announcement, and no live Explainer teaches virtual patching.
+- `zzorbmvg`: Same as ruby2shell: aged out by publication, and a WAF rule announcement with no matching live Explainer.
+- `bucmcx76`: APNIC opinion essay on supply-chain risk, not an event at a named system, and no architectural mechanism for an Explainer.
+- `inrxbn7h`: Community post (an elected-leader profile).
+- `6cxhrm44`: Call for papers and sponsors.
+- `c4lkzgaf`: Newsletter roundup.
+- `hyqudmlz`: Inside-perspective talk on how the Java language is evolved: process and opinion, not one architectural idea.
+- `2cmd5fpc`: Model-architecture research (residual connections), not an event or a backend system. AI/ML Systems already gets the KV-offload Concept today.
+- `rn3af3oh`: Product feature story (Duplex in Gemini), and AI/ML Systems already has today's pick.
+- `kmex2pgr`: Fetched: a teachable idea (key skew moves lock-bound and cache-bound throughput in opposite directions), but the Source is short with only interactive charts, and Distributed Systems is already the thickest Vertical. A candidate for a later day.
+- `suwoz4in`: Fetched: strong mechanism for a MonoKernel / persistent-kernel decode Concept, but AI/ML Systems already gets KV cache offload today. The next AI/ML candidate.
+- `ors6i6yf`: Lazy constants (JEP 547) are already covered by the live java-immutable-data Concept.
+- `gifu2zhy`: Valhalla value objects are already covered by the live java-immutable-data Concept.
+- `47zffks3`: Petsem is already covered by the live Brief fly-io-petsem-sqlite-lock-contention.
+
+</details>
+
