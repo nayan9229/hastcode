@@ -9,7 +9,8 @@ kind: comparison
 vertical: infrastructure-cloud
 tags: ["kubernetes", "kube-proxy", "nftables", "iptables", "ipvs"]
 published: "2026-11-19T06:32:28Z"
-reviewed: "2026-11-19T06:32:28Z"
+verified: 2026-11-23
+reviewed: "2026-11-23T10:10:31Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [cilium]
-draft: true
 ---
 
 Kubernetes SIG Network [plans to remove kube-proxy's `ipvs` backend in Kubernetes 1.40](https://kubernetes.io/blog/2026/11/16/ipvs-removal/), Dan Winship wrote on the Kubernetes blog on 16 November 2026. Unless you have replaced it, every node in a cluster runs kube-proxy, which [implements a virtual IP mechanism for Services](https://kubernetes.io/docs/reference/networking/virtual-ips/). Its backend (the documentation says proxy mode) is the kernel API it programs to do that. Developers added the `ipvs` backend in 2017 to fix performance problems in the `iptables` one. In very large clusters, kube-proxy would "[use 100% of one CPU all the time just to process iptables updates](https://kubernetes.io/blog/2026/11/16/ipvs-removal/#why-was-the-ipvs-backend-written)." Kubernetes [deprecated `ipvs` in 1.35](https://kubernetes.io/blog/2025/12/17/kubernetes-v1-35-release/#deprecation-of-ipvs-mode-in-kube-proxy) and recommends the `nftables` backend, generally available (GA) since 1.33, in its place. So which backend should write your Service rules: `iptables`, `ipvs` or `nftables`? We answer the same five questions for all three, from the Kubernetes blog, documentation and enhancement proposals (KEPs).

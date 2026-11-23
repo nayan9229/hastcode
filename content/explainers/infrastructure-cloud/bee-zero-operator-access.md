@@ -9,7 +9,8 @@ kind: case-study
 vertical: infrastructure-cloud
 tags: ["confidential-computing", "attestation", "encryption", "privacy", "bee"]
 published: "2026-11-23T09:31:05Z"
-reviewed: "2026-11-23T09:31:05Z"
+verified: 2026-11-23
+reviewed: "2026-11-23T10:10:31Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Bee's wearable listens through the user's day, and the conversations it captures [can be about health, finances and family](https://aws.amazon.com/blogs/architecture/how-bee-implemented-zero-operator-access-for-personal-ai-on-aws/). The servers that read them run [without SSH, SSM (AWS Systems Manager) or shell access](https://cdn.amazon.science/28/51/3233e0da45d6bf68c85b9eb04f0d/beeprivatecompute-whitepaper-09-23-26.pdf#page=2). A user's phone hands them a decryption key only after checking their software against [a public log that Amazon does not operate](https://cdn.amazon.science/28/51/3233e0da45d6bf68c85b9eb04f0d/beeprivatecompute-whitepaper-09-23-26.pdf#page=11). This is how Bee built Zero Operator Access on AWS, the simpler designs it could not use, and what the guarantee costs.

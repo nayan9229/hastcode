@@ -8,7 +8,8 @@ kind: concept
 vertical: distributed-systems
 tags: ["data-contracts", "odcs", "data-quality", "schema-evolution", "data-mesh"]
 published: "2026-11-20T09:31:06Z"
-reviewed: "2026-11-20T09:31:06Z"
+verified: 2026-11-23
+reviewed: "2026-11-23T10:10:31Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 In November 2026 the Thoughtworks Technology Radar put the Open Data Contract Standard (ODCS) in its Adopt ring, calling it ["a sensible default for teams building data products"](https://www.thoughtworks.com/en-de/radar/languages-and-frameworks/summary/open-data-contract-standard-odcs). The same month, Simon Harrer and Arif Wider [showed what such a file does](https://martinfowler.com/articles/data-contracts.html). A provider publishes a contract for its `customers` table: [fewer than 1% empty names](https://martinfowler.com/articles/data-contracts.html#SchemaAndDataQuality), and a [freshness promise of 24 hours](https://martinfowler.com/articles/data-contracts.html#TermsOfUseAndSlas). Later, someone renames a column. Nobody regenerates the contract to match. ["The contract test fails instead"](https://martinfowler.com/articles/data-contracts.html#Data-firstVs.Contract-first), and the rename has to be handled as a breaking change. This piece shows what goes into that file, how a pipeline enforces it like an API spec, and where it ends: at the access agreement a consumer gets on approval.

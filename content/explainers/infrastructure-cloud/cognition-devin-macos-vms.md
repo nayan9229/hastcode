@@ -9,7 +9,8 @@ kind: case-study
 vertical: infrastructure-cloud
 tags: ["virtualization", "macos", "ai-agents", "snapshots", "cognition"]
 published: "2026-11-23T09:31:06Z"
-reviewed: "2026-11-23T09:31:06Z"
+verified: 2026-11-23
+reviewed: "2026-11-23T10:10:31Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 related: [fly-io-sbd]
-draft: true
 ---
 
 Cognition [launched macOS support for Devin](https://aws.amazon.com/blogs/architecture/ai-coding-agents-on-amazon-ec2-mac-how-cognition-scales-devin-for-macos/#results), its AI software engineer, on 15 September 2026. Within six weeks, [nearly 1,000 organisations were running it](https://aws.amazon.com/blogs/architecture/ai-coding-agents-on-amazon-ec2-mac-how-cognition-scales-devin-for-macos/), by Cognition's count. Each session gets [a fresh macOS virtual machine (VM) in under a minute](https://aws.amazon.com/blogs/architecture/ai-coding-agents-on-amazon-ec2-mac-how-cognition-scales-devin-for-macos/), yet the Mac underneath [cannot be released for 24 hours](https://aws.amazon.com/blogs/architecture/ai-coding-agents-on-amazon-ec2-mac-how-cognition-scales-devin-for-macos/#solution-overview). This is how Cognition splits a session's life from its host's, the four parts that make it work, and what each one costs.

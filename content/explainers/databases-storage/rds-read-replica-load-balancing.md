@@ -8,7 +8,8 @@ kind: comparison
 vertical: databases-storage
 tags: ["aws", "rds", "read-replicas", "load-balancing", "dns"]
 published: "2026-11-20T09:31:07Z"
-reviewed: "2026-11-20T09:31:07Z"
+verified: 2026-11-23
+reviewed: "2026-11-23T10:10:31Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 Spread connections evenly across three RDS read replicas in three Availability Zones (AZs), and only one connection in three lands in the caller's AZ. That is the starting point of [the AWS Database Blog's cost estimate](https://aws.amazon.com/blogs/database/distribute-amazon-rds-traffic-between-read-replicas-using-network-load-balancer/#cost-estimate). At 10 GB an hour, about 7 TB a month, the other two-thirds come to "7 TB × 0.667 ≈ 4.7 TB" of inter-AZ traffic every month. The post's fix is a Network Load Balancer (NLB) whose targets a Lambda function keeps in step with the replicas' DNS names. It joins three older options: Aurora's reader endpoint, Route 53 weighted records, and a ProxySQL or PgBouncer proxy tier. Which of the four keeps a read in its AZ, balances queries rather than connections, notices a dead replica first, reaches on-premises clients and costs least to run? We answer the same questions for all four, from AWS's documentation and the proxies' own.
