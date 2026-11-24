@@ -9,7 +9,8 @@ kind: case-study
 vertical: apis-networking
 tags: ["dns", "synthetic-monitoring", "slo", "testing", "cloudflare"]
 published: "2026-11-24T18:54:04Z"
-reviewed: "2026-11-24T18:54:04Z"
+verified: 2026-11-24
+reviewed: "2026-11-24T16:32:07Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 In one rollout of the service that publishes DNS records to Cloudflare's edge, [a scheduling bug left some record changes unpublished for hours](https://blog.cloudflare.com/probing-dns-at-cloudflare/). In Cloudflare's words, "The service stayed up and was healthy," but new hostnames were slow to resolve and certificates could not be issued until the bug was fixed. This is how Cloudflare now tests DNS by its output instead of its health, and how those tests decide whether a release ships.

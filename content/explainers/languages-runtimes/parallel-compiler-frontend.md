@@ -8,7 +8,8 @@ kind: concept
 vertical: languages-runtimes
 tags: ["rust", "compilers", "parallelism", "rayon", "build-performance"]
 published: "2026-11-21T18:54:05Z"
-reviewed: "2026-11-21T18:54:05Z"
+verified: 2026-11-24
+reviewed: "2026-11-24T16:32:07Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 Since [`nightly-2026-11-14`](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#context), the nightly Rust compiler has checked code on [two threads](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#tuning-the-thread-count) by default. The part that changed is the frontend, which the Rust Compiler Team says [includes type checking and borrow checking](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#context) and had run on a single thread. Across the real-world benchmarks in the team's suite, two threads cut the wall time of a from-scratch `check` build by [21.95% on average](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#benefits), and eight threads by 44.23%. For a `cargo check` of the `nalgebra`, `cargo` or `diesel` crates, eight threads made compilation ["almost three times faster"](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#benefits). The code is [not new](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#context). The team shipped it as a [nightly opt-in in November 2023](https://blog.rust-lang.org/2023/11/09/parallel-rustc/), aiming for stable in 2024, and [missed that goal](https://blog.rust-lang.org/2026/11/16/enabling-parallel-frontend-on-nightly/#context). This piece shows how rustc lets many threads share one cache of results, and what the extra threads cost you.

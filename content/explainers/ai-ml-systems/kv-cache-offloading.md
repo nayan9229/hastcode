@@ -9,14 +9,14 @@ kind: concept
 vertical: ai-ml-systems
 tags: ["kv-cache", "llm-inference", "prefix-caching", "nvme", "vllm"]
 published: "2026-11-24T18:54:04Z"
-reviewed: "2026-11-24T18:54:04Z"
+verified: 2026-11-24
+reviewed: "2026-11-24T16:32:07Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
 # hero: concept-name.png
 # hero_alt: "What the image shows"
 related: [disaggregated-inference, decode-context-parallelism]
-draft: true
 ---
 
 In AgentX, a benchmark that replays real Claude Code sessions, the median turn sends [142K input tokens](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier), and [over 96% of them](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier) are a prefix the server has already seen. Serving those sessions on vLLM, the Kimi-K3 model wrote [2.3 to 4.6 TB of KV cache an hour](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier) to the pool that keeps it. A [1.8 TB pool of host DRAM, listed at about $76,000](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier), holds only the last 23 to 47 minutes of that. In a post on 23 November 2026, AMD and Embedded LLM put the pool on drives instead. On AMD Instinct MI355X GPUs, a [1.8 TB NVMe pool came within 1%](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier#at-the-same-size-nvme-matched-dram) of a DRAM pool of the same size. Its own DRAM use was [about 80 GB](https://vllm.ai/blog/2026-11-23-skip-the-dram-tier#tldr). This is how KV cache offloading works, why the slower tier kept up, and how to choose a tier by how long the cache must survive.

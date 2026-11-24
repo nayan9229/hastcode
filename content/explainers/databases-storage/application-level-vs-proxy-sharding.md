@@ -9,7 +9,8 @@ kind: comparison
 vertical: databases-storage
 tags: ["sharding", "vitess", "neki", "postgres", "mysql"]
 published: "2026-11-21T18:54:04Z"
-reviewed: "2026-11-21T18:54:04Z"
+verified: 2026-11-24
+reviewed: "2026-11-24T16:32:07Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 PlanetScale's Ahmed Darwich starts a growing marketplace's sharding with one function. `shard_for` takes a `user_id` [modulo 4 and picks one of four databases](https://planetscale.com/blog/why-you-shouldnt-do-app-level-sharding#sharding-in-the-application), and writing it takes an afternoon. By day 1000, the team runs [reshard tooling, an ID scheme, a lookup table, a saga, a schema rollout tool, a failover orchestrator and a pooler on every shard](https://planetscale.com/blog/why-you-shouldnt-do-app-level-sharding#you-built-a-sharding-layer-anyway). The post's verdict: "You ended up building a sharding layer, even though your team's actual job is running a marketplace." PlanetScale sells such a layer, so we check the argument against the layers' own documentation. Should the sharding logic live in your application code, or in a sharding layer such as Vitess or Neki, and what does each leave you to build? We answer the same six questions for application code, Vitess and Neki.
