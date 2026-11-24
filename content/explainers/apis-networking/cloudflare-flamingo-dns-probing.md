@@ -8,8 +8,8 @@ description: "Cloudflare's Flamingo reads a timestamped DNS record back from eve
 kind: case-study
 vertical: apis-networking
 tags: ["dns", "synthetic-monitoring", "slo", "testing", "cloudflare"]
-published: "2026-11-23T18:54:04Z"
-reviewed: "2026-11-23T18:54:04Z"
+published: "2026-11-24T18:54:04Z"
+reviewed: "2026-11-24T18:54:04Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
