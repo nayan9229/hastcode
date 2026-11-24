@@ -8,8 +8,8 @@ description: "KV cache offloading keeps prefix KV the GPU evicts in DRAM or on N
 kind: concept
 vertical: ai-ml-systems
 tags: ["kv-cache", "llm-inference", "prefix-caching", "nvme", "vllm"]
-published: "2026-11-23T18:54:04Z"
-reviewed: "2026-11-23T18:54:04Z"
+published: "2026-11-24T18:54:04Z"
+reviewed: "2026-11-24T18:54:04Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
