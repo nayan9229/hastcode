@@ -9,7 +9,8 @@ kind: case-study
 vertical: ai-ml-systems
 tags: ["vllm", "generative-recommendation", "beam-search", "kv-cache", "llm-inference"]
 published: "2026-11-25T07:37:22Z"
-reviewed: "2026-11-25T07:37:22Z"
+verified: 2026-11-26
+reviewed: "2026-11-26T11:04:27Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -17,7 +18,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
-draft: true
 ---
 
 OneRec-1.7B reads a viewer's history and returns [128 candidate item IDs](https://vllm.ai/blog/2026-11-24-vllm-gr-announcement#about), each [three tokens long](https://github.com/vllm-project/vllm-gr/blob/main/docs/configuration/constraint_tables.md): the reverse of a chat model's one long reply. vLLM-GR, announced on 24 November 2026, runs that whole search as one engine request. On an NVIDIA H20, at beam width 256 and batch size 8, its [P99 latency was 369.4 ms against SGLang's 1,280.1 ms](https://vllm.ai/blog/2026-11-24-vllm-gr-announcement#performance-evaluation). This is how a request moves through the engine, what those numbers do and do not show, and what the first release cannot do yet.

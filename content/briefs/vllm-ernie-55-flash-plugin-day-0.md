@@ -6,6 +6,7 @@ title: "vLLM's ERNIE 5.5 Flash plugin: model code outside the core"
 description: "Baidu's ERNIE 5.5 Flash Preview runs on unmodified vLLM 0.32.0 on release day, through a plugin. A new model need not wait for an engine release."
 tags: [llm-inference, vllm, mixture-of-experts, expert-parallelism]
 published: "2026-11-26T07:37:21Z"
+verified: 2026-11-26
 author: mira-vance
 source_url: "https://vllm.ai/blog/2026-11-24-ernie-5-5-flash-preview"
 explainers: [vllm-vs-deepinfer, expert-parallelism]
@@ -16,7 +17,6 @@ explainers: [vllm-vs-deepinfer, expert-parallelism]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 ## What happened

@@ -8,7 +8,8 @@ kind: concept
 vertical: infrastructure-cloud
 tags: ["inference", "gpu-clusters", "reverse-proxy", "qos", "vllm"]
 published: "2026-11-25T07:37:22Z"
-reviewed: "2026-11-25T07:37:22Z"
+verified: 2026-11-26
+reviewed: "2026-11-26T11:04:27Z"
 author: mira-vance
 # Optional: an image HastCode may use, beside this file, replaces the
 # generated title card. Never a Source's image.
@@ -16,7 +17,6 @@ author: mira-vance
 # hero_alt: "What the image shows"
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [http-connection-reuse]
-draft: true
 ---
 
 On 25 November 2026, Sabina Anja, Chief Technologist at Broadcom, [sized a network on the APNIC blog](https://blog.apnic.net/2026/11/25/the-model-inside-the-server-network-design-for-inference-on-a-few-gpu-nodes/) for a small inference cluster. The example is "4 servers × 8 GPUs", running Llama 3.3 70B with the vLLM inference server. A training cluster adds a second, dedicated network for traffic between GPUs in different servers, and [the 400G ports go with it](https://blog.apnic.net/2026/11/25/the-model-inside-the-server-network-design-for-inference-on-a-few-gpu-nodes/). Anja's arithmetic found little for it to carry here. One response stream is about 120 kbit/s. The largest transfer is a 141 GB model load per server. At 25 Gigabit Ethernet (GbE) line rate that is a 45-second transfer, made only at install and on a version change. ["The network problem is not how the GPUs talk to each other."](https://blog.apnic.net/2026/11/25/the-model-inside-the-server-network-design-for-inference-on-a-few-gpu-nodes/) This piece shows why that holds while a model fits in one server, the configuration that replaces the second network, and the point where the design stops working.

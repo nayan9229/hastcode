@@ -6,6 +6,7 @@ title: "GitHub's Git LFS overload: retries hid one region's shortfall"
 description: "On 25 November automated unauthenticated traffic overwhelmed Git LFS servers in one GitHub region. Shed load by class before requests time out."
 tags: [load-shedding, retries, incidents, github]
 published: "2026-11-26T07:37:21Z"
+verified: 2026-11-26
 author: mira-vance
 source_url: "https://www.githubstatus.com/incidents/m0wvf9pt3l0l"
 explainers: [metastable-failures]
@@ -16,7 +17,6 @@ explainers: [metastable-failures]
 # Optional: related Explainer slugs and extra sources (title + url).
 # related: [metastable-failures]
 # sources: [{title: "The page's title", url: "https://example.com/page"}]
-draft: true
 ---
 
 ## What happened
